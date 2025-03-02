@@ -101,7 +101,7 @@ class DashboardController extends Controller
             ];
         });
 
-        return Inertia::render('Dashboard', [
+        return Inertia::render('dashboard', [
             'cars' => $carStats,
         ]);
     }
