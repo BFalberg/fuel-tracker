@@ -29,7 +29,8 @@ class CarController extends Controller
             'registration_number' => 'required|string|max:255|unique:cars',
         ]);
 
-        Car::create($validated);
+        // Create the car and associate it with the authenticated user
+        $car = auth()->user()->cars()->create($validated);
 
         return redirect()->route('cars.index')->with('success', 'Car created successfully');
     }

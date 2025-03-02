@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Car extends Model
 {
-    protected $fillable = ['name', 'registration_number'];
+    protected $fillable = [
+        'name',
+        'registration_number',
+        'user_id'
+    ];
 
     public function refuels(): HasMany
     {

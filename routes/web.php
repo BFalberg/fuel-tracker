@@ -5,15 +5,14 @@ use Inertia\Inertia;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\RefuelController;
 use App\Http\Controllers\GasStationController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 Route::middleware(['auth'])->group(function () {
