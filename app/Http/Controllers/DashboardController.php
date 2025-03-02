@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $cars = $user->cars;
 
         if ($cars->isEmpty()) {
-            return Inertia::render('Dashboard', [
+            return Inertia::render('dashboard', [
                 'stats' => null,
                 'message' => 'Please add a car to start tracking fuel consumption.'
             ]);
