@@ -11,25 +11,18 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+// Group all routes that need both auth and verified middleware
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-});
 
-Route::middleware(['auth'])->group(function () {
-    // Cars routes
     Route::resource('cars', CarController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->middleware(['auth', 'verified']);
+        ->only(['index', 'store', 'update', 'destroy']);
 
-    // Refuels routes
     Route::resource('refuels', RefuelController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->middleware(['auth', 'verified']);
+        ->only(['index', 'store', 'update', 'destroy']);
 
-    // Gas Stations routes
     Route::resource('gas-stations', GasStationController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->middleware(['auth', 'verified']);
+        ->only(['index', 'store', 'update', 'destroy']);
 });
 
 require __DIR__ . '/settings.php';
