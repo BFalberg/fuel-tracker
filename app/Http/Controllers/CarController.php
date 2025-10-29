@@ -20,8 +20,13 @@ class CarController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show the form for creating a new resource.
      */
+    public function create()
+    {
+        return Inertia::render('Cars/CarCreate');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -48,7 +53,9 @@ class CarController extends Controller
      */
     public function edit(Car $car)
     {
-        //
+        return Inertia::render('Cars/CarEdit', [
+            'car' => $car
+        ]);
     }
 
     /**

@@ -13,23 +13,22 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-});
 
-Route::middleware(['auth'])->group(function () {
     // Cars routes
     Route::resource('cars', CarController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->middleware(['auth', 'verified']);
+        ->only(['index']);
+    Route::get('cars/create', [CarController::class, 'create'])
+        ->name('cars.create');
+    Route::get('cars/{car}/edit', [CarController::class, 'edit'])
+        ->name('cars.edit');
 
     // Refuels routes
     Route::resource('refuels', RefuelController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->middleware(['auth', 'verified']);
+        ->only(['index', 'store', 'update', 'destroy']);
 
     // Gas Stations routes
     Route::resource('gas-stations', GasStationController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->middleware(['auth', 'verified']);
+        ->only(['index', 'store', 'update', 'destroy']);
 });
 
 require __DIR__ . '/settings.php';
