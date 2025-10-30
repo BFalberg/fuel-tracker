@@ -55,7 +55,7 @@ export default function GasStations({ gasStations }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gas Stations" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Gas Stations</h1>
                     <Button

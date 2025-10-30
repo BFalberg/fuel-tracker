@@ -48,7 +48,7 @@ export default function Cars({ cars }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Cars" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Cars</h1>
                     <Button

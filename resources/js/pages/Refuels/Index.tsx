@@ -85,7 +85,7 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Refuels" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Refuels</h1>
                     <Button
