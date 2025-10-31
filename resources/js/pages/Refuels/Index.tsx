@@ -1,3 +1,4 @@
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -6,7 +7,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import DeleteConfirmation from './DeleteConfirmation';
 import RefuelCard from './RefuelCard';
-import RefuelForm from './RefuelForm';
 
 interface Refuel {
     id: number;
@@ -31,8 +31,6 @@ interface Props {
         per_page: number;
         total: number;
     };
-    cars: Array<{ id: number; name: string }>;
-    gasStations: Array<{ id: number; name: string }>;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -42,14 +40,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Refuels({ refuels, cars, gasStations }: Props) {
-    const [isFormOpen, setIsFormOpen] = useState(false);
+export default function Refuels({ refuels }: Props) {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedRefuel, setSelectedRefuel] = useState<Refuel | null>(null);
 
     const handleEdit = (refuel: Refuel) => {
         setSelectedRefuel(refuel);
-        setIsFormOpen(true);
     };
 
     const handleDelete = (refuel: Refuel) => {
@@ -74,7 +70,7 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
             { page },
             {
                 preserveState: true,
-                preserveScroll: false, // Change this to false
+                preserveScroll: false,
                 onSuccess: () => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
@@ -85,20 +81,9 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Refuels" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Refuels</h1>
-                    <Button
-                        onClick={() => {
-                            setSelectedRefuel(null);
-                            setIsFormOpen(true);
-                        }}
-                    >
-                        Create Refuel
-                    </Button>
-                </div>
-
-                <div className="flex flex-col gap-4">
+            <Heading level={1} title={breadcrumbs[0].title} />
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {refuels.data.map((refuel) => (
                         <RefuelCard key={refuel.id} refuel={refuel} onEdit={handleEdit} onDelete={handleDelete} />
                     ))}
@@ -106,7 +91,7 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
 
                 {refuels.last_page > 1 && (
                     <div className="flex items-center justify-between border-t pt-4">
-                        <div className="text-sm text-gray-700">
+                        <div className="text-muted-foreground text-sm">
                             Showing page {refuels.current_page} of {refuels.last_page}
                         </div>
                         <div className="flex gap-2">
@@ -129,17 +114,6 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
                         </div>
                     </div>
                 )}
-
-                <RefuelForm
-                    refuel={selectedRefuel ?? undefined}
-                    cars={cars}
-                    gasStations={gasStations}
-                    open={isFormOpen}
-                    onOpenChange={(open) => {
-                        setIsFormOpen(open);
-                        if (!open) setSelectedRefuel(null);
-                    }}
-                />
 
                 {selectedRefuel && (
                     <DeleteConfirmation

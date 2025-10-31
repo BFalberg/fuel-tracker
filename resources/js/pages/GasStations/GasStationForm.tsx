@@ -1,8 +1,8 @@
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
 
@@ -13,20 +13,16 @@ interface GasStation {
 }
 
 interface GasStationFormProps {
+    formType: 'create' | 'edit';
     gasStation?: GasStation;
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
 }
 
-export default function GasStationForm({ gasStation, open, onOpenChange }: GasStationFormProps) {
-    const isEditing = !!gasStation;
-
+export default function GasStationForm({ formType, gasStation }: GasStationFormProps) {
     const { data, setData, post, put, processing, errors, reset } = useForm({
         name: gasStation?.name ?? '',
         address: gasStation?.address ?? '',
     });
 
-    // Add this effect to handle form data updates when gasStation prop changes
     useEffect(() => {
         if (gasStation) {
             setData({
@@ -36,22 +32,20 @@ export default function GasStationForm({ gasStation, open, onOpenChange }: GasSt
         } else {
             reset();
         }
-    }, [gasStation]);
+    }, [gasStation, reset, setData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (isEditing) {
+        if (formType === 'edit' && gasStation?.id) {
             put(`/gas-stations/${gasStation.id}`, {
                 onSuccess: () => {
-                    onOpenChange(false);
                     reset();
                 },
             });
         } else {
             post('/gas-stations', {
                 onSuccess: () => {
-                    onOpenChange(false);
                     reset();
                 },
             });
@@ -59,37 +53,43 @@ export default function GasStationForm({ gasStation, open, onOpenChange }: GasSt
     };
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent side="bottom">
-                <div className="mx-auto w-full max-w-sm">
-                    <SheetHeader>
-                        <SheetTitle>{isEditing ? 'Edit Gas Station' : 'Create Gas Station'}</SheetTitle>
-                        <SheetDescription>{isEditing ? 'Update gas station details' : 'Add a new gas station'}</SheetDescription>
-                    </SheetHeader>
-                    <div className="p-4 pt-0">
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <Label htmlFor="name">Name</Label>
-                                <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
-                                <InputError message={errors.name} />
-                            </div>
-                            <div>
-                                <Label htmlFor="address">Address</Label>
-                                <Input id="address" value={data.address} onChange={(e) => setData('address', e.target.value)} />
-                                <InputError message={errors.address} />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Button className="w-full" type="submit" disabled={processing}>
-                                    {isEditing ? 'Update' : 'Create'}
-                                </Button>
-                                <Button className="w-full" variant="outline" onClick={() => onOpenChange(false)}>
-                                    Cancel
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
+        <Card>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6 px-6">
+                <div className="grid gap-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                        id="name"
+                        type="text"
+                        required
+                        autoFocus
+                        tabIndex={1}
+                        autoComplete="off"
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
+                        placeholder="Gas station name"
+                    />
+                    <InputError message={errors.name} />
                 </div>
-            </SheetContent>
-        </Sheet>
+                <div className="grid gap-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input
+                        id="address"
+                        type="text"
+                        required
+                        tabIndex={2}
+                        autoComplete="off"
+                        value={data.address}
+                        onChange={(e) => setData('address', e.target.value)}
+                        placeholder="123 Main St"
+                    />
+                    <InputError message={errors.address} />
+                </div>
+                <div className="flex flex-col gap-2">
+                    <Button className="w-full" type="submit" disabled={processing} tabIndex={3}>
+                        {formType === 'edit' ? 'Update Gas Station' : 'Create Gas Station'}
+                    </Button>
+                </div>
+            </form>
+        </Card>
     );
 }

@@ -1,9 +1,8 @@
-import { Button } from '@/components/ui/button';
+import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import CarCard from './CarCard';
-import CarForm from './CarForm';
 import DeleteConfirmation from './DeleteConfirmation';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -24,13 +23,11 @@ interface Props {
 }
 
 export default function Cars({ cars }: Props) {
-    const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedCar, setSelectedCar] = useState<Car | null>(null);
 
     const handleEdit = (car: Car) => {
         setSelectedCar(car);
-        setIsFormOpen(true);
     };
 
     const handleDelete = (car: Car) => {
@@ -48,32 +45,13 @@ export default function Cars({ cars }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Cars" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Cars</h1>
-                    <Button
-                        onClick={() => {
-                            setSelectedCar(null);
-                            setIsFormOpen(true);
-                        }}
-                    >
-                        Create Car
-                    </Button>
-                </div>
+            <Heading level={1} title={breadcrumbs[0].title} />
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {cars.map((car) => (
                         <CarCard key={car.id} car={car} onEdit={handleEdit} onDelete={handleDelete} />
                     ))}
                 </div>
-
-                <CarForm
-                    car={selectedCar ?? undefined}
-                    open={isFormOpen}
-                    onOpenChange={(open) => {
-                        setIsFormOpen(open);
-                        if (!open) setSelectedCar(null);
-                    }}
-                />
 
                 {selectedCar && (
                     <DeleteConfirmation

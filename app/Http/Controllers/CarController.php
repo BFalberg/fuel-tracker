@@ -15,13 +15,18 @@ class CarController extends Controller
     public function index()
     {
         return Inertia::render('Cars/Index', [
-            'cars' => Car::latest()->get()
+            'cars' => Car::latest()->with('user:id,name')->get()
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show the form for creating a new resource.
      */
+    public function create()
+    {
+        return Inertia::render('Cars/CarCreate');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -48,7 +53,9 @@ class CarController extends Controller
      */
     public function edit(Car $car)
     {
-        //
+        return Inertia::render('Cars/CarEdit', [
+            'car' => $car
+        ]);
     }
 
     /**
@@ -63,7 +70,7 @@ class CarController extends Controller
 
         $car->update($validated);
 
-        return redirect()->back()->with('success', 'Car updated successfully');
+        return redirect()->route('cars.index')->with('success', 'Car updated successfully');
     }
 
     /**
