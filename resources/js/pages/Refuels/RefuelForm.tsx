@@ -133,7 +133,7 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
                     <div className="grid gap-2">
                         <Label htmlFor="car_id">Car</Label>
                         <NativeSelect id="car_id" value={data.car_id.toString()} onChange={(e) => setData('car_id', e.target.value)}>
-                            {cars.length > 1 && <NativeSelectOption value="">Select car</NativeSelectOption>}
+                            <NativeSelectOption value="">Select car</NativeSelectOption>
                             {cars.map((car) => (
                                 <NativeSelectOption key={car.id} value={car.id.toString()}>
                                     {car.name}

@@ -61,7 +61,7 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="outline" size="icon">
                             <MoreVertical className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
