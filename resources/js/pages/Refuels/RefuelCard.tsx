@@ -26,7 +26,7 @@ interface RefuelCardProps {
     onDelete?: (refuel: Refuel) => void;
 }
 
-export default function RefuelCard({ refuel, onEdit, onDelete }: RefuelCardProps) {
+export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('da-DK', {
             style: 'currency',

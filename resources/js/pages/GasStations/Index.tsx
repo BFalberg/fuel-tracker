@@ -26,10 +26,6 @@ export default function GasStations({ gasStations }: Props) {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedStation, setSelectedStation] = useState<GasStation | null>(null);
 
-    const handleEdit = (station: GasStation) => {
-        setSelectedStation(station);
-    };
-
     const handleDelete = (station: GasStation) => {
         setSelectedStation(station);
         setIsDeleteOpen(true);

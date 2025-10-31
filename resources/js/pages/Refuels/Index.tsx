@@ -31,8 +31,6 @@ interface Props {
         per_page: number;
         total: number;
     };
-    cars: Array<{ id: number; name: string }>;
-    gasStations: Array<{ id: number; name: string }>;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -42,14 +40,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Refuels({ refuels, cars, gasStations }: Props) {
-    const [isFormOpen, setIsFormOpen] = useState(false);
+export default function Refuels({ refuels }: Props) {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedRefuel, setSelectedRefuel] = useState<Refuel | null>(null);
 
     const handleEdit = (refuel: Refuel) => {
         setSelectedRefuel(refuel);
-        setIsFormOpen(true);
     };
 
     const handleDelete = (refuel: Refuel) => {

@@ -47,7 +47,7 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
         } else if (formType === 'create') {
             reset();
         }
-    }, [refuel, formType]);
+    }, [refuel, formType, reset, setData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
