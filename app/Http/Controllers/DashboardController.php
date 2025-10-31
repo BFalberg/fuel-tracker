@@ -54,32 +54,12 @@ class DashboardController extends Controller
             // SQLite does not support YEAR() and MONTH() functions natively.
             // Instead, use strftime('%Y', created_at) and strftime('%m', created_at) for grouping.
 
-            $averageStats = DB::table(function ($query) use ($car) {
-                $query->from('refuels')
-                    ->where('car_id', $car->id)
-                    ->selectRaw('
-                        strftime(\'%Y\', created_at) as year,
-                        strftime(\'%m\', created_at) as month,
-                        SUM(total_price) as monthly_amount,
-                        MAX(mileage) - MIN(mileage) as monthly_kilometers
-                    ')
-                    ->groupBy('year', 'month');
-            }, 'monthly_stats')
-                ->selectRaw('
-                    AVG(monthly_amount) as avg_monthly_amount,
-                    AVG(monthly_kilometers) as avg_monthly_kilometers
-                ')
-                ->first();
-
-
-            // For MySQL
-            // Average monthly stats
             // $averageStats = DB::table(function ($query) use ($car) {
             //     $query->from('refuels')
             //         ->where('car_id', $car->id)
             //         ->selectRaw('
-            //             YEAR(created_at) as year,
-            //             MONTH(created_at) as month,
+            //             strftime(\'%Y\', created_at) as year,
+            //             strftime(\'%m\', created_at) as month,
             //             SUM(total_price) as monthly_amount,
             //             MAX(mileage) - MIN(mileage) as monthly_kilometers
             //         ')
@@ -90,6 +70,26 @@ class DashboardController extends Controller
             //         AVG(monthly_kilometers) as avg_monthly_kilometers
             //     ')
             //     ->first();
+
+
+            // For MySQL
+            // Average monthly stats
+            $averageStats = DB::table(function ($query) use ($car) {
+                $query->from('refuels')
+                    ->where('car_id', $car->id)
+                    ->selectRaw('
+                        YEAR(created_at) as year,
+                        MONTH(created_at) as month,
+                        SUM(total_price) as monthly_amount,
+                        MAX(mileage) - MIN(mileage) as monthly_kilometers
+                    ')
+                    ->groupBy('year', 'month');
+            }, 'monthly_stats')
+                ->selectRaw('
+                    AVG(monthly_amount) as avg_monthly_amount,
+                    AVG(monthly_kilometers) as avg_monthly_kilometers
+                ')
+                ->first();
 
             // Total stats
             $totalStats = Refuel::where('car_id', $car->id)

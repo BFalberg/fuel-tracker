@@ -7,7 +7,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import DeleteConfirmation from './DeleteConfirmation';
 import RefuelCard from './RefuelCard';
-import RefuelForm from './RefuelForm';
 
 interface Refuel {
     id: number;
@@ -119,17 +118,6 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
                         </div>
                     </div>
                 )}
-
-                <RefuelForm
-                    refuel={selectedRefuel ?? undefined}
-                    cars={cars}
-                    gasStations={gasStations}
-                    open={isFormOpen}
-                    onOpenChange={(open) => {
-                        setIsFormOpen(open);
-                        if (!open) setSelectedRefuel(null);
-                    }}
-                />
 
                 {selectedRefuel && (
                     <DeleteConfirmation

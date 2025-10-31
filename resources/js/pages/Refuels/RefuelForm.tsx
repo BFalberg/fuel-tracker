@@ -21,10 +21,11 @@ interface RefuelFormProps {
     cars: Array<{ id: number; name: string }>;
     gasStations: Array<{ id: number; name: string }>;
     open: boolean;
+    formType: 'create' | 'edit';
 }
 
-export default function RefuelForm({ refuel, cars, gasStations, open }: RefuelFormProps) {
-    const isEditing = !!refuel;
+export default function RefuelForm({ refuel, cars, gasStations, formType }: RefuelFormProps) {
+    const isEditing = formType === 'edit';
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         car_id: refuel?.car_id?.toString() ?? '',
@@ -34,9 +35,8 @@ export default function RefuelForm({ refuel, cars, gasStations, open }: RefuelFo
         mileage: refuel?.mileage ?? '',
     });
 
-    // Reset form when refuel prop changes (switching between create/edit)
     useEffect(() => {
-        if (refuel) {
+        if (formType === 'edit' && refuel) {
             setData({
                 car_id: refuel.car_id.toString(),
                 gas_station_id: refuel.gas_station_id.toString(),
@@ -44,25 +44,21 @@ export default function RefuelForm({ refuel, cars, gasStations, open }: RefuelFo
                 total_price: refuel.total_price,
                 mileage: refuel.mileage,
             });
-        } else {
+        } else if (formType === 'create') {
             reset();
         }
-    }, [refuel]);
+    }, [refuel, formType]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (isEditing) {
-            put(`/refuels/${refuel.id}`, {
-                onSuccess: () => {
-                    reset();
-                },
+            put(`/refuels/${refuel?.id}`, {
+                onSuccess: () => reset(),
             });
         } else {
             post('/refuels', {
-                onSuccess: () => {
-                    reset();
-                },
+                onSuccess: () => reset(),
             });
         }
     };
@@ -120,23 +116,29 @@ export default function RefuelForm({ refuel, cars, gasStations, open }: RefuelFo
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="gas_station_id">Gas Station</Label>
-                        <NativeSelect>
-                            <NativeSelectOption value="">Select status</NativeSelectOption>
-                            <NativeSelectOption value="todo">Todo</NativeSelectOption>
-                            <NativeSelectOption value="in-progress">In Progress</NativeSelectOption>
-                            <NativeSelectOption value="done">Done</NativeSelectOption>
-                            <NativeSelectOption value="cancelled">Cancelled</NativeSelectOption>
-                        </NativeSelect>{' '}
+                        <NativeSelect
+                            id="gas_station_id"
+                            value={data.gas_station_id.toString()}
+                            onChange={(e) => setData('gas_station_id', e.target.value)}
+                        >
+                            <NativeSelectOption value="">Select gas station</NativeSelectOption>
+                            {gasStations.map((station) => (
+                                <NativeSelectOption key={station.id} value={station.id.toString()}>
+                                    {station.name}
+                                </NativeSelectOption>
+                            ))}
+                        </NativeSelect>
                         <InputError message={errors.gas_station_id} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="car_id">Car</Label>
                         <NativeSelect id="car_id" value={data.car_id.toString()} onChange={(e) => setData('car_id', e.target.value)}>
-                            <NativeSelectOption value="">Select status</NativeSelectOption>
-                            <NativeSelectOption value="todo">Todo</NativeSelectOption>
-                            <NativeSelectOption value="in-progress">In Progress</NativeSelectOption>
-                            <NativeSelectOption value="done">Done</NativeSelectOption>
-                            <NativeSelectOption value="cancelled">Cancelled</NativeSelectOption>
+                            {cars.length > 1 && <NativeSelectOption value="">Select car</NativeSelectOption>}
+                            {cars.map((car) => (
+                                <NativeSelectOption key={car.id} value={car.id.toString()}>
+                                    {car.name}
+                                </NativeSelectOption>
+                            ))}
                         </NativeSelect>
                         <InputError message={errors.car_id} />
                     </div>

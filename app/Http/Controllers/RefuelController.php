@@ -40,7 +40,11 @@ class RefuelController extends Controller
     {
         return Inertia::render('Refuels/RefuelCreate', [
             'cars' => Car::select(['id', 'name'])->get(),
-            'gasStations' => GasStation::select(['id', 'name'])->get(),
+            'gasStations' => GasStation::select(['gas_stations.id', 'gas_stations.name'])
+                ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
+                ->orderByRaw('MAX(refuels.created_at) DESC')
+                ->groupBy('gas_stations.id', 'gas_stations.name')
+                ->get(),
         ]);
     }
 
@@ -88,10 +92,10 @@ class RefuelController extends Controller
      */
     public function edit(Refuel $refuel)
     {
-        $refuel->load(['car', 'gasStation']);
+        $refuelData = Refuel::with(['car', 'gasStation'])->findOrFail($refuel->id);
 
         return Inertia::render('Refuels/RefuelEdit', [
-            'refuel' => $refuel,
+            'refuel' => $refuelData,
             'cars' => Car::select(['id', 'name'])->get(),
             'gasStations' => GasStation::select(['id', 'name'])->get(),
         ]);

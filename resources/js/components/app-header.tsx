@@ -31,14 +31,14 @@ const mainNavItems: NavItem[] = [
         icon: Car,
     },
     {
-        title: 'Refuels',
-        url: '/refuels',
-        icon: Fuel,
-    },
-    {
         title: 'Gas Stations',
         url: '/gas-stations',
         icon: MapPin,
+    },
+    {
+        title: 'Refuels',
+        url: '/refuels',
+        icon: Fuel,
     },
     {
         title: 'Create',

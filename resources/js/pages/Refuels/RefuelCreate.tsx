@@ -9,11 +9,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function RefuelCreate() {
+export default function RefuelCreate({ cars, gasStations }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Heading level={1} title={breadcrumbs[0].title} />
-            <RefuelForm formType="create" />
+            <RefuelForm cars={cars} gasStations={gasStations} formType="create" />
         </AppLayout>
     );
 }
