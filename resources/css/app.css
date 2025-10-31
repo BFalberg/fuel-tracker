@@ -81,7 +81,45 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
+    /* Copy of dark mode colors for default mode */
+    --background: oklch(0.1718 0.0303 175.04); /* Emerald 950 but darker */
+    --foreground: oklch(97.9% 0.021 166.113); /* Emerald 50 */
+    --card: oklch(0.1718 0.0303 175.04 / 50%); /* Emerald 950 but darker */
+    --card-foreground: oklch(97.9% 0.021 166.113); /* Emerald 50 */
+    --popover: oklch(0.1718 0.0303 175.04); /* Emerald 950 but darker */
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.1718 0.0303 175.04); /* Emerald 950 but darker */
+    --primary-foreground: oklch(97.9% 0.021 166.113); /* Emerald 50 */
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(95% 0.052 163.051 / 50%); /* Emerald 100 */
+    --accent: oklch(76.5% 0.177 163.223); /* Emerald 400 */
+    --accent-foreground: oklch(26.2% 0.051 172.552); /* Emerald 950 */
+    --destructive: oklch(0.396 0.141 25.723);
+    --destructive-foreground: oklch(0.637 0.237 25.331);
+    --border: oklch(97.9% 0.021 166.113 / 10%); /* Emerald 50 */
+    --input: oklch(95% 0.052 163.051 / 5%); /* Emerald 100 */
+    --ring: oklch(84.5% 0.143 164.978); /* Emerald 300 */
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.985 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(0.269 0 0);
+    --sidebar-ring: oklch(0.439 0 0);
+    --button: oklch(43.2% 0.095 166.913); /* Emerald 800 */
+    --button-foreground: oklch(90.5% 0.093 164.15); /* Emerald 200 */
+    --button-border: oklch(84.5% 0.143 164.978); /* Emerald 300 */
+
+    /* ---- Old Light mode colors ---- */
+    /* --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -93,8 +131,8 @@
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
     --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(76.5% 0.177 163.223); /* Emerald 400 */
-    --accent-foreground: oklch(26.2% 0.051 172.552); /* Emerald 950 */
+    --accent: oklch(76.5% 0.177 163.223);
+    --accent-foreground: oklch(26.2% 0.051 172.552);
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
@@ -114,9 +152,9 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.87 0 0);
-    --button: oklch(43.2% 0.095 166.913); /* Emerald 800 */
-    --button-foreground: oklch(90.5% 0.093 164.15); /* Emerald 200 */
-    --button-border: oklch(84.5% 0.143 164.978); /* Emerald 300 */
+    --button: oklch(43.2% 0.095 166.913);
+    --button-foreground: oklch(90.5% 0.093 164.15);
+    --button-border: oklch(84.5% 0.143 164.978);  */
 }
 
 .dark {
