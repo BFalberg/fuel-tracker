@@ -30,7 +30,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Refuels routes
     Route::resource('refuels', RefuelController::class)
-        ->only(['index', 'store', 'update', 'destroy']);
+        ->only(['index']);
+    Route::get('refuels/create', [RefuelController::class, 'create'])
+        ->name('refuels.create');
+    Route::post('refuels', [RefuelController::class, 'store'])
+        ->name('refuels.store');
+    Route::get('refuels/{refuel}/edit', [RefuelController::class, 'edit'])
+        ->name('refuels.edit');
+    Route::put('refuels/{refuel}', [RefuelController::class, 'update'])
+        ->name('refuels.update');
+    Route::delete('refuels/{refuel}', [RefuelController::class, 'destroy'])
+        ->name('refuels.destroy');
 
     // Gas Stations routes
     Route::resource('gas-stations', GasStationController::class)

@@ -1,9 +1,9 @@
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { useForm } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 
@@ -21,10 +21,9 @@ interface RefuelFormProps {
     cars: Array<{ id: number; name: string }>;
     gasStations: Array<{ id: number; name: string }>;
     open: boolean;
-    onOpenChange: (open: boolean) => void;
 }
 
-export default function RefuelForm({ refuel, cars, gasStations, open, onOpenChange }: RefuelFormProps) {
+export default function RefuelForm({ refuel, cars, gasStations, open }: RefuelFormProps) {
     const isEditing = !!refuel;
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
@@ -56,14 +55,12 @@ export default function RefuelForm({ refuel, cars, gasStations, open, onOpenChan
         if (isEditing) {
             put(`/refuels/${refuel.id}`, {
                 onSuccess: () => {
-                    onOpenChange(false);
                     reset();
                 },
             });
         } else {
             post('/refuels', {
                 onSuccess: () => {
-                    onOpenChange(false);
                     reset();
                 },
             });
@@ -71,108 +68,85 @@ export default function RefuelForm({ refuel, cars, gasStations, open, onOpenChan
     };
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent side="bottom">
-                <div className="mx-auto w-full max-w-sm">
-                    <SheetHeader>
-                        <SheetTitle>{isEditing ? 'Edit Refuel' : 'Create Refuel'}</SheetTitle>
-                        <SheetDescription>{isEditing ? 'Update your refuel details' : 'Add a new refuel record'}</SheetDescription>
-                    </SheetHeader>
-
-                    <div className="p-4 pt-0">
-                        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-                            <div>
-                                <Label htmlFor="total_price" className="block text-sm font-medium text-gray-700">
-                                    Total Price
-                                </Label>
-                                <Input
-                                    id="total_price"
-                                    type="number"
-                                    inputMode="decimal"
-                                    pattern="[0-9]*"
-                                    step="0.01"
-                                    value={data.total_price}
-                                    onChange={(e) => setData('total_price', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                                />
-                                <InputError message={errors.total_price} />
-                            </div>
-                            <div>
-                                <Label htmlFor="liters_refueled" className="block text-sm font-medium text-gray-700">
-                                    Liters Refueled
-                                </Label>
-                                <Input
-                                    id="liters_refueled"
-                                    type="number"
-                                    inputMode="decimal"
-                                    pattern="[0-9]*"
-                                    step="0.01"
-                                    value={data.liters_refueled}
-                                    onChange={(e) => setData('liters_refueled', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                                />
-                                <InputError message={errors.liters_refueled} />
-                            </div>
-                            <div>
-                                <Label htmlFor="mileage" className="block text-sm font-medium text-gray-700">
-                                    Mileage
-                                </Label>
-                                <Input
-                                    id="mileage"
-                                    type="number"
-                                    inputMode="decimal"
-                                    pattern="[0-9]*"
-                                    value={data.mileage}
-                                    onChange={(e) => setData('mileage', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                                />
-                                <InputError message={errors.mileage} />
-                            </div>
-                            <div>
-                                <Label htmlFor="gas_station_id">Gas Station</Label>
-                                <Select value={data.gas_station_id.toString()} onValueChange={(value) => setData('gas_station_id', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a gas station" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {gasStations.map((station, index) => (
-                                            <React.Fragment key={station.id}>
-                                                {index === 1 && <SelectSeparator />}
-                                                <SelectItem value={station.id.toString()}>{station.name}</SelectItem>
-                                            </React.Fragment>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.gas_station_id} />
-                            </div>
-                            <div>
-                                <Label htmlFor="car_id">Car</Label>
-                                <Select value={data.car_id.toString()} onValueChange={(value) => setData('car_id', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a car" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {cars.map((car) => (
-                                            <SelectItem key={car.id} value={car.id.toString()}>
-                                                {car.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.car_id} />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Button className="w-full" type="submit" disabled={processing}>
-                                    {isEditing ? 'Update' : 'Create'}
-                                </Button>
-                                <Button className="w-full" variant="outline" onClick={() => onOpenChange(false)}>
-                                    Cancel
-                                </Button>
-                            </div>
-                        </form>
+        <Card>
+            <div className="p-4 pt-0">
+                <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="total_price">Total Price</Label>
+                        <Input
+                            id="total_price"
+                            type="number"
+                            required
+                            inputMode="decimal"
+                            step="0.01"
+                            tabIndex={1}
+                            autoComplete="off"
+                            value={data.total_price}
+                            onChange={(e) => setData('total_price', e.target.value)}
+                            placeholder="Total price"
+                        />
+                        <InputError message={errors.total_price} />
                     </div>
-                </div>
-            </SheetContent>
-        </Sheet>
+                    <div className="grid gap-2">
+                        <Label htmlFor="liters_refueled">Liters Refueled</Label>
+                        <Input
+                            id="liters_refueled"
+                            type="number"
+                            required
+                            inputMode="decimal"
+                            step="0.01"
+                            tabIndex={2}
+                            autoComplete="off"
+                            value={data.liters_refueled}
+                            onChange={(e) => setData('liters_refueled', e.target.value)}
+                            placeholder="Liters refueled"
+                        />
+                        <InputError message={errors.liters_refueled} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="mileage">Mileage</Label>
+                        <Input
+                            id="mileage"
+                            type="number"
+                            required
+                            inputMode="decimal"
+                            tabIndex={3}
+                            autoComplete="off"
+                            value={data.mileage}
+                            onChange={(e) => setData('mileage', e.target.value)}
+                            placeholder="Mileage"
+                        />
+                        <InputError message={errors.mileage} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="gas_station_id">Gas Station</Label>
+                        <NativeSelect>
+                            <NativeSelectOption value="">Select status</NativeSelectOption>
+                            <NativeSelectOption value="todo">Todo</NativeSelectOption>
+                            <NativeSelectOption value="in-progress">In Progress</NativeSelectOption>
+                            <NativeSelectOption value="done">Done</NativeSelectOption>
+                            <NativeSelectOption value="cancelled">Cancelled</NativeSelectOption>
+                        </NativeSelect>{' '}
+                        <InputError message={errors.gas_station_id} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="car_id">Car</Label>
+                        <NativeSelect id="car_id" value={data.car_id.toString()} onChange={(e) => setData('car_id', e.target.value)}>
+                            <NativeSelectOption value="">Select status</NativeSelectOption>
+                            <NativeSelectOption value="todo">Todo</NativeSelectOption>
+                            <NativeSelectOption value="in-progress">In Progress</NativeSelectOption>
+                            <NativeSelectOption value="done">Done</NativeSelectOption>
+                            <NativeSelectOption value="cancelled">Cancelled</NativeSelectOption>
+                        </NativeSelect>
+                        <InputError message={errors.car_id} />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <Button className="w-full" type="submit" disabled={processing}>
+                            {isEditing ? 'Update' : 'Create'}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </Card>
     );
 }

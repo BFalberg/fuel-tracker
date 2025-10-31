@@ -1,19 +1,19 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
-import CarForm from './CarForm';
+import RefuelForm from './RefuelForm';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Edit Car',
-        href: '/cars/edit',
+        title: 'Edit Refuel',
+        href: '/refuels/edit',
     },
 ];
 
-export default function CarEdit({ car }: Props) {
+export default function RefuelCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Heading level={1} title={breadcrumbs[0].title} />
-            <CarForm formType="edit" car={car} />
+            <RefuelForm formType="edit" />
         </AppLayout>
     );
 }

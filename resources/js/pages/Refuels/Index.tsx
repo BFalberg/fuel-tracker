@@ -1,3 +1,4 @@
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -74,7 +75,7 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
             { page },
             {
                 preserveState: true,
-                preserveScroll: false, // Change this to false
+                preserveScroll: false,
                 onSuccess: () => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
@@ -85,20 +86,9 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Refuels" />
+            <Heading level={1} title={breadcrumbs[0].title} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Refuels</h1>
-                    <Button
-                        onClick={() => {
-                            setSelectedRefuel(null);
-                            setIsFormOpen(true);
-                        }}
-                    >
-                        Create Refuel
-                    </Button>
-                </div>
-
-                <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {refuels.data.map((refuel) => (
                         <RefuelCard key={refuel.id} refuel={refuel} onEdit={handleEdit} onDelete={handleDelete} />
                     ))}
@@ -106,7 +96,7 @@ export default function Refuels({ refuels, cars, gasStations }: Props) {
 
                 {refuels.last_page > 1 && (
                     <div className="flex items-center justify-between border-t pt-4">
-                        <div className="text-sm text-gray-700">
+                        <div className="text-muted-foreground text-sm">
                             Showing page {refuels.current_page} of {refuels.last_page}
                         </div>
                         <div className="flex gap-2">

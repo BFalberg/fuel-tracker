@@ -38,7 +38,10 @@ class RefuelController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Refuels/RefuelCreate', [
+            'cars' => Car::select(['id', 'name'])->get(),
+            'gasStations' => GasStation::select(['id', 'name'])->get(),
+        ]);
     }
 
     /**
@@ -69,7 +72,7 @@ class RefuelController extends Controller
 
         Refuel::create($validated);
 
-        return redirect()->back()->with('success', 'Refuel created successfully');
+        return redirect()->route('refuels.index')->with('success', 'Refuel created successfully');
     }
 
     /**
@@ -85,7 +88,13 @@ class RefuelController extends Controller
      */
     public function edit(Refuel $refuel)
     {
-        //
+        $refuel->load(['car', 'gasStation']);
+
+        return Inertia::render('Refuels/RefuelEdit', [
+            'refuel' => $refuel,
+            'cars' => Car::select(['id', 'name'])->get(),
+            'gasStations' => GasStation::select(['id', 'name'])->get(),
+        ]);
     }
 
     /**
@@ -117,7 +126,7 @@ class RefuelController extends Controller
 
         $refuel->update($validated);
 
-        return redirect()->back()->with('success', 'Refuel updated successfully');
+        return redirect()->route('refuels.index')->with('success', 'Refuel updated successfully');
     }
 
     /**
