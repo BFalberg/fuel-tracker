@@ -19,8 +19,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->only(['index']);
     Route::get('cars/create', [CarController::class, 'create'])
         ->name('cars.create');
+    Route::post('cars', [CarController::class, 'store'])
+        ->name('cars.store');
     Route::get('cars/{car}/edit', [CarController::class, 'edit'])
         ->name('cars.edit');
+    Route::put('cars/{car}', [CarController::class, 'update'])
+        ->name('cars.update');
+    Route::delete('cars/{car}', [CarController::class, 'destroy'])
+        ->name('cars.destroy');
 
     // Refuels routes
     Route::resource('refuels', RefuelController::class)
@@ -28,7 +34,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Gas Stations routes
     Route::resource('gas-stations', GasStationController::class)
-        ->only(['index', 'store', 'update', 'destroy']);
+        ->only(['index']);
+    Route::get('gas-stations/create', [GasStationController::class, 'create'])
+        ->name('gas-stations.create');
+    Route::post('gas-stations', [GasStationController::class, 'store'])
+        ->name('gas-stations.store');
+    Route::get('gas-stations/{gas_station}/edit', [GasStationController::class, 'edit'])
+        ->name('gas-stations.edit');
+    Route::put('gas-stations/{gas_station}', [GasStationController::class, 'update'])
+        ->name('gas-stations.update');
+    Route::delete('gas-stations/{gas_station}', [GasStationController::class, 'destroy'])
+        ->name('gas-stations.destroy');
 });
 
 require __DIR__ . '/settings.php';

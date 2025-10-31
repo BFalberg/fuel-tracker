@@ -17,4 +17,9 @@ class Car extends Model
     {
         return $this->hasMany(Refuel::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

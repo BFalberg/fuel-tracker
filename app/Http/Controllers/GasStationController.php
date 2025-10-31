@@ -14,9 +14,7 @@ class GasStationController extends Controller
     public function index()
     {
         return Inertia::render('GasStations/Index', [
-            'gasStations' => GasStation::withCount('refuels')
-                ->orderByDesc('refuels_count')
-                ->get()
+            'gasStations' => GasStation::latest()->get()
         ]);
     }
 
@@ -25,8 +23,9 @@ class GasStationController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('GasStations/GasStationCreate');
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -40,7 +39,7 @@ class GasStationController extends Controller
 
         GasStation::create($validated);
 
-        return redirect()->back()->with('success', 'Gas station created successfully');
+        return redirect()->route('gas-stations.index')->with('success', 'Gas station created successfully');
     }
 
     /**
@@ -56,7 +55,9 @@ class GasStationController extends Controller
      */
     public function edit(GasStation $gasStation)
     {
-        //
+        return Inertia::render('GasStations/GasStationEdit', [
+            'gasStation' => $gasStation
+        ]);
     }
 
     /**
@@ -71,7 +72,7 @@ class GasStationController extends Controller
 
         $gasStation->update($validated);
 
-        return redirect()->back()->with('success', 'Gas station updated successfully');
+        return redirect()->route('gas-stations.index')->with('success', 'Gas station updated successfully');
     }
 
     /**

@@ -12,6 +12,13 @@ import { Link, usePage } from '@inertiajs/react';
 import { Car, ChartNoAxesColumnDecreasing, Fuel, MapPin, Plus } from 'lucide-react';
 import AppLogo from './app-logo';
 
+const getCreateUrl = (currentUrl: string) => {
+    if (currentUrl.startsWith('/cars')) return '/cars/create';
+    if (currentUrl.startsWith('/refuels')) return '/refuels/create';
+    if (currentUrl.startsWith('/gas-stations')) return '/gas-stations/create';
+    return '/refuels/create';
+};
+
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -32,6 +39,11 @@ const mainNavItems: NavItem[] = [
         title: 'Gas Stations',
         url: '/gas-stations',
         icon: MapPin,
+    },
+    {
+        title: 'Create',
+        url: getCreateUrl,
+        icon: Plus,
     },
 ];
 
@@ -86,20 +98,18 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 className="bg-accent fixed bottom-0 left-1/2 z-50 flex w-full max-w-11/12 -translate-1/2 items-center justify-center rounded-full px-4 py-2"
             >
                 <NavigationMenuList className="grid w-full grid-cols-5 items-center justify-center">
-                    {mainNavItems.map((item, index) => (
-                        <NavigationMenuItem key={index} className="">
-                            <Link href={item.url} className={cn(menuItemStyles, page.url === item.url && activeItemStyles)}>
-                                {item.icon && <Icon iconNode={item.icon} className="size-4" />}
-                                {item.title}
-                            </Link>
-                        </NavigationMenuItem>
-                    ))}
-                    <NavigationMenuItem key="" className="">
-                        <Link href="" className={menuItemStyles}>
-                            <Icon iconNode={Plus} className="size-4" />
-                            Create
-                        </Link>
-                    </NavigationMenuItem>
+                    {mainNavItems.map((item, index) => {
+                        // If item.url is a function, call it with the current page URL
+                        const resolvedUrl = typeof item.url === 'function' ? item.url(page.url) : item.url;
+                        return (
+                            <NavigationMenuItem key={index} className="">
+                                <Link href={resolvedUrl} className={cn(menuItemStyles, page.url === resolvedUrl && activeItemStyles)}>
+                                    {item.icon && <Icon iconNode={item.icon} className="size-4" />}
+                                    {item.title}
+                                </Link>
+                            </NavigationMenuItem>
+                        );
+                    })}
                 </NavigationMenuList>
             </NavigationMenu>
         </>

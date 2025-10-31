@@ -2,25 +2,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from '@inertiajs/react';
-import { Car, MoreVertical, Pencil, Trash2, User } from 'lucide-react';
-interface CarCardProps {
-    car: {
+import { MapPin, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+
+interface GasStationCardProps {
+    gasStation: {
         id: number;
         name: string;
-        registration_number: string;
-        user: {
-            id: number;
-            name: string;
-        };
+        address: string;
     };
-    onDelete?: (car: CarCardProps['car']) => void;
+    onDelete?: (gasStation: GasStationCardProps['gasStation']) => void;
 }
 
-export default function CarCard({ car, onDelete }: CarCardProps) {
+export default function GasStationCard({ gasStation, onDelete }: GasStationCardProps) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>{car.name}</CardTitle>
+                <CardTitle>{gasStation.name}</CardTitle>
                 <div className="flex gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -30,12 +27,12 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                                <Link href={route('cars.edit', { car: car.id })} className="flex items-center">
+                                <Link href={route('gas-stations.edit', { gas_station: gasStation.id })} className="flex items-center">
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Edit
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onDelete?.(car)} className="text-red-600">
+                            <DropdownMenuItem onClick={() => onDelete?.(gasStation)} className="text-red-600">
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
                             </DropdownMenuItem>
@@ -44,15 +41,9 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-5 gap-4">
-                    <p className="text-muted-foreground col-span-2 flex items-center gap-2 text-sm">
-                        <Car className="size-5" />
-                        {car.registration_number}
-                    </p>
-                    <p className="text-muted-foreground col-span-3 flex items-center gap-2 text-sm">
-                        <User className="size-5" />
-                        {car.user.name}
-                    </p>
+                <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                    <MapPin className="size-5" />
+                    {gasStation.address}
                 </div>
             </CardContent>
         </Card>

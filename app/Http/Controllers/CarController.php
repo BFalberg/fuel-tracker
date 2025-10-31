@@ -15,7 +15,7 @@ class CarController extends Controller
     public function index()
     {
         return Inertia::render('Cars/Index', [
-            'cars' => Car::latest()->get()
+            'cars' => Car::latest()->with('user:id,name')->get()
         ]);
     }
 
@@ -70,7 +70,7 @@ class CarController extends Controller
 
         $car->update($validated);
 
-        return redirect()->back()->with('success', 'Car updated successfully');
+        return redirect()->route('cars.index')->with('success', 'Car updated successfully');
     }
 
     /**

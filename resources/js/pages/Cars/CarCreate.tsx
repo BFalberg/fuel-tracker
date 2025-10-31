@@ -1,4 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
+import CarForm from './CarForm';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -10,7 +11,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CarCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <h1>Create car</h1>
+            <CarForm formType="create" />
         </AppLayout>
     );
 }
