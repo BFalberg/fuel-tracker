@@ -58,8 +58,8 @@ class DashboardController extends Controller
             //     $query->from('refuels')
             //         ->where('car_id', $car->id)
             //         ->selectRaw('
-            //             strftime(\'%Y\', created_at) as year,
-            //             strftime(\'%m\', created_at) as month,
+            //             YEAR(created_at) as year,
+            //             MONTH(created_at) as month,
             //             SUM(total_price) as monthly_amount,
             //             MAX(mileage) - MIN(mileage) as monthly_kilometers
             //         ')

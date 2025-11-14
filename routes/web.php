@@ -6,6 +6,7 @@ use App\Http\Controllers\CarController;
 use App\Http\Controllers\RefuelController;
 use App\Http\Controllers\GasStationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CarExpenseController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -27,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('cars.update');
     Route::delete('cars/{car}', [CarController::class, 'destroy'])
         ->name('cars.destroy');
+    Route::get('cars/{car}', [CarController::class, 'show'])->name('cars.show');
 
     // Refuels routes
     Route::resource('refuels', RefuelController::class)
@@ -55,6 +57,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('gas-stations.update');
     Route::delete('gas-stations/{gas_station}', [GasStationController::class, 'destroy'])
         ->name('gas-stations.destroy');
+
+    // Car Expenses routes
+    Route::prefix('cars/{car}')->group(function () {
+        Route::get('expenses', [CarExpenseController::class, 'index'])->name('cars.expenses.index');
+        Route::get('expenses/create', [CarExpenseController::class, 'create'])->name('cars.expenses.create');
+        Route::post('expenses', [CarExpenseController::class, 'store'])->name('cars.expenses.store');
+        Route::get('expenses/{expense}/edit', [CarExpenseController::class, 'edit'])->name('cars.expenses.edit');
+        Route::put('expenses/{expense}', [CarExpenseController::class, 'update'])->name('cars.expenses.update');
+        Route::delete('expenses/{expense}', [CarExpenseController::class, 'destroy'])->name('cars.expenses.destroy');
+    });
 });
 
 require __DIR__ . '/settings.php';
