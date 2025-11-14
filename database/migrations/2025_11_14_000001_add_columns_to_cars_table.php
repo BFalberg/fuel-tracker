@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('cars', function (Blueprint $table) {
-            if (!Schema::hasColumn('cars', 'user_id')) {
-                $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            }
+            $table->bigInteger('start_milage')->nullable();
+            $table->decimal('purchase_price', 12, 2)->nullable();
+            $table->decimal('sale_price', 12, 2)->nullable();
         });
     }
 
@@ -23,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('cars', function (Blueprint $table) {
+            $table->dropColumn(['start_milage', 'purchase_price', 'sale_price']);
+        });
     }
 };

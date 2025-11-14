@@ -20,7 +20,11 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>{car.name}</CardTitle>
+                <CardTitle>
+                    <Link href={route('cars.show', { car: car.id })} className="hover:underline">
+                        {car.name}
+                    </Link>
+                </CardTitle>
                 <div className="flex gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

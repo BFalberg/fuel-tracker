@@ -45,7 +45,14 @@ class CarController extends Controller
      */
     public function show(Car $car)
     {
-        //
+        $car->load('carExpenses', 'user:id,name', 'refuels');
+        return Inertia::render('Cars/Show', [
+            'car' => $car,
+            'expenses' => $car->carExpenses->sortByDesc('invoice_date')->values(),
+            'refuels' => $car->refuels,
+            'start_milage' => $car->start_milage,
+            'user' => $car->user,
+        ]);
     }
 
     /**

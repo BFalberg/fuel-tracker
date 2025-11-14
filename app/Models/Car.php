@@ -10,7 +10,10 @@ class Car extends Model
     protected $fillable = [
         'name',
         'registration_number',
-        'user_id'
+        'user_id',
+        'start_milage',
+        'purchase_price',
+        'sale_price',
     ];
 
     public function refuels(): HasMany
@@ -21,5 +24,10 @@ class Car extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function carExpenses(): HasMany
+    {
+        return $this->hasMany(CarExpense::class);
     }
 }
