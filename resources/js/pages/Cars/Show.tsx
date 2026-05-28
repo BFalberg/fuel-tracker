@@ -57,7 +57,7 @@ export default function Show({ car, expenses, refuels, start_milage }: ShowProps
             <Head title="Cars" />
             <Heading level={1} title={breadcrumbs[0].title} />
 
-            <div className="mx-auto flex max-w-3xl flex-col gap-6 py-8">
+            <div className="mx-auto flex max-w-3xl flex-col gap-6">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-2xl">
