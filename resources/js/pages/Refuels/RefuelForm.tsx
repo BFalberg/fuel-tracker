@@ -200,7 +200,7 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
                     </div>
                     {shouldShowNewStation && (
                         <div className="rounded-md border p-3">
-                            <div className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">New station</div>
+                            <div className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">New station</div>
                             <div className="mt-3 grid gap-3">
                                 <div className="grid gap-2">
                                     <Label htmlFor="new_gas_station_name">Station name</Label>

@@ -51,7 +51,7 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
         });
     };
 
-    const isElectric = refuel.type ? refuel.type === 'charge' : refuel.car?.is_electric ?? false;
+    const isElectric = refuel.type ? refuel.type === 'charge' : (refuel.car?.is_electric ?? false);
     const unitLabel = isElectric ? 'kWh' : 'L';
     const unitPriceLabel = isElectric ? 'kr./kWh' : 'kr./L';
 
@@ -103,9 +103,7 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                     </div>
                     <div className="flex items-center space-x-2">
                         <Gauge className="text-muted-foreground h-4 w-4" />
-                        <span className="text-sm">
-                            {formatCurrency(refuel.total_price / refuel.liters_refueled).replace('kr.', unitPriceLabel)}
-                        </span>
+                        <span className="text-sm">{formatCurrency(refuel.total_price / refuel.liters_refueled).replace('kr.', unitPriceLabel)}</span>
                     </div>
                 </div>
             </CardContent>

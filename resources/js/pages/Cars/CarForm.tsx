@@ -98,11 +98,7 @@ export default function CarForm({ formType, car }: CarFormProps) {
                     <InputError message={errors.registration_number} />
                 </div>
                 <div className="flex items-center gap-3">
-                    <Checkbox
-                        id="is_electric"
-                        checked={data.is_electric}
-                        onCheckedChange={(checked) => setData('is_electric', Boolean(checked))}
-                    />
+                    <Checkbox id="is_electric" checked={data.is_electric} onCheckedChange={(checked) => setData('is_electric', Boolean(checked))} />
                     <Label htmlFor="is_electric">Electric vehicle (EV)</Label>
                 </div>
                 <div className="grid gap-2">
