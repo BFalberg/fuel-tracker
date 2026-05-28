@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Car extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'registration_number',
@@ -14,7 +17,15 @@ class Car extends Model
         'start_milage',
         'purchase_price',
         'sale_price',
+        'is_electric',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_electric' => 'boolean',
+        ];
+    }
 
     public function refuels(): HasMany
     {

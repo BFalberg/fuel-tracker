@@ -4,25 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use Illuminate\Http\Request;
-
 use Inertia\Inertia;
+use Inertia\Response;
 
 class CarController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {
         return Inertia::render('Cars/Index', [
-            'cars' => Car::latest()->with('user:id,name')->get()
+            'cars' => Car::latest()
+                ->with('user:id,name')
+                ->get(['id', 'name', 'registration_number', 'is_electric', 'user_id']),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('Cars/CarCreate');
     }
@@ -32,6 +34,7 @@ class CarController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:255|unique:cars',
+            'is_electric' => 'required|boolean',
         ]);
 
         // Create the car and associate it with the authenticated user
@@ -43,9 +46,10 @@ class CarController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Car $car)
+    public function show(Car $car): Response
     {
         $car->load('carExpenses', 'user:id,name', 'refuels');
+
         return Inertia::render('Cars/Show', [
             'car' => $car,
             'expenses' => $car->carExpenses->sortByDesc('invoice_date')->values(),
@@ -58,10 +62,10 @@ class CarController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Car $car)
+    public function edit(Car $car): Response
     {
         return Inertia::render('Cars/CarEdit', [
-            'car' => $car
+            'car' => $car,
         ]);
     }
 
@@ -72,7 +76,8 @@ class CarController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'registration_number' => 'required|string|max:255|unique:cars,registration_number,' . $car->id,
+            'registration_number' => 'required|string|max:255|unique:cars,registration_number,'.$car->id,
+            'is_electric' => 'required|boolean',
         ]);
 
         $car->update($validated);

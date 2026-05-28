@@ -16,6 +16,7 @@ interface Car {
     id: number;
     name: string;
     registration_number: string;
+    is_electric?: boolean;
 }
 
 interface Props {

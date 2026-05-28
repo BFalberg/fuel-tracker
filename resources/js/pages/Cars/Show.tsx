@@ -14,6 +14,7 @@ type CarType = {
     purchase_price?: number | null;
     sale_price?: number | null;
     start_milage?: number | null;
+    is_electric?: boolean;
 };
 
 type ExpenseType = {
@@ -99,6 +100,10 @@ export default function Show({ car, expenses, refuels, start_milage }: ShowProps
                             <div>
                                 <div className="text-muted-foreground text-xs">Start Milage</div>
                                 <div className="font-medium">{car.start_milage != null ? car.start_milage.toLocaleString('da-DK') : '-'} km</div>
+                            </div>
+                            <div>
+                                <div className="text-muted-foreground text-xs">Type</div>
+                                <div className="font-medium">{car.is_electric ? 'EV' : 'Fossil'}</div>
                             </div>
                         </div>
                     </CardContent>
