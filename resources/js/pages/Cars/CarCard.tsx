@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -8,6 +9,7 @@ interface CarCardProps {
         id: number;
         name: string;
         registration_number: string;
+        is_electric?: boolean;
         user: {
             id: number;
             name: string;
@@ -20,11 +22,14 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>
-                    <Link href={route('cars.show', { car: car.id })} className="hover:underline">
-                        {car.name}
-                    </Link>
-                </CardTitle>
+                <div className="flex items-center gap-3">
+                    <CardTitle>
+                        <Link href={route('cars.show', { car: car.id })} className="hover:underline">
+                            {car.name}
+                        </Link>
+                    </CardTitle>
+                    <Badge variant={car.is_electric ? 'secondary' : 'outline'}>{car.is_electric ? 'EV' : 'Fossil'}</Badge>
+                </div>
                 <div className="flex gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

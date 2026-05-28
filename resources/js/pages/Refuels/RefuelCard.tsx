@@ -7,17 +7,19 @@ import { BanknoteIcon, Car, Fuel, Gauge, MapPin, MoreVertical, Pencil, Trash2 } 
 interface Refuel {
     id: number;
     car_id: number;
-    gas_station_id: number;
+    gas_station_id?: number | null;
     liters_refueled: number;
     total_price: number;
     mileage: number;
+    type?: 'fossil' | 'charge';
     created_at: string; // Add this for the date
     car?: {
         name: string;
+        is_electric?: boolean;
     };
     gas_station?: {
         name: string;
-    };
+    } | null;
 }
 
 interface RefuelCardProps {
@@ -48,6 +50,10 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
             day: 'numeric',
         });
     };
+
+    const isElectric = refuel.type ? refuel.type === 'charge' : refuel.car?.is_electric ?? false;
+    const unitLabel = isElectric ? 'kWh' : 'L';
+    const unitPriceLabel = isElectric ? 'kr./kWh' : 'kr./L';
 
     return (
         <Card>
@@ -87,7 +93,9 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                     </div>
                     <div className="flex items-center space-x-2">
                         <Fuel className="text-muted-foreground h-4 w-4" />
-                        <span className="text-sm">{formatNumber(refuel.liters_refueled)} L</span>
+                        <span className="text-sm">
+                            {formatNumber(refuel.liters_refueled)} {unitLabel}
+                        </span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <BanknoteIcon className="text-muted-foreground h-4 w-4" />
@@ -95,7 +103,9 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                     </div>
                     <div className="flex items-center space-x-2">
                         <Gauge className="text-muted-foreground h-4 w-4" />
-                        <span className="text-sm">{formatCurrency(refuel.total_price / refuel.liters_refueled).replace('kr.', 'kr./L')}</span>
+                        <span className="text-sm">
+                            {formatCurrency(refuel.total_price / refuel.liters_refueled).replace('kr.', unitPriceLabel)}
+                        </span>
                     </div>
                 </div>
             </CardContent>

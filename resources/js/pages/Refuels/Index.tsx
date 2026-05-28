@@ -1,5 +1,6 @@
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
@@ -11,16 +12,18 @@ import RefuelCard from './RefuelCard';
 interface Refuel {
     id: number;
     car_id: number;
-    gas_station_id: number;
+    gas_station_id?: number | null;
     liters_refueled: number;
     total_price: number;
     mileage: number;
+    type?: 'fossil' | 'charge';
     car: {
         name: string;
+        is_electric?: boolean;
     };
-    gasStation: {
+    gasStation?: {
         name: string;
-    };
+    } | null;
 }
 
 interface Props {
@@ -31,6 +34,8 @@ interface Props {
         per_page: number;
         total: number;
     };
+    cars: Array<{ id: number; name: string; is_electric?: boolean }>;
+    selectedCarId?: string | null;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -40,9 +45,23 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Refuels({ refuels }: Props) {
+export default function Refuels({ refuels, cars, selectedCarId }: Props) {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedRefuel, setSelectedRefuel] = useState<Refuel | null>(null);
+
+    const handleCarFilterChange = (value: string) => {
+        router.get(
+            '/refuels',
+            { car_id: value || undefined },
+            {
+                preserveState: true,
+                preserveScroll: false,
+                onSuccess: () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+            },
+        );
+    };
 
     const handleEdit = (refuel: Refuel) => {
         setSelectedRefuel(refuel);
@@ -67,7 +86,7 @@ export default function Refuels({ refuels }: Props) {
     const handlePageChange = (page: number) => {
         router.get(
             '/refuels',
-            { page },
+            { page, car_id: selectedCarId || undefined },
             {
                 preserveState: true,
                 preserveScroll: false,
@@ -83,6 +102,19 @@ export default function Refuels({ refuels }: Props) {
             <Head title="Refuels" />
             <Heading level={1} title={breadcrumbs[0].title} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="text-muted-foreground text-sm">Filter by car</div>
+                    <div className="w-full md:w-64">
+                        <NativeSelect value={selectedCarId ?? ''} onChange={(e) => handleCarFilterChange(e.target.value)}>
+                            <NativeSelectOption value="">All cars</NativeSelectOption>
+                            {cars.map((car) => (
+                                <NativeSelectOption key={car.id} value={car.id.toString()}>
+                                    {car.name}
+                                </NativeSelectOption>
+                            ))}
+                        </NativeSelect>
+                    </div>
+                </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {refuels.data.map((refuel) => (
                         <RefuelCard key={refuel.id} refuel={refuel} onEdit={handleEdit} onDelete={handleDelete} />

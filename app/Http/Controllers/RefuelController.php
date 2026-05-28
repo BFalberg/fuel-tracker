@@ -2,29 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Car;
+use App\Models\GasStation;
 use App\Models\Refuel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Car;
-use App\Models\GasStation;
-use Illuminate\Validation\Rule;
+use Inertia\Response;
 
 class RefuelController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {
-        $latestGasStationId = Refuel::latest()->value('gas_station_id');
+        $selectedCarId = request()->query('car_id');
 
         $refuels = Refuel::with(['car', 'gasStation'])
+            ->when($selectedCarId, function ($query) use ($selectedCarId) {
+                $query->where('car_id', $selectedCarId);
+            })
             ->latest()
             ->paginate(10);
 
         return Inertia::render('Refuels/Index', [
             'refuels' => $refuels,
-            'cars' => Car::select(['id', 'name'])->get(),
+            'cars' => Car::select(['id', 'name', 'is_electric'])->get(),
+            'selectedCarId' => $selectedCarId,
             'gasStations' => GasStation::select(['gas_stations.id', 'gas_stations.name'])
                 ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
                 ->groupBy('gas_stations.id', 'gas_stations.name')
@@ -36,10 +40,10 @@ class RefuelController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('Refuels/RefuelCreate', [
-            'cars' => Car::select(['id', 'name'])->get(),
+            'cars' => Car::select(['id', 'name', 'is_electric'])->get(),
             'gasStations' => GasStation::select(['gas_stations.id', 'gas_stations.name'])
                 ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
                 ->orderByRaw('MAX(refuels.created_at) DESC')
@@ -55,7 +59,9 @@ class RefuelController extends Controller
     {
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
-            'gas_station_id' => 'required|exists:gas_stations,id',
+            'gas_station_id' => 'nullable|exists:gas_stations,id',
+            'new_gas_station_name' => 'nullable|string|max:255',
+            'new_gas_station_address' => 'nullable|string|max:255',
             'liters_refueled' => 'required|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'mileage' => [
@@ -74,6 +80,21 @@ class RefuelController extends Controller
             ],
         ]);
 
+        $car = Car::select(['id', 'is_electric'])->findOrFail($validated['car_id']);
+
+        if (! empty($validated['new_gas_station_name'])) {
+            $station = GasStation::create([
+                'name' => $validated['new_gas_station_name'],
+                'address' => $validated['new_gas_station_address'] ?? 'Unknown',
+            ]);
+
+            $validated['gas_station_id'] = $station->id;
+        }
+
+        $validated['type'] = $car->is_electric ? 'charge' : 'fossil';
+
+        unset($validated['new_gas_station_name'], $validated['new_gas_station_address']);
+
         Refuel::create($validated);
 
         return redirect()->route('refuels.index')->with('success', 'Refuel created successfully');
@@ -90,13 +111,13 @@ class RefuelController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Refuel $refuel)
+    public function edit(Refuel $refuel): Response
     {
         $refuelData = Refuel::with(['car', 'gasStation'])->findOrFail($refuel->id);
 
         return Inertia::render('Refuels/RefuelEdit', [
             'refuel' => $refuelData,
-            'cars' => Car::select(['id', 'name'])->get(),
+            'cars' => Car::select(['id', 'name', 'is_electric'])->get(),
             'gasStations' => GasStation::select(['id', 'name'])->get(),
         ]);
     }
@@ -108,7 +129,9 @@ class RefuelController extends Controller
     {
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
-            'gas_station_id' => 'required|exists:gas_stations,id',
+            'gas_station_id' => 'nullable|exists:gas_stations,id',
+            'new_gas_station_name' => 'nullable|string|max:255',
+            'new_gas_station_address' => 'nullable|string|max:255',
             'liters_refueled' => 'required|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'mileage' => [
@@ -127,6 +150,21 @@ class RefuelController extends Controller
                 },
             ],
         ]);
+
+        $car = Car::select(['id', 'is_electric'])->findOrFail($validated['car_id']);
+
+        if (! empty($validated['new_gas_station_name'])) {
+            $station = GasStation::create([
+                'name' => $validated['new_gas_station_name'],
+                'address' => $validated['new_gas_station_address'] ?? 'Unknown',
+            ]);
+
+            $validated['gas_station_id'] = $station->id;
+        }
+
+        $validated['type'] = $car->is_electric ? 'charge' : 'fossil';
+
+        unset($validated['new_gas_station_name'], $validated['new_gas_station_address']);
 
         $refuel->update($validated);
 

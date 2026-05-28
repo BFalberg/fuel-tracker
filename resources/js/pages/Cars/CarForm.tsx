@@ -1,6 +1,7 @@
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
@@ -13,6 +14,7 @@ interface Car {
     start_milage?: number | '';
     purchase_price?: number | '';
     sale_price?: number | '';
+    is_electric?: boolean;
 }
 
 interface CarFormProps {
@@ -27,6 +29,7 @@ export default function CarForm({ formType, car }: CarFormProps) {
         start_milage: car?.start_milage ?? '',
         purchase_price: car?.purchase_price ?? '',
         sale_price: car?.sale_price ?? '',
+        is_electric: car?.is_electric ?? false,
     });
 
     useEffect(() => {
@@ -37,6 +40,7 @@ export default function CarForm({ formType, car }: CarFormProps) {
                 start_milage: car.start_milage ?? '',
                 purchase_price: car.purchase_price ?? '',
                 sale_price: car.sale_price ?? '',
+                is_electric: car.is_electric ?? false,
             });
         } else {
             reset();
@@ -93,12 +97,20 @@ export default function CarForm({ formType, car }: CarFormProps) {
                     />
                     <InputError message={errors.registration_number} />
                 </div>
+                <div className="flex items-center gap-3">
+                    <Checkbox
+                        id="is_electric"
+                        checked={data.is_electric}
+                        onCheckedChange={(checked) => setData('is_electric', Boolean(checked))}
+                    />
+                    <Label htmlFor="is_electric">Electric vehicle (EV)</Label>
+                </div>
                 <div className="grid gap-2">
                     <Label htmlFor="start_milage">Start Milage</Label>
                     <Input
                         id="start_milage"
                         type="number"
-                        tabIndex={3}
+                        tabIndex={4}
                         autoComplete="off"
                         value={data.start_milage}
                         onChange={(e) => setData('start_milage', e.target.value === '' ? '' : Number(e.target.value))}
@@ -111,7 +123,7 @@ export default function CarForm({ formType, car }: CarFormProps) {
                     <Input
                         id="purchase_price"
                         type="number"
-                        tabIndex={4}
+                        tabIndex={5}
                         autoComplete="off"
                         value={data.purchase_price}
                         onChange={(e) => setData('purchase_price', e.target.value === '' ? '' : Number(e.target.value))}
@@ -124,7 +136,7 @@ export default function CarForm({ formType, car }: CarFormProps) {
                     <Input
                         id="sale_price"
                         type="number"
-                        tabIndex={5}
+                        tabIndex={6}
                         autoComplete="off"
                         value={data.sale_price}
                         onChange={(e) => setData('sale_price', e.target.value === '' ? '' : Number(e.target.value))}
