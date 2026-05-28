@@ -61,6 +61,7 @@ class RefuelController extends Controller
             'car_id' => 'required|exists:cars,id',
             'gas_station_id' => 'nullable|exists:gas_stations,id',
             'new_gas_station_name' => 'nullable|string|max:255',
+            'new_gas_station_address' => 'nullable|string|max:255',
             'liters_refueled' => 'required|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'mileage' => [
@@ -84,7 +85,7 @@ class RefuelController extends Controller
         if (! empty($validated['new_gas_station_name'])) {
             $station = GasStation::create([
                 'name' => $validated['new_gas_station_name'],
-                'address' => 'Unknown',
+                'address' => $validated['new_gas_station_address'] ?? 'Unknown',
             ]);
 
             $validated['gas_station_id'] = $station->id;
@@ -92,7 +93,7 @@ class RefuelController extends Controller
 
         $validated['type'] = $car->is_electric ? 'charge' : 'fossil';
 
-        unset($validated['new_gas_station_name']);
+        unset($validated['new_gas_station_name'], $validated['new_gas_station_address']);
 
         Refuel::create($validated);
 
@@ -130,6 +131,7 @@ class RefuelController extends Controller
             'car_id' => 'required|exists:cars,id',
             'gas_station_id' => 'nullable|exists:gas_stations,id',
             'new_gas_station_name' => 'nullable|string|max:255',
+            'new_gas_station_address' => 'nullable|string|max:255',
             'liters_refueled' => 'required|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'mileage' => [
@@ -154,7 +156,7 @@ class RefuelController extends Controller
         if (! empty($validated['new_gas_station_name'])) {
             $station = GasStation::create([
                 'name' => $validated['new_gas_station_name'],
-                'address' => 'Unknown',
+                'address' => $validated['new_gas_station_address'] ?? 'Unknown',
             ]);
 
             $validated['gas_station_id'] = $station->id;
@@ -162,7 +164,7 @@ class RefuelController extends Controller
 
         $validated['type'] = $car->is_electric ? 'charge' : 'fossil';
 
-        unset($validated['new_gas_station_name']);
+        unset($validated['new_gas_station_name'], $validated['new_gas_station_address']);
 
         $refuel->update($validated);
 

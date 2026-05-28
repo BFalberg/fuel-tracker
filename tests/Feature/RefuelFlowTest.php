@@ -36,6 +36,7 @@ test('creates a new station when provided during refuel creation', function () {
         'car_id' => $car->id,
         'gas_station_id' => null,
         'new_gas_station_name' => 'Fast Charge One',
+        'new_gas_station_address' => '123 Main St',
         'liters_refueled' => 15,
         'total_price' => 300,
         'mileage' => 1200,
@@ -47,7 +48,7 @@ test('creates a new station when provided during refuel creation', function () {
     $refuel = Refuel::firstOrFail();
 
     expect($refuel->gas_station_id)->toBe($station->id)
-        ->and($station->address)->toBe('Unknown');
+        ->and($station->address)->toBe('123 Main St');
 });
 
 test('refuels list can be filtered by car', function () {

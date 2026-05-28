@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { useForm } from '@inertiajs/react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface Refuel {
     id?: number;
@@ -27,6 +27,7 @@ interface RefuelFormProps {
 
 export default function RefuelForm({ refuel, cars, gasStations, formType }: RefuelFormProps) {
     const isEditing = formType === 'edit';
+    const [showNewStation, setShowNewStation] = useState(false);
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         car_id: refuel?.car_id?.toString() ?? '',
@@ -35,6 +36,7 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
         total_price: refuel?.total_price ?? '',
         mileage: refuel?.mileage ?? '',
         new_gas_station_name: '',
+        new_gas_station_address: '',
     });
 
     const selectedCar = cars.find((car) => car.id.toString() === data.car_id.toString());
@@ -50,11 +52,52 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
                 total_price: refuel.total_price,
                 mileage: refuel.mileage,
                 new_gas_station_name: '',
+                new_gas_station_address: '',
             });
         } else if (formType === 'create') {
             reset();
         }
     }, [refuel, formType, reset, setData]);
+
+    const shouldShowNewStation = showNewStation || Boolean(data.new_gas_station_name || data.new_gas_station_address);
+
+    const handleUseCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`,
+                    );
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const address = data?.address ?? {};
+                    const street = [address.road, address.house_number].filter(Boolean).join(' ');
+                    const locality = address.city || address.town || address.village || address.suburb || address.city_district;
+                    const cityLine = [address.postcode, locality].filter(Boolean).join(' ');
+                    const formatted = [street, cityLine].filter(Boolean).join(', ');
+
+                    if (formatted) {
+                        setData('new_gas_station_address', formatted);
+                    } else if (data?.display_name) {
+                        setData('new_gas_station_address', data.display_name);
+                    }
+                } catch {
+                    // no-op
+                }
+            },
+            () => {
+                // no-op
+            },
+        );
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -149,19 +192,48 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
                         </NativeSelect>
                         <InputError message={errors.gas_station_id} />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="new_gas_station_name">New station name (optional)</Label>
-                        <Input
-                            id="new_gas_station_name"
-                            type="text"
-                            tabIndex={5}
-                            autoComplete="off"
-                            value={data.new_gas_station_name}
-                            onChange={(e) => setData('new_gas_station_name', e.target.value)}
-                            placeholder={isElectric ? 'Charging station name' : 'Gas station name'}
-                        />
-                        <InputError message={errors.new_gas_station_name} />
+                    <div className="flex items-center justify-between">
+                        <div className="text-muted-foreground text-sm">Need a new station?</div>
+                        <Button type="button" variant="outline" onClick={() => setShowNewStation((current) => !current)}>
+                            {shouldShowNewStation ? 'Hide new station' : 'Add new station'}
+                        </Button>
                     </div>
+                    {shouldShowNewStation && (
+                        <div className="rounded-md border p-3">
+                            <div className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">New station</div>
+                            <div className="mt-3 grid gap-3">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="new_gas_station_name">Station name</Label>
+                                    <Input
+                                        id="new_gas_station_name"
+                                        type="text"
+                                        tabIndex={5}
+                                        autoComplete="off"
+                                        value={data.new_gas_station_name}
+                                        onChange={(e) => setData('new_gas_station_name', e.target.value)}
+                                        placeholder={isElectric ? 'Charging station name' : 'Gas station name'}
+                                    />
+                                    <InputError message={errors.new_gas_station_name} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="new_gas_station_address">Address</Label>
+                                    <Input
+                                        id="new_gas_station_address"
+                                        type="text"
+                                        tabIndex={6}
+                                        autoComplete="off"
+                                        value={data.new_gas_station_address}
+                                        onChange={(e) => setData('new_gas_station_address', e.target.value)}
+                                        placeholder="Street, city"
+                                    />
+                                    <InputError message={errors.new_gas_station_address} />
+                                </div>
+                                <Button type="button" variant="outline" onClick={handleUseCurrentLocation}>
+                                    Use current location
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                     <div className="flex flex-col gap-2">
                         <Button className="w-full" type="submit" disabled={processing}>
                             {isEditing ? 'Update' : 'Create'}

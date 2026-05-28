@@ -34,6 +34,44 @@ export default function GasStationForm({ formType, gasStation }: GasStationFormP
         }
     }, [gasStation, reset, setData]);
 
+    const handleUseCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`,
+                    );
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const address = data?.address ?? {};
+                    const street = [address.road, address.house_number].filter(Boolean).join(' ');
+                    const locality = address.city || address.town || address.village || address.suburb || address.city_district;
+                    const cityLine = [address.postcode, locality].filter(Boolean).join(' ');
+                    const formatted = [street, cityLine].filter(Boolean).join(', ');
+
+                    if (formatted) {
+                        setData('address', formatted);
+                    } else if (data?.display_name) {
+                        setData('address', data.display_name);
+                    }
+                } catch {
+                    // no-op
+                }
+            },
+            () => {
+                // no-op
+            },
+        );
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -83,6 +121,9 @@ export default function GasStationForm({ formType, gasStation }: GasStationFormP
                         placeholder="123 Main St"
                     />
                     <InputError message={errors.address} />
+                    <Button type="button" variant="outline" onClick={handleUseCurrentLocation}>
+                        Use current location
+                    </Button>
                 </div>
                 <div className="flex flex-col gap-2">
                     <Button className="w-full" type="submit" disabled={processing} tabIndex={3}>
