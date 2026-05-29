@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Deferred, Head } from '@inertiajs/react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Car, ChartNoAxesCombined, Coins, Wallet } from 'lucide-react';
 
 interface CarStats {
@@ -25,7 +26,7 @@ interface CarStats {
 }
 
 interface Props {
-    cars: CarStats[];
+    cars?: CarStats[];
     message?: string;
 }
 
@@ -66,60 +67,87 @@ export default function Dashboard({ cars, message }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
-                {cars.map((car) => (
-                    <div key={car.id} className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h1 className="text-2xl font-bold">{car.name}</h1>
+                <Deferred
+                    data="cars"
+                    fallback={
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-8 w-40" />
+                            </div>
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                                {Array.from({ length: 4 }).map((_, index) => (
+                                    <Card key={index}>
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <Skeleton className="h-4 w-24" />
+                                            <Skeleton className="h-4 w-4" />
+                                        </CardHeader>
+                                        <CardContent className="space-y-2">
+                                            <Skeleton className="h-6 w-32" />
+                                            <Skeleton className="h-3 w-24" />
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
                         </div>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">This Month</CardTitle>
-                                    <Wallet className="text-muted-foreground h-4 w-4" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{formatCurrency(car.stats.currentMonth.amount)}</div>
-                                    <p className="text-muted-foreground text-xs">Avg. {formatCurrency(car.stats.averages.monthlyAmount)}/month</p>
-                                </CardContent>
-                            </Card>
+                    }
+                >
+                    {(cars ?? []).map((car) => (
+                        <div key={car.id} className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h1 className="text-2xl font-bold">{car.name}</h1>
+                            </div>
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">This Month</CardTitle>
+                                        <Wallet className="text-muted-foreground h-4 w-4" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{formatCurrency(car.stats.currentMonth.amount)}</div>
+                                        <p className="text-muted-foreground text-xs">
+                                            Avg. {formatCurrency(car.stats.averages.monthlyAmount)}/month
+                                        </p>
+                                    </CardContent>
+                                </Card>
 
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Distance This Month</CardTitle>
-                                    <Car className="text-muted-foreground h-4 w-4" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{formatNumber(car.stats.currentMonth.kilometers)} km</div>
-                                    <p className="text-muted-foreground text-xs">
-                                        Avg. {formatNumber(car.stats.averages.monthlyKilometers)} km/month
-                                    </p>
-                                </CardContent>
-                            </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Distance This Month</CardTitle>
+                                        <Car className="text-muted-foreground h-4 w-4" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{formatNumber(car.stats.currentMonth.kilometers)} km</div>
+                                        <p className="text-muted-foreground text-xs">
+                                            Avg. {formatNumber(car.stats.averages.monthlyKilometers)} km/month
+                                        </p>
+                                    </CardContent>
+                                </Card>
 
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Price per Kilometer</CardTitle>
-                                    <Coins className="text-muted-foreground h-4 w-4" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{formatCurrency(car.stats.totals.pricePerKilometer)}</div>
-                                    <p className="text-muted-foreground text-xs">per kilometer driven</p>
-                                </CardContent>
-                            </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Price per Kilometer</CardTitle>
+                                        <Coins className="text-muted-foreground h-4 w-4" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{formatCurrency(car.stats.totals.pricePerKilometer)}</div>
+                                        <p className="text-muted-foreground text-xs">per kilometer driven</p>
+                                    </CardContent>
+                                </Card>
 
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">All time</CardTitle>
-                                    <ChartNoAxesCombined className="text-muted-foreground h-4 w-4" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{formatCurrency(car.stats.totals.amount)}</div>
-                                    <p className="text-muted-foreground text-xs">{formatNumber(car.stats.totals.kilometers)} km driven</p>
-                                </CardContent>
-                            </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">All time</CardTitle>
+                                        <ChartNoAxesCombined className="text-muted-foreground h-4 w-4" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{formatCurrency(car.stats.totals.amount)}</div>
+                                        <p className="text-muted-foreground text-xs">{formatNumber(car.stats.totals.kilometers)} km driven</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </Deferred>
             </div>
         </AppLayout>
     );

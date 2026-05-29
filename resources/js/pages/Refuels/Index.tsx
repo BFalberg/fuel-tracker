@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Deferred, Head, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import DeleteConfirmation from './DeleteConfirmation';
 import RefuelCard from './RefuelCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Refuel {
     id: number;
@@ -27,14 +28,14 @@ interface Refuel {
 }
 
 interface Props {
-    refuels: {
+    refuels?: {
         data: Refuel[];
         current_page: number;
         last_page: number;
         per_page: number;
         total: number;
     };
-    cars: Array<{ id: number; name: string; is_electric?: boolean }>;
+    cars?: Array<{ id: number; name: string; is_electric?: boolean }>;
     selectedCarId?: string | null;
 }
 
@@ -102,50 +103,80 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
             <Head title="Refuels" />
             <Heading level={1} title={breadcrumbs[0].title} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div className="text-muted-foreground text-sm">Filter by car</div>
-                    <div className="w-full md:w-64">
-                        <NativeSelect value={selectedCarId ?? ''} onChange={(e) => handleCarFilterChange(e.target.value)}>
-                            <NativeSelectOption value="">All cars</NativeSelectOption>
-                            {cars.map((car) => (
-                                <NativeSelectOption key={car.id} value={car.id.toString()}>
-                                    {car.name}
-                                </NativeSelectOption>
-                            ))}
-                        </NativeSelect>
+                <Deferred
+                    data={["refuels", "cars"]}
+                    fallback={
+                        <>
+                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                <div className="text-muted-foreground text-sm">Filter by car</div>
+                                <div className="w-full md:w-64">
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                    <div key={index} className="rounded-xl border p-4">
+                                        <div className="space-y-3">
+                                            <Skeleton className="h-5 w-28" />
+                                            <Skeleton className="h-4 w-20" />
+                                            <Skeleton className="h-4 w-24" />
+                                            <Skeleton className="h-4 w-16" />
+                                            <div className="flex gap-2 pt-2">
+                                                <Skeleton className="h-8 w-20" />
+                                                <Skeleton className="h-8 w-20" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    }
+                >
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div className="text-muted-foreground text-sm">Filter by car</div>
+                        <div className="w-full md:w-64">
+                            <NativeSelect value={selectedCarId ?? ''} onChange={(e) => handleCarFilterChange(e.target.value)}>
+                                <NativeSelectOption value="">All cars</NativeSelectOption>
+                                {(cars ?? []).map((car) => (
+                                    <NativeSelectOption key={car.id} value={car.id.toString()}>
+                                        {car.name}
+                                    </NativeSelectOption>
+                                ))}
+                            </NativeSelect>
+                        </div>
                     </div>
-                </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {refuels.data.map((refuel) => (
-                        <RefuelCard key={refuel.id} refuel={refuel} onEdit={handleEdit} onDelete={handleDelete} />
-                    ))}
-                </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {(refuels?.data ?? []).map((refuel) => (
+                            <RefuelCard key={refuel.id} refuel={refuel} onEdit={handleEdit} onDelete={handleDelete} />
+                        ))}
+                    </div>
 
-                {refuels.last_page > 1 && (
-                    <div className="flex items-center justify-between border-t pt-4">
-                        <div className="text-muted-foreground text-sm">
-                            Showing page {refuels.current_page} of {refuels.last_page}
+                    {(refuels?.last_page ?? 0) > 1 && (
+                        <div className="flex items-center justify-between border-t pt-4">
+                            <div className="text-muted-foreground text-sm">
+                                Showing page {refuels?.current_page} of {refuels?.last_page}
+                            </div>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange((refuels?.current_page ?? 1) - 1)}
+                                    disabled={refuels?.current_page === 1}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange((refuels?.current_page ?? 1) + 1)}
+                                    disabled={refuels?.current_page === refuels?.last_page}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handlePageChange(refuels.current_page - 1)}
-                                disabled={refuels.current_page === 1}
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handlePageChange(refuels.current_page + 1)}
-                                disabled={refuels.current_page === refuels.last_page}
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-                )}
+                    )}
+                </Deferred>
 
                 {selectedRefuel && (
                     <DeleteConfirmation

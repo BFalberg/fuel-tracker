@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use App\Models\CarExpense;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,9 +14,10 @@ class CarExpenseController extends Controller
     public function index(Car $car): Response
     {
         $expenses = $car->carExpenses()->latest()->get();
+
         return Inertia::render('CarExpenses/Index', [
             'car' => $car,
-            'expenses' => $expenses,
+            'expenses' => Inertia::defer(fn () => $expenses),
         ]);
     }
 
@@ -37,6 +38,7 @@ class CarExpenseController extends Controller
             'invoice_date' => 'nullable|date',
         ]);
         $car->carExpenses()->create($data);
+
         return redirect()->route('cars.show', $car);
     }
 
@@ -58,12 +60,14 @@ class CarExpenseController extends Controller
             'invoice_date' => 'nullable|date',
         ]);
         $expense->update($data);
+
         return redirect()->route('cars.show', $car);
     }
 
     public function destroy(Car $car, CarExpense $expense): RedirectResponse
     {
         $expense->delete();
+
         return redirect()->route('cars.show', $car);
     }
 }

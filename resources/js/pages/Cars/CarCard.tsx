@@ -10,7 +10,7 @@ interface CarCardProps {
         name: string;
         registration_number: string;
         is_electric?: boolean;
-        user: {
+        user?: {
             id: number;
             name: string;
         };
@@ -60,7 +60,7 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
                     </p>
                     <p className="text-muted-foreground col-span-3 flex items-center gap-2 text-sm">
                         <User className="size-5" />
-                        {car.user.name}
+                        {car.user?.name ?? '-'}
                     </p>
                 </div>
             </CardContent>

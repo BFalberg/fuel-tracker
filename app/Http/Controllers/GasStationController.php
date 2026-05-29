@@ -14,7 +14,7 @@ class GasStationController extends Controller
     public function index()
     {
         return Inertia::render('GasStations/Index', [
-            'gasStations' => GasStation::latest()->get()
+            'gasStations' => Inertia::defer(fn () => GasStation::latest()->get()),
         ]);
     }
 
@@ -25,7 +25,6 @@ class GasStationController extends Controller
     {
         return Inertia::render('GasStations/GasStationCreate');
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -56,7 +55,7 @@ class GasStationController extends Controller
     public function edit(GasStation $gasStation)
     {
         return Inertia::render('GasStations/GasStationEdit', [
-            'gasStation' => $gasStation
+            'gasStation' => $gasStation,
         ]);
     }
 

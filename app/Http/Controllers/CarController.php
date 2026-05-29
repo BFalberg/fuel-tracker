@@ -15,9 +15,9 @@ class CarController extends Controller
     public function index(): Response
     {
         return Inertia::render('Cars/Index', [
-            'cars' => Car::latest()
+            'cars' => Inertia::defer(fn () => Car::latest()
                 ->with('user:id,name')
-                ->get(['id', 'name', 'registration_number', 'is_electric', 'user_id']),
+                ->get(['id', 'name', 'registration_number', 'is_electric', 'user_id'])),
         ]);
     }
 
@@ -48,12 +48,12 @@ class CarController extends Controller
      */
     public function show(Car $car): Response
     {
-        $car->load('carExpenses', 'user:id,name', 'refuels');
+        $car->load('user:id,name');
 
         return Inertia::render('Cars/Show', [
             'car' => $car,
-            'expenses' => $car->carExpenses->sortByDesc('invoice_date')->values(),
-            'refuels' => $car->refuels,
+            'expenses' => Inertia::defer(fn () => $car->carExpenses->sortByDesc('invoice_date')->values()),
+            'refuels' => Inertia::defer(fn () => $car->refuels),
             'start_milage' => $car->start_milage,
             'user' => $car->user,
         ]);
