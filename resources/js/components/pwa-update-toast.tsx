@@ -12,7 +12,7 @@ export default function PwaUpdateToast({ open, onDismiss, onReload }: PwaUpdateT
     }
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 w-[min(24rem,calc(100%-2rem))]">
+        <div className="fixed right-4 bottom-4 z-50 w-[min(24rem,calc(100%-2rem))]">
             <div className="bg-background/95 text-foreground border-border/60 animate-in slide-in-from-bottom-3 space-y-3 rounded-xl border p-4 shadow-lg backdrop-blur">
                 <div className="text-sm font-semibold">Update available</div>
                 <p className="text-muted-foreground text-sm">A new version of the app is ready. Reload to update.</p>

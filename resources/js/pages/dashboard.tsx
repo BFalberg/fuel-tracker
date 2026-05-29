@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head } from '@inertiajs/react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Car, ChartNoAxesCombined, Coins, Wallet } from 'lucide-react';
 
 interface CarStats {
@@ -104,9 +104,7 @@ export default function Dashboard({ cars, message }: Props) {
                                     </CardHeader>
                                     <CardContent>
                                         <div className="text-2xl font-bold">{formatCurrency(car.stats.currentMonth.amount)}</div>
-                                        <p className="text-muted-foreground text-xs">
-                                            Avg. {formatCurrency(car.stats.averages.monthlyAmount)}/month
-                                        </p>
+                                        <p className="text-muted-foreground text-xs">Avg. {formatCurrency(car.stats.averages.monthlyAmount)}/month</p>
                                     </CardContent>
                                 </Card>
 

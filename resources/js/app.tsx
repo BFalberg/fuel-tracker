@@ -1,13 +1,13 @@
 import '../css/app.css';
 
+import PwaUpdateToast from '@/components/pwa-update-toast';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { registerSW } from 'virtual:pwa-register';
 import { route as routeFn } from 'ziggy-js';
 import { initializeTheme } from './hooks/use-appearance';
-import PwaUpdateToast from '@/components/pwa-update-toast';
-import { useEffect, useState } from 'react';
-import { registerSW } from 'virtual:pwa-register';
 
 declare global {
     const route: typeof routeFn;
@@ -47,11 +47,7 @@ createInertiaApp({
             return (
                 <>
                     <App {...props} />
-                    <PwaUpdateToast
-                        open={updateAvailable}
-                        onDismiss={() => setUpdateAvailable(false)}
-                        onReload={handleReload}
-                    />
+                    <PwaUpdateToast open={updateAvailable} onDismiss={() => setUpdateAvailable(false)} onReload={handleReload} />
                 </>
             );
         }

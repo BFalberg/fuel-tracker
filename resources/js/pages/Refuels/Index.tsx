@@ -1,6 +1,7 @@
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, router } from '@inertiajs/react';
@@ -8,7 +9,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import DeleteConfirmation from './DeleteConfirmation';
 import RefuelCard from './RefuelCard';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface Refuel {
     id: number;
@@ -104,7 +104,7 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
             <Heading level={1} title={breadcrumbs[0].title} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
                 <Deferred
-                    data={["refuels", "cars"]}
+                    data={['refuels', 'cars']}
                     fallback={
                         <>
                             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

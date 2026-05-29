@@ -1,10 +1,10 @@
 import Heading from '@/components/heading';
+import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { Deferred, Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import CarCard from './CarCard';
 import DeleteConfirmation from './DeleteConfirmation';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

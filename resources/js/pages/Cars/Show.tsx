@@ -1,11 +1,11 @@
 import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { Deferred, Head } from '@inertiajs/react';
 import { Car, User } from 'lucide-react';
 import CarExpensesList from '../CarExpenses/CarExpensesList';
 import CarCosts from './CarCosts';
-import { Skeleton } from '@/components/ui/skeleton';
 
 type CarType = {
     id: number;
@@ -110,7 +110,7 @@ export default function Show({ car, expenses, refuels, start_milage }: ShowProps
                     </CardContent>
                 </Card>
                 <Deferred
-                    data={["expenses", "refuels"]}
+                    data={['expenses', 'refuels']}
                     fallback={
                         <div className="space-y-6">
                             <div className="rounded-xl border p-4">
