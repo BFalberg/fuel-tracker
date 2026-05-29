@@ -81,7 +81,10 @@ test('refuels list can be filtered by car', function () {
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('Refuels/Index')
         ->where('selectedCarId', (string) $car->id)
-        ->has('refuels.data', 1)
-        ->where('refuels.data.0.car_id', $car->id)
+        ->missing('refuels')
+        ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+            ->has('refuels.data', 1)
+            ->where('refuels.data.0.car_id', $car->id)
+        )
     );
 });

@@ -1,8 +1,11 @@
 import '../css/app.css';
 
+import PwaUpdateToast from '@/components/pwa-update-toast';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { registerSW } from 'virtual:pwa-register';
 import { route as routeFn } from 'ziggy-js';
 import { initializeTheme } from './hooks/use-appearance';
 
@@ -18,7 +21,38 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        function Root() {
+            const [updateAvailable, setUpdateAvailable] = useState(false);
+            const [updateServiceWorker, setUpdateServiceWorker] = useState<(() => void) | null>(null);
+
+            useEffect(() => {
+                const updateSw = registerSW({
+                    onNeedRefresh() {
+                        setUpdateAvailable(true);
+                    },
+                });
+
+                setUpdateServiceWorker(() => () => updateSw(true));
+            }, []);
+
+            const handleReload = () => {
+                if (!updateServiceWorker) {
+                    window.location.reload();
+                    return;
+                }
+
+                updateServiceWorker();
+            };
+
+            return (
+                <>
+                    <App {...props} />
+                    <PwaUpdateToast open={updateAvailable} onDismiss={() => setUpdateAvailable(false)} onReload={handleReload} />
+                </>
+            );
+        }
+
+        root.render(<Root />);
     },
     progress: {
         color: '#4B5563',

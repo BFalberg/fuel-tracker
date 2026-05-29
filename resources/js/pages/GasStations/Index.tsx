@@ -1,6 +1,7 @@
 import Heading from '@/components/heading';
+import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
-import { Head, router } from '@inertiajs/react';
+import { Deferred, Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import DeleteConfirmation from './DeleteConfirmation';
 import GasStationCard from './GasStationCard';
@@ -19,7 +20,7 @@ interface GasStation {
 }
 
 interface Props {
-    gasStations: GasStation[];
+    gasStations?: GasStation[];
 }
 
 export default function GasStations({ gasStations }: Props) {
@@ -43,15 +44,31 @@ export default function GasStations({ gasStations }: Props) {
             <Head title="Gas Stations" />
             <Heading level={1} title={breadcrumbs[0].title} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {gasStations.map((station) => (
-                        <GasStationCard
-                            key={station.id}
-                            gasStation={station} // <-- use gasStation prop name
-                            onDelete={handleDelete}
-                        />
-                    ))}
-                </div>
+                <Deferred
+                    data="gasStations"
+                    fallback={
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {Array.from({ length: 6 }).map((_, index) => (
+                                <div key={index} className="rounded-xl border p-4">
+                                    <div className="space-y-3">
+                                        <Skeleton className="h-5 w-36" />
+                                        <Skeleton className="h-4 w-48" />
+                                        <div className="flex gap-2 pt-2">
+                                            <Skeleton className="h-8 w-20" />
+                                            <Skeleton className="h-8 w-20" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    }
+                >
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {(gasStations ?? []).map((station) => (
+                            <GasStationCard key={station.id} gasStation={station} onDelete={handleDelete} />
+                        ))}
+                    </div>
+                </Deferred>
 
                 {selectedStation && (
                     <DeleteConfirmation

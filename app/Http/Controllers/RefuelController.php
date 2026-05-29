@@ -26,14 +26,14 @@ class RefuelController extends Controller
             ->paginate(10);
 
         return Inertia::render('Refuels/Index', [
-            'refuels' => $refuels,
-            'cars' => Car::select(['id', 'name', 'is_electric'])->get(),
+            'refuels' => Inertia::defer(fn () => $refuels),
+            'cars' => Inertia::defer(fn () => Car::select(['id', 'name', 'is_electric'])->get()),
             'selectedCarId' => $selectedCarId,
-            'gasStations' => GasStation::select(['gas_stations.id', 'gas_stations.name'])
+            'gasStations' => Inertia::defer(fn () => GasStation::select(['gas_stations.id', 'gas_stations.name'])
                 ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
                 ->groupBy('gas_stations.id', 'gas_stations.name')
                 ->orderByRaw('COUNT(refuels.id) DESC')
-                ->get(),
+                ->get()),
         ]);
     }
 

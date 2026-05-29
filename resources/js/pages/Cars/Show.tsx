@@ -1,7 +1,8 @@
 import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+import { Deferred, Head } from '@inertiajs/react';
 import { Car, User } from 'lucide-react';
 import CarExpensesList from '../CarExpenses/CarExpensesList';
 import CarCosts from './CarCosts';
@@ -40,8 +41,8 @@ type BreadcrumbItem = {
 
 interface ShowProps {
     car: CarType;
-    expenses: ExpenseType[];
-    refuels: RefuelType[];
+    expenses?: ExpenseType[];
+    refuels?: RefuelType[];
     start_milage: number | null;
 }
 
@@ -108,14 +109,37 @@ export default function Show({ car, expenses, refuels, start_milage }: ShowProps
                         </div>
                     </CardContent>
                 </Card>
-                <CarCosts
-                    expenses={expenses}
-                    refuels={refuels}
-                    startMilage={start_milage}
-                    purchasePrice={car.purchase_price}
-                    salePrice={car.sale_price}
-                />
-                <CarExpensesList expenses={expenses} carId={car.id} />
+                <Deferred
+                    data={['expenses', 'refuels']}
+                    fallback={
+                        <div className="space-y-6">
+                            <div className="rounded-xl border p-4">
+                                <div className="space-y-3">
+                                    <Skeleton className="h-5 w-40" />
+                                    <Skeleton className="h-8 w-32" />
+                                    <Skeleton className="h-8 w-28" />
+                                </div>
+                            </div>
+                            <div className="rounded-xl border p-4">
+                                <div className="space-y-3">
+                                    <Skeleton className="h-5 w-32" />
+                                    {Array.from({ length: 4 }).map((_, index) => (
+                                        <Skeleton key={index} className="h-4 w-full" />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    }
+                >
+                    <CarCosts
+                        expenses={expenses ?? []}
+                        refuels={refuels ?? []}
+                        startMilage={start_milage}
+                        purchasePrice={car.purchase_price}
+                        salePrice={car.sale_price}
+                    />
+                    <CarExpensesList expenses={expenses ?? []} carId={car.id} />
+                </Deferred>
             </div>
         </AppLayout>
     );
