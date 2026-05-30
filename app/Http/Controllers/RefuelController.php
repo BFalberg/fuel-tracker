@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
-use App\Models\GasStation;
+use App\Actions\Refuel\CreateRefuel;
+use App\Actions\Refuel\DeleteRefuel;
+use App\Actions\Refuel\GetRefuelFormData;
+use App\Actions\Refuel\GetRefuelIndexData;
+use App\Actions\Refuel\ListRefuels;
+use App\Actions\Refuel\UpdateRefuel;
 use App\Models\Refuel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,48 +18,38 @@ class RefuelController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(ListRefuels $listRefuels, GetRefuelIndexData $getRefuelIndexData): Response
     {
         $selectedCarId = request()->query('car_id');
 
-        $refuels = Refuel::with(['car', 'gasStation'])
-            ->when($selectedCarId, function ($query) use ($selectedCarId) {
-                $query->where('car_id', $selectedCarId);
-            })
-            ->latest()
-            ->paginate(10);
+        $refuels = $listRefuels->handle($selectedCarId ? (int) $selectedCarId : null);
+        $indexData = $getRefuelIndexData->handle();
 
         return Inertia::render('Refuels/Index', [
             'refuels' => Inertia::defer(fn () => $refuels),
-            'cars' => Inertia::defer(fn () => Car::select(['id', 'name', 'is_electric'])->get()),
+            'cars' => Inertia::defer(fn () => $indexData['cars']),
             'selectedCarId' => $selectedCarId,
-            'gasStations' => Inertia::defer(fn () => GasStation::select(['gas_stations.id', 'gas_stations.name'])
-                ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
-                ->groupBy('gas_stations.id', 'gas_stations.name')
-                ->orderByRaw('COUNT(refuels.id) DESC')
-                ->get()),
+            'gasStations' => Inertia::defer(fn () => $indexData['gasStations']),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): Response
+    public function create(GetRefuelFormData $getRefuelFormData): Response
     {
+        $formData = $getRefuelFormData->handle(true);
+
         return Inertia::render('Refuels/RefuelCreate', [
-            'cars' => Car::select(['id', 'name', 'is_electric'])->get(),
-            'gasStations' => GasStation::select(['gas_stations.id', 'gas_stations.name'])
-                ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
-                ->orderByRaw('MAX(refuels.created_at) DESC')
-                ->groupBy('gas_stations.id', 'gas_stations.name')
-                ->get(),
+            'cars' => $formData['cars'],
+            'gasStations' => $formData['gasStations'],
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, CreateRefuel $createRefuel)
     {
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
@@ -80,22 +74,7 @@ class RefuelController extends Controller
             ],
         ]);
 
-        $car = Car::select(['id', 'is_electric'])->findOrFail($validated['car_id']);
-
-        if (! empty($validated['new_gas_station_name'])) {
-            $station = GasStation::create([
-                'name' => $validated['new_gas_station_name'],
-                'address' => $validated['new_gas_station_address'] ?? 'Unknown',
-            ]);
-
-            $validated['gas_station_id'] = $station->id;
-        }
-
-        $validated['type'] = $car->is_electric ? 'charge' : 'fossil';
-
-        unset($validated['new_gas_station_name'], $validated['new_gas_station_address']);
-
-        Refuel::create($validated);
+        $createRefuel->handle($validated);
 
         return redirect()->route('refuels.index')->with('success', 'Refuel created successfully');
     }
@@ -111,21 +90,22 @@ class RefuelController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Refuel $refuel): Response
+    public function edit(Refuel $refuel, GetRefuelFormData $getRefuelFormData): Response
     {
         $refuelData = Refuel::with(['car', 'gasStation'])->findOrFail($refuel->id);
+        $formData = $getRefuelFormData->handle(false);
 
         return Inertia::render('Refuels/RefuelEdit', [
             'refuel' => $refuelData,
-            'cars' => Car::select(['id', 'name', 'is_electric'])->get(),
-            'gasStations' => GasStation::select(['id', 'name'])->get(),
+            'cars' => $formData['cars'],
+            'gasStations' => $formData['gasStations'],
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Refuel $refuel)
+    public function update(Request $request, Refuel $refuel, UpdateRefuel $updateRefuel)
     {
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
@@ -151,22 +131,7 @@ class RefuelController extends Controller
             ],
         ]);
 
-        $car = Car::select(['id', 'is_electric'])->findOrFail($validated['car_id']);
-
-        if (! empty($validated['new_gas_station_name'])) {
-            $station = GasStation::create([
-                'name' => $validated['new_gas_station_name'],
-                'address' => $validated['new_gas_station_address'] ?? 'Unknown',
-            ]);
-
-            $validated['gas_station_id'] = $station->id;
-        }
-
-        $validated['type'] = $car->is_electric ? 'charge' : 'fossil';
-
-        unset($validated['new_gas_station_name'], $validated['new_gas_station_address']);
-
-        $refuel->update($validated);
+        $updateRefuel->handle($refuel, $validated);
 
         return redirect()->route('refuels.index')->with('success', 'Refuel updated successfully');
     }
@@ -174,9 +139,9 @@ class RefuelController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Refuel $refuel)
+    public function destroy(Refuel $refuel, DeleteRefuel $deleteRefuel)
     {
-        $refuel->delete();
+        $deleteRefuel->handle($refuel);
 
         return redirect()->back()->with('success', 'Refuel deleted successfully');
     }

@@ -22,7 +22,10 @@ test('stores refuel type based on car type', function () {
         'mileage' => 1000,
     ];
 
-    $this->actingAs($user)->post('/refuels', $payload)->assertRedirect('/refuels');
+    $this->actingAs($user)
+        ->withSession(['_token' => 'test'])
+        ->post('/refuels', [...$payload, '_token' => 'test'])
+        ->assertRedirect('/refuels');
 
     $refuel = Refuel::firstOrFail();
     expect($refuel->type)->toBe('charge');
@@ -42,7 +45,10 @@ test('creates a new station when provided during refuel creation', function () {
         'mileage' => 1200,
     ];
 
-    $this->actingAs($user)->post('/refuels', $payload)->assertRedirect('/refuels');
+    $this->actingAs($user)
+        ->withSession(['_token' => 'test'])
+        ->post('/refuels', [...$payload, '_token' => 'test'])
+        ->assertRedirect('/refuels');
 
     $station = GasStation::where('name', 'Fast Charge One')->firstOrFail();
     $refuel = Refuel::firstOrFail();
