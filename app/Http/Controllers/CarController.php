@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Cars\CreateCar;
+use App\Actions\Cars\DeleteCar;
+use App\Actions\Cars\ListCars;
+use App\Actions\Cars\ShowCar;
+use App\Actions\Cars\UpdateCar;
 use App\Models\Car;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,12 +17,10 @@ class CarController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(ListCars $listCars): Response
     {
         return Inertia::render('Cars/Index', [
-            'cars' => Inertia::defer(fn () => Car::latest()
-                ->with('user:id,name')
-                ->get(['id', 'name', 'registration_number', 'is_electric', 'user_id'])),
+            'cars' => Inertia::defer(fn () => $listCars->handle()),
         ]);
     }
 
@@ -29,7 +32,7 @@ class CarController extends Controller
         return Inertia::render('Cars/CarCreate');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, CreateCar $createCar)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -37,8 +40,7 @@ class CarController extends Controller
             'is_electric' => 'required|boolean',
         ]);
 
-        // Create the car and associate it with the authenticated user
-        $car = auth()->user()->cars()->create($validated);
+        $createCar->handle(auth()->user(), $validated);
 
         return redirect()->route('cars.index')->with('success', 'Car created successfully');
     }
@@ -46,16 +48,16 @@ class CarController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Car $car): Response
+    public function show(Car $car, ShowCar $showCar): Response
     {
-        $car->load('user:id,name');
+        $data = $showCar->handle($car);
 
         return Inertia::render('Cars/Show', [
-            'car' => $car,
-            'expenses' => Inertia::defer(fn () => $car->carExpenses->sortByDesc('invoice_date')->values()),
-            'refuels' => Inertia::defer(fn () => $car->refuels),
-            'start_milage' => $car->start_milage,
-            'user' => $car->user,
+            'car' => $data['car'],
+            'expenses' => Inertia::defer($data['expenses']),
+            'refuels' => Inertia::defer($data['refuels']),
+            'start_milage' => $data['start_milage'],
+            'user' => $data['user'],
         ]);
     }
 
@@ -72,7 +74,7 @@ class CarController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Car $car)
+    public function update(Request $request, Car $car, UpdateCar $updateCar)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -80,7 +82,7 @@ class CarController extends Controller
             'is_electric' => 'required|boolean',
         ]);
 
-        $car->update($validated);
+        $updateCar->handle($car, $validated);
 
         return redirect()->route('cars.index')->with('success', 'Car updated successfully');
     }
@@ -88,9 +90,9 @@ class CarController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Car $car)
+    public function destroy(Car $car, DeleteCar $deleteCar)
     {
-        $car->delete();
+        $deleteCar->handle($car);
 
         return redirect()->back()->with('success', 'Car deleted successfully');
     }

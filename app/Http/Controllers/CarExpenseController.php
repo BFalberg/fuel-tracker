@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CarExpenses\CreateCarExpense;
+use App\Actions\CarExpenses\DeleteCarExpense;
+use App\Actions\CarExpenses\ListCarExpenses;
+use App\Actions\CarExpenses\UpdateCarExpense;
 use App\Models\Car;
 use App\Models\CarExpense;
 use Illuminate\Http\RedirectResponse;
@@ -11,9 +15,9 @@ use Inertia\Response;
 
 class CarExpenseController extends Controller
 {
-    public function index(Car $car): Response
+    public function index(Car $car, ListCarExpenses $listCarExpenses): Response
     {
-        $expenses = $car->carExpenses()->latest()->get();
+        $expenses = $listCarExpenses->handle($car);
 
         return Inertia::render('CarExpenses/Index', [
             'car' => $car,
@@ -28,7 +32,7 @@ class CarExpenseController extends Controller
         ]);
     }
 
-    public function store(Request $request, Car $car): RedirectResponse
+    public function store(Request $request, Car $car, CreateCarExpense $createCarExpense): RedirectResponse
     {
         $data = $request->validate([
             'expense_type' => 'required|string|max:255',
@@ -37,7 +41,7 @@ class CarExpenseController extends Controller
             'vendor' => 'nullable|string',
             'invoice_date' => 'nullable|date',
         ]);
-        $car->carExpenses()->create($data);
+        $createCarExpense->handle($car, $data);
 
         return redirect()->route('cars.show', $car);
     }
@@ -50,7 +54,7 @@ class CarExpenseController extends Controller
         ]);
     }
 
-    public function update(Request $request, Car $car, CarExpense $expense): RedirectResponse
+    public function update(Request $request, Car $car, CarExpense $expense, UpdateCarExpense $updateCarExpense): RedirectResponse
     {
         $data = $request->validate([
             'expense_type' => 'required|string|max:255',
@@ -59,14 +63,14 @@ class CarExpenseController extends Controller
             'vendor' => 'nullable|string',
             'invoice_date' => 'nullable|date',
         ]);
-        $expense->update($data);
+        $updateCarExpense->handle($expense, $data);
 
         return redirect()->route('cars.show', $car);
     }
 
-    public function destroy(Car $car, CarExpense $expense): RedirectResponse
+    public function destroy(Car $car, CarExpense $expense, DeleteCarExpense $deleteCarExpense): RedirectResponse
     {
-        $expense->delete();
+        $deleteCarExpense->handle($expense);
 
         return redirect()->route('cars.show', $car);
     }

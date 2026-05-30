@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GasStations\CreateGasStation;
+use App\Actions\GasStations\DeleteGasStation;
+use App\Actions\GasStations\ListGasStations;
+use App\Actions\GasStations\UpdateGasStation;
 use App\Models\GasStation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,10 +15,10 @@ class GasStationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(ListGasStations $listGasStations)
     {
         return Inertia::render('GasStations/Index', [
-            'gasStations' => Inertia::defer(fn () => GasStation::latest()->get()),
+            'gasStations' => Inertia::defer(fn () => $listGasStations->handle()),
         ]);
     }
 
@@ -29,14 +33,14 @@ class GasStationController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, CreateGasStation $createGasStation)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:255',
         ]);
 
-        GasStation::create($validated);
+        $createGasStation->handle($validated);
 
         return redirect()->route('gas-stations.index')->with('success', 'Gas station created successfully');
     }
@@ -62,14 +66,14 @@ class GasStationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, GasStation $gasStation)
+    public function update(Request $request, GasStation $gasStation, UpdateGasStation $updateGasStation)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:255',
         ]);
 
-        $gasStation->update($validated);
+        $updateGasStation->handle($gasStation, $validated);
 
         return redirect()->route('gas-stations.index')->with('success', 'Gas station updated successfully');
     }
@@ -77,9 +81,9 @@ class GasStationController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(GasStation $gasStation)
+    public function destroy(GasStation $gasStation, DeleteGasStation $deleteGasStation)
     {
-        $gasStation->delete();
+        $deleteGasStation->handle($gasStation);
 
         return redirect()->back()->with('success', 'Gas station deleted successfully');
     }
