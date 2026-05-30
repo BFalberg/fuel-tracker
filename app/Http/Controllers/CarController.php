@@ -38,6 +38,9 @@ class CarController extends Controller
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:255|unique:cars',
             'is_electric' => 'required|boolean',
+            'start_milage' => 'nullable|integer|min:0',
+            'purchase_price' => 'nullable|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
         ]);
 
         $createCar->handle(auth()->user(), $validated);
@@ -80,6 +83,9 @@ class CarController extends Controller
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:255|unique:cars,registration_number,'.$car->id,
             'is_electric' => 'required|boolean',
+            'start_milage' => 'nullable|integer|min:0',
+            'purchase_price' => 'nullable|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
         ]);
 
         $updateCar->handle($car, $validated);

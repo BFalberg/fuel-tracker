@@ -7,7 +7,7 @@ use App\Models\Car;
 class UpdateCar
 {
     /**
-     * @param  array{name: string, registration_number: string, is_electric: bool}  $data
+     * @param  array{name: string, registration_number: string, is_electric: bool, start_milage?: int|null, purchase_price?: float|int|null, sale_price?: float|int|null}  $data
      */
     public function handle(Car $car, array $data): Car
     {
