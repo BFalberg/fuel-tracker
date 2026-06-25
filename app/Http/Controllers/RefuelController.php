@@ -64,7 +64,7 @@ class RefuelController extends Controller
                 'min:0',
                 function ($attribute, $value, $fail) use ($request) {
                     $lastRefuel = Refuel::where('car_id', $request->car_id)
-                        ->latest()
+                        ->orderByDesc('mileage')
                         ->first();
 
                     if ($lastRefuel && $value <= $lastRefuel->mileage) {
@@ -92,7 +92,7 @@ class RefuelController extends Controller
      */
     public function edit(Refuel $refuel, GetRefuelFormData $getRefuelFormData): Response
     {
-        $refuelData = Refuel::with(['car', 'gasStation'])->findOrFail($refuel->id);
+        $refuelData = $refuel->load(['car', 'gasStation']);
         $formData = $getRefuelFormData->handle(false);
 
         return Inertia::render('Refuels/RefuelEdit', [
@@ -121,7 +121,7 @@ class RefuelController extends Controller
                 function ($attribute, $value, $fail) use ($request, $refuel) {
                     $lastRefuel = Refuel::where('car_id', $request->car_id)
                         ->where('id', '!=', $refuel->id)
-                        ->latest()
+                        ->orderByDesc('mileage')
                         ->first();
 
                     if ($lastRefuel && $value <= $lastRefuel->mileage) {

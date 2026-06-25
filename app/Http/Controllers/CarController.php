@@ -60,7 +60,6 @@ class CarController extends Controller
             'expenses' => Inertia::defer($data['expenses']),
             'refuels' => Inertia::defer($data['refuels']),
             'start_milage' => $data['start_milage'],
-            'user' => $data['user'],
         ]);
     }
 

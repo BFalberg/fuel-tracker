@@ -5,7 +5,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
-import { useEffect } from 'react';
 
 interface Car {
     id?: number;
@@ -23,7 +22,7 @@ interface CarFormProps {
 }
 
 export default function CarForm({ formType, car }: CarFormProps) {
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, put, processing, errors } = useForm({
         name: car?.name ?? '',
         registration_number: car?.registration_number ?? '',
         start_milage: car?.start_milage ?? '',
@@ -32,36 +31,13 @@ export default function CarForm({ formType, car }: CarFormProps) {
         is_electric: car?.is_electric ?? false,
     });
 
-    useEffect(() => {
-        if (car) {
-            setData({
-                name: car.name,
-                registration_number: car.registration_number,
-                start_milage: car.start_milage ?? '',
-                purchase_price: car.purchase_price ?? '',
-                sale_price: car.sale_price ?? '',
-                is_electric: car.is_electric ?? false,
-            });
-        } else {
-            reset();
-        }
-    }, [car, reset, setData]);
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (formType === 'edit' && car?.id) {
-            put(`/cars/${car.id}`, {
-                onSuccess: () => {
-                    reset();
-                },
-            });
+            put(`/cars/${car.id}`);
         } else {
-            post('/cars', {
-                onSuccess: () => {
-                    reset();
-                },
-            });
+            post('/cars');
         }
     };
 

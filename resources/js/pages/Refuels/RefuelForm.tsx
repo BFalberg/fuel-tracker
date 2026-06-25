@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { useForm } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface Refuel {
     id?: number;
@@ -21,7 +21,6 @@ interface RefuelFormProps {
     refuel?: Refuel;
     cars: Array<{ id: number; name: string; is_electric?: boolean }>;
     gasStations: Array<{ id: number; name: string }>;
-    open: boolean;
     formType: 'create' | 'edit';
 }
 
@@ -29,7 +28,7 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
     const isEditing = formType === 'edit';
     const [showNewStation, setShowNewStation] = useState(false);
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, put, processing, errors } = useForm({
         car_id: refuel?.car_id?.toString() ?? '',
         gas_station_id: refuel?.gas_station_id?.toString() ?? '',
         liters_refueled: refuel?.liters_refueled ?? '',
@@ -42,22 +41,6 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
     const selectedCar = cars.find((car) => car.id.toString() === data.car_id.toString());
     const isElectric = selectedCar?.is_electric ?? false;
     const energyLabel = isElectric ? 'kWh Charged' : 'Liters Refueled';
-
-    useEffect(() => {
-        if (formType === 'edit' && refuel) {
-            setData({
-                car_id: refuel.car_id.toString(),
-                gas_station_id: refuel.gas_station_id?.toString() ?? '',
-                liters_refueled: refuel.liters_refueled,
-                total_price: refuel.total_price,
-                mileage: refuel.mileage,
-                new_gas_station_name: '',
-                new_gas_station_address: '',
-            });
-        } else if (formType === 'create') {
-            reset();
-        }
-    }, [refuel, formType, reset, setData]);
 
     const shouldShowNewStation = showNewStation || Boolean(data.new_gas_station_name || data.new_gas_station_address);
 
@@ -103,13 +86,9 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
         e.preventDefault();
 
         if (isEditing) {
-            put(`/refuels/${refuel?.id}`, {
-                onSuccess: () => reset(),
-            });
+            put(`/refuels/${refuel?.id}`);
         } else {
-            post('/refuels', {
-                onSuccess: () => reset(),
-            });
+            post('/refuels');
         }
     };
 

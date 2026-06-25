@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { useForm } from '@inertiajs/react';
 
 export default function Edit({ car, expense }) {
@@ -27,7 +28,15 @@ export default function Edit({ car, expense }) {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="mb-1 block text-xs">Type</label>
-                            <Input value={data.expense_type} onChange={(e) => setData('expense_type', e.target.value)} required />
+                            <NativeSelect value={data.expense_type} onChange={(e) => setData('expense_type', e.target.value)} required>
+                                <NativeSelectOption value="" disabled>
+                                    Vælg type
+                                </NativeSelectOption>
+                                <NativeSelectOption value="Værksted">Værksted</NativeSelectOption>
+                                <NativeSelectOption value="Forsikring">Forsikring</NativeSelectOption>
+                                <NativeSelectOption value="Afgift">Afgift</NativeSelectOption>
+                                <NativeSelectOption value="Tilkøb">Tilkøb</NativeSelectOption>
+                            </NativeSelect>
                             {errors.expense_type && <div className="text-xs text-red-500">{errors.expense_type}</div>}
                         </div>
                         <div>

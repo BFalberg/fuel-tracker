@@ -2,14 +2,14 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import RefuelForm from './RefuelForm';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Create Refuel',
-        href: '/refuels/create',
-    },
-];
+interface RefuelCreateProps {
+    cars: Array<{ id: number; name: string; is_electric?: boolean }>;
+    gasStations: Array<{ id: number; name: string }>;
+}
 
-export default function RefuelCreate({ cars, gasStations }) {
+const breadcrumbs = [{ title: 'Create Refuel', href: '/refuels/create' }];
+
+export default function RefuelCreate({ cars, gasStations }: RefuelCreateProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Heading level={1} title={breadcrumbs[0].title} />

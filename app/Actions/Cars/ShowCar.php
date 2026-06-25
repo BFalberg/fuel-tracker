@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 class ShowCar
 {
     /**
-     * @return array{car: Car, expenses: Closure, refuels: Closure, start_milage: mixed, user: mixed}
+     * @return array{car: Car, expenses: Closure, refuels: Closure, start_milage: mixed}
      */
     public function handle(Car $car): array
     {
@@ -20,7 +20,6 @@ class ShowCar
             'expenses' => fn (): Collection => $car->carExpenses->sortByDesc('invoice_date')->values(),
             'refuels' => fn (): Collection => $car->refuels,
             'start_milage' => $car->start_milage,
-            'user' => $car->user,
         ];
     }
 }
