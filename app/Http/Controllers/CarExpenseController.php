@@ -48,6 +48,8 @@ class CarExpenseController extends Controller
 
     public function edit(Car $car, CarExpense $expense): Response
     {
+        abort_if($expense->car_id !== $car->id, 404);
+
         return Inertia::render('CarExpenses/Edit', [
             'car' => $car,
             'expense' => $expense,
@@ -56,6 +58,8 @@ class CarExpenseController extends Controller
 
     public function update(Request $request, Car $car, CarExpense $expense, UpdateCarExpense $updateCarExpense): RedirectResponse
     {
+        abort_if($expense->car_id !== $car->id, 404);
+
         $data = $request->validate([
             'expense_type' => 'required|string|max:255',
             'amount' => 'required|numeric',
@@ -70,6 +74,8 @@ class CarExpenseController extends Controller
 
     public function destroy(Car $car, CarExpense $expense, DeleteCarExpense $deleteCarExpense): RedirectResponse
     {
+        abort_if($expense->car_id !== $car->id, 404);
+
         $deleteCarExpense->handle($expense);
 
         return redirect()->route('cars.show', $car);

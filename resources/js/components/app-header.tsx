@@ -40,15 +40,15 @@ const mainNavItems: NavItem[] = [
         url: '/refuels',
         icon: Fuel,
     },
-    {
-        title: 'Create',
-        url: getCreateUrl,
-        icon: Plus,
-    },
+    // {
+    //     title: 'Create',
+    //     url: getCreateUrl,
+    //     icon: Plus,
+    // },
 ];
 
 const activeItemStyles = 'bg-accent-foreground text-accent';
-const menuItemStyles = 'flex flex-col items-center justify-center gap-1 p-1 text-[.5rem] rounded-xl text-center text-accent-foreground';
+const menuItemStyles = 'flex flex-col items-center justify-center gap-1 px-1 py-2 text-[0.7rem] rounded-md text-center text-accent-foreground';
 
 interface AppHeaderProps {
     breadcrumbs?: BreadcrumbItem[];
@@ -92,26 +92,32 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
                 </div>
             )}
-            {/* Navigation */}
-            <NavigationMenu
-                id="app-navbar"
-                className="bg-accent fixed bottom-0 left-1/2 z-50 flex w-full max-w-11/12 -translate-1/2 items-center justify-center rounded-full px-4 py-2"
-            >
-                <NavigationMenuList className="grid w-full grid-cols-5 items-center justify-center">
-                    {mainNavItems.map((item, index) => {
-                        // If item.url is a function, call it with the current page URL
-                        const resolvedUrl = typeof item.url === 'function' ? item.url(page.url) : item.url;
-                        return (
-                            <NavigationMenuItem key={index} className="">
-                                <Link href={resolvedUrl} className={cn(menuItemStyles, page.url === resolvedUrl && activeItemStyles)}>
-                                    {item.icon && <Icon iconNode={item.icon} className="size-4" />}
-                                    {item.title}
-                                </Link>
-                            </NavigationMenuItem>
-                        );
-                    })}
-                </NavigationMenuList>
-            </NavigationMenu>
+
+            <div className="fixed bottom-6 z-50 flex w-full flex-col gap-6 px-4">
+                {/* Create Button */}
+                <Button variant="default" size="icon" className="size-14 self-end rounded-full">
+                    <Link href={getCreateUrl(page.url)} className="">
+                        <Plus className="size-6" />
+                    </Link>
+                </Button>
+                {/* Navigation */}
+                <NavigationMenu id="app-navbar" className="bg-accent flex w-full max-w-full items-center justify-center rounded-xl px-1 py-1">
+                    <NavigationMenuList className="grid w-full grid-cols-4 items-center justify-center">
+                        {mainNavItems.map((item, index) => {
+                            // If item.url is a function, call it with the current page URL
+                            const resolvedUrl = typeof item.url === 'function' ? item.url(page.url) : item.url;
+                            return (
+                                <NavigationMenuItem key={index} className="">
+                                    <Link href={resolvedUrl} className={cn(menuItemStyles, page.url === resolvedUrl && activeItemStyles)}>
+                                        {item.icon && <Icon iconNode={item.icon} className="size-5" />}
+                                        {item.title}
+                                    </Link>
+                                </NavigationMenuItem>
+                            );
+                        })}
+                    </NavigationMenuList>
+                </NavigationMenu>
+            </div>
         </>
     );
 }

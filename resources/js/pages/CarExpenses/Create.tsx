@@ -1,10 +1,21 @@
+import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import AppLayout from '@/layouts/app-layout';
 import { useForm } from '@inertiajs/react';
 
-export default function Create({ car }) {
+interface Car {
+    id: number;
+    name: string;
+}
+
+interface CreateProps {
+    car: Car;
+}
+
+export default function Create({ car }: CreateProps) {
     const { data, setData, post, processing, errors } = useForm({
         expense_type: '',
         amount: '',
@@ -13,19 +24,17 @@ export default function Create({ car }) {
         invoice_date: '',
     });
 
-    function handleSubmit(e) {
+    function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         post(route('cars.expenses.store', { car: car.id }));
     }
 
     return (
-        <div className="mx-auto max-w-xl py-8">
+        <AppLayout>
+            <Heading level={1} title={`Add Expense for ${car.name}`} />
             <Card>
-                <CardHeader>
-                    <CardTitle>Add Expense for {car.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="p-4 pt-0">
+                    <form onSubmit={handleSubmit} className="space-y-4 pt-4">
                         <div>
                             <label className="mb-1 block text-xs">Type</label>
                             <NativeSelect value={data.expense_type} onChange={(e) => setData('expense_type', e.target.value)} required>
@@ -36,6 +45,7 @@ export default function Create({ car }) {
                                 <NativeSelectOption value="Forsikring">Forsikring</NativeSelectOption>
                                 <NativeSelectOption value="Afgift">Afgift</NativeSelectOption>
                                 <NativeSelectOption value="Tilkøb">Tilkøb</NativeSelectOption>
+                                <NativeSelectOption value="Abonnement">Abonnement</NativeSelectOption>
                             </NativeSelect>
                             {errors.expense_type && <div className="text-xs text-red-500">{errors.expense_type}</div>}
                         </div>
@@ -60,8 +70,8 @@ export default function Create({ car }) {
                             Create Expense
                         </Button>
                     </form>
-                </CardContent>
+                </div>
             </Card>
-        </div>
+        </AppLayout>
     );
 }
