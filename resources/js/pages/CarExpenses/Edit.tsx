@@ -36,6 +36,7 @@ export default function Edit({ car, expense }) {
                                 <NativeSelectOption value="Forsikring">Forsikring</NativeSelectOption>
                                 <NativeSelectOption value="Afgift">Afgift</NativeSelectOption>
                                 <NativeSelectOption value="Tilkøb">Tilkøb</NativeSelectOption>
+                                <NativeSelectOption value="Abonnement">Abonnement</NativeSelectOption>
                             </NativeSelect>
                             {errors.expense_type && <div className="text-xs text-red-500">{errors.expense_type}</div>}
                         </div>
