@@ -1,6 +1,7 @@
 import Heading from '@/components/heading';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import CarCard from './CarCard';
@@ -18,10 +19,8 @@ interface Car {
     name: string;
     registration_number: string;
     is_electric?: boolean;
-    user?: {
-        id: number;
-        name: string;
-    };
+    users?: { id: number; name: string }[];
+    pivot?: { role: 'owner' | 'co_driver' };
 }
 
 interface Props {
@@ -31,10 +30,6 @@ interface Props {
 export default function Cars({ cars }: Props) {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedCar, setSelectedCar] = useState<Car | null>(null);
-
-    const handleEdit = (car: Car) => {
-        setSelectedCar(car);
-    };
 
     const handleDelete = (car: Car) => {
         setSelectedCar(car);
@@ -75,7 +70,7 @@ export default function Cars({ cars }: Props) {
                 >
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {(cars ?? []).map((car) => (
-                            <CarCard key={car.id} car={car} onEdit={handleEdit} onDelete={handleDelete} />
+                            <CarCard key={car.id} car={car} onDelete={handleDelete} />
                         ))}
                     </div>
                 </Deferred>

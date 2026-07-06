@@ -11,7 +11,7 @@ type CarType = {
     id: number;
     name: string;
     registration_number: string;
-    user?: { name?: string };
+    users?: { name?: string }[];
     purchase_price?: number | null;
     sale_price?: number | null;
     start_milage?: number | null;
@@ -79,7 +79,7 @@ export default function Show({ car, expenses, refuels, start_milage }: ShowProps
                                 <div className="text-muted-foreground text-xs">Owner</div>
                                 <div className="flex items-center gap-2 font-medium">
                                     <User className="size-4" />
-                                    {car.user?.name ?? '-'}
+                                    {car.users?.[0]?.name ?? '-'}
                                 </div>
                             </div>
                             <div>
