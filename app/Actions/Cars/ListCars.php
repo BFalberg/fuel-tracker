@@ -10,7 +10,6 @@ class ListCars
     public function handle(): Collection
     {
         return Car::latest()
-            ->with('user:id,name')
-            ->get(['id', 'name', 'registration_number', 'is_electric', 'user_id']);
+            ->get(['id', 'name', 'registration_number', 'is_electric']);
     }
 }

@@ -9,11 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('cars', function (Blueprint $table) {
-            $foreignKeys = collect(Schema::getForeignKeys('cars'))
-                ->pluck('name')
-                ->toArray();
+            $hasForeignKey = collect(Schema::getForeignKeys('cars'))
+                ->contains(fn ($fk) => in_array('user_id', $fk['columns']));
 
-            if (in_array('cars_user_id_foreign', $foreignKeys)) {
+            if ($hasForeignKey) {
                 $table->dropForeign(['user_id']);
             }
 

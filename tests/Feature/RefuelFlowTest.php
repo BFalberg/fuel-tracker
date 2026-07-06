@@ -11,7 +11,7 @@ uses(RefreshDatabase::class);
 
 test('stores refuel type based on car type', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create(['is_electric' => true]);
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => true]);
     $station = GasStation::factory()->create();
 
     $payload = [
@@ -33,7 +33,7 @@ test('stores refuel type based on car type', function () {
 
 test('creates a new station when provided during refuel creation', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create(['is_electric' => false]);
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
 
     $payload = [
         'car_id' => $car->id,
@@ -59,8 +59,8 @@ test('creates a new station when provided during refuel creation', function () {
 
 test('refuels list can be filtered by car', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create();
-    $otherCar = Car::factory()->for($user)->create();
+    $car = Car::factory()->ownedBy($user)->create();
+    $otherCar = Car::factory()->ownedBy($user)->create();
     $station = GasStation::factory()->create();
 
     Refuel::create([
