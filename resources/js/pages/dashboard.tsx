@@ -112,7 +112,24 @@ export default function Dashboard({ cars, message }: Props) {
                                         <p className="text-muted-foreground text-xs">Avg. {formatCurrency(car.stats.averages.monthlyAmount)}/month</p>
                                     </CardContent>
                                 </Card>
-
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Efficiency</CardTitle>
+                                        <Gauge className="text-muted-foreground h-4 w-4" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">
+                                            {car.stats.efficiency.currentMonth !== null
+                                                ? `${car.stats.efficiency.currentMonth} ${car.isElectric ? 'kWh' : 'L'}/100km`
+                                                : '—'}
+                                        </div>
+                                        <p className="text-muted-foreground text-xs">
+                                            {car.stats.efficiency.allTime !== null
+                                                ? `Avg. ${car.stats.efficiency.allTime} ${car.isElectric ? 'kWh' : 'L'}/100km all-time`
+                                                : '—'}
+                                        </p>
+                                    </CardContent>
+                                </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <CardTitle className="text-sm font-medium">Distance This Month</CardTitle>
@@ -145,25 +162,6 @@ export default function Dashboard({ cars, message }: Props) {
                                     <CardContent>
                                         <div className="text-2xl font-bold">{formatCurrency(car.stats.totals.amount)}</div>
                                         <p className="text-muted-foreground text-xs">{formatNumber(car.stats.totals.kilometers)} km driven</p>
-                                    </CardContent>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Efficiency</CardTitle>
-                                        <Gauge className="text-muted-foreground h-4 w-4" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">
-                                            {car.stats.efficiency.currentMonth !== null
-                                                ? `${car.stats.efficiency.currentMonth} ${car.isElectric ? 'kWh' : 'L'}/100km`
-                                                : '—'}
-                                        </div>
-                                        <p className="text-muted-foreground text-xs">
-                                            {car.stats.efficiency.allTime !== null
-                                                ? `Avg. ${car.stats.efficiency.allTime} ${car.isElectric ? 'kWh' : 'L'}/100km all-time`
-                                                : '—'}
-                                        </p>
                                     </CardContent>
                                 </Card>
                             </div>
