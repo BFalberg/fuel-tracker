@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "Checking for destructive database commands...",
+            "command": "input=$(cat); cmd=$(echo \"$input\" | jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -qE 'php artisan (migrate:fresh|migrate:reset|migrate:rollback|db:wipe)'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"BLOCKED: This project is wired to the PRODUCTION database. This command would destroy or corrupt production data. Forbidden: migrate:fresh, migrate:reset, migrate:rollback, db:wipe, db:seed --force.\"}}'; elif echo \"$cmd\" | grep -q 'php artisan db:seed' && echo \"$cmd\" | grep -q -- '--force'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"BLOCKED: This project is wired to the PRODUCTION database. db:seed --force is forbidden to prevent overwriting production data.\"}}'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
