@@ -51,3 +51,35 @@ test('co-driver sees shared car in car list', function () {
             )
         );
 });
+
+test('co-driver cannot edit a car', function () {
+    $owner = User::factory()->create();
+    $coDriver = User::factory()->create();
+    $car = Car::factory()->ownedBy($owner)->create();
+    $car->users()->attach($coDriver->id, ['role' => 'co_driver']);
+
+    $this->actingAs($coDriver)
+        ->get(route('cars.edit', $car))
+        ->assertForbidden();
+});
+
+test('stranger cannot view a car', function () {
+    $owner = User::factory()->create();
+    $stranger = User::factory()->create();
+    $car = Car::factory()->ownedBy($owner)->create();
+
+    $this->actingAs($stranger)
+        ->get(route('cars.show', $car))
+        ->assertForbidden();
+});
+
+test('co-driver can view a car', function () {
+    $owner = User::factory()->create();
+    $coDriver = User::factory()->create();
+    $car = Car::factory()->ownedBy($owner)->create();
+    $car->users()->attach($coDriver->id, ['role' => 'co_driver']);
+
+    $this->actingAs($coDriver)
+        ->get(route('cars.show', $car))
+        ->assertOk();
+});

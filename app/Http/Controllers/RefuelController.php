@@ -8,13 +8,17 @@ use App\Actions\Refuel\GetRefuelFormData;
 use App\Actions\Refuel\GetRefuelIndexData;
 use App\Actions\Refuel\ListRefuels;
 use App\Actions\Refuel\UpdateRefuel;
+use App\Models\Car;
 use App\Models\Refuel;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RefuelController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
@@ -73,6 +77,8 @@ class RefuelController extends Controller
                 },
             ],
         ]);
+
+        $this->authorize('view', Car::findOrFail($validated['car_id']));
 
         $createRefuel->handle($validated);
 

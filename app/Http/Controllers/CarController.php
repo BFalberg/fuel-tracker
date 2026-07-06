@@ -8,15 +8,15 @@ use App\Actions\Cars\ListCars;
 use App\Actions\Cars\ShowCar;
 use App\Actions\Cars\UpdateCar;
 use App\Models\Car;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CarController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    use AuthorizesRequests;
+
     public function index(ListCars $listCars): Response
     {
         return Inertia::render('Cars/Index', [
@@ -24,9 +24,6 @@ class CarController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(): Response
     {
         return Inertia::render('Cars/CarCreate');
@@ -48,11 +45,10 @@ class CarController extends Controller
         return redirect()->route('cars.index')->with('success', 'Car created successfully');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Car $car, ShowCar $showCar): Response
     {
+        $this->authorize('view', $car);
+
         $data = $showCar->handle($car);
 
         return Inertia::render('Cars/Show', [
@@ -63,21 +59,28 @@ class CarController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Car $car): Response
     {
+        $this->authorize('update', $car);
+
+        $carUsers = $car->users()->get(['users.id', 'users.name', 'users.email'])->map(fn ($user) => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->pivot->role,
+        ]);
+
         return Inertia::render('Cars/CarEdit', [
             'car' => $car,
+            'carUsers' => $carUsers,
+            'isOwner' => true,
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Car $car, UpdateCar $updateCar)
     {
+        $this->authorize('update', $car);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:255|unique:cars,registration_number,'.$car->id,
@@ -92,11 +95,10 @@ class CarController extends Controller
         return redirect()->route('cars.index')->with('success', 'Car updated successfully');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Car $car, DeleteCar $deleteCar)
     {
+        $this->authorize('delete', $car);
+
         $deleteCar->handle($car);
 
         return redirect()->back()->with('success', 'Car deleted successfully');
