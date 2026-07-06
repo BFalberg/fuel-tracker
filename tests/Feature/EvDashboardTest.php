@@ -141,3 +141,21 @@ test('efficiency stats are null when no refuels exist', function () {
     expect($stats->first()['stats']['efficiency']['currentMonth'])->toBeNull()
         ->and($stats->first()['stats']['efficiency']['allTime'])->toBeNull();
 });
+
+test('currentMonth efficiency is null when no refuels exist in current month', function () {
+    $user = User::factory()->create();
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
+
+    // Refuels in a prior month only
+    Carbon::setTestNow('2026-06-15');
+    Refuel::create(['car_id' => $car->id, 'mileage' => 100, 'liters_refueled' => 20, 'total_price' => 300]);
+    Refuel::create(['car_id' => $car->id, 'mileage' => 200, 'liters_refueled' => 20, 'total_price' => 300]);
+
+    Carbon::setTestNow('2026-07-06');
+    $stats = app(BuildDashboardStats::class)->handle(collect([$car]))();
+
+    expect($stats->first()['stats']['efficiency']['currentMonth'])->toBeNull()
+        ->and($stats->first()['stats']['efficiency']['allTime'])->toBe(40.0);
+
+    Carbon::setTestNow();
+});
