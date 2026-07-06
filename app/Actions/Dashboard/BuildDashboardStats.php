@@ -68,19 +68,7 @@ class BuildDashboardStats
 
         $pricePerKilometer = $totalDistance > 0 ? round($totalAmount / $totalDistance, 2) : 0;
 
-        $currentMonthLiters = Refuel::where('car_id', $car->id)
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->sum('liters_refueled');
-
-        $totalLiters = Refuel::where('car_id', $car->id)->sum('liters_refueled');
-
-        $currentMonthEfficiency = ($currentMonthLiters > 0 && $currentMonthDistance > 0)
-            ? round((float) $currentMonthLiters / $currentMonthDistance * 100, 1)
-            : null;
-
-        $allTimeEfficiency = ($totalLiters > 0 && $totalDistance > 0)
-            ? round((float) $totalLiters / $totalDistance * 100, 1)
-            : null;
+        $efficiency = $this->calculateEfficiency($car->id, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
 
         return [
             'id' => $car->id,
@@ -100,10 +88,7 @@ class BuildDashboardStats
                     'kilometers' => round($totalDistance, 2),
                     'pricePerKilometer' => $pricePerKilometer,
                 ],
-                'efficiency' => [
-                    'currentMonth' => $currentMonthEfficiency,
-                    'allTime' => $allTimeEfficiency,
-                ],
+                'efficiency' => $efficiency,
             ],
         ];
     }
@@ -138,19 +123,7 @@ class BuildDashboardStats
             ')
             ->first();
 
-        $currentMonthLiters = Refuel::where('car_id', $car->id)
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->sum('liters_refueled');
-
-        $totalLiters = Refuel::where('car_id', $car->id)->sum('liters_refueled');
-
-        $currentMonthEfficiency = ($currentMonthLiters > 0 && $currentMonthDistance > 0)
-            ? round((float) $currentMonthLiters / $currentMonthDistance * 100, 1)
-            : null;
-
-        $allTimeEfficiency = ($totalLiters > 0 && $totalDistance > 0)
-            ? round((float) $totalLiters / $totalDistance * 100, 1)
-            : null;
+        $efficiency = $this->calculateEfficiency($car->id, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
 
         return [
             'id' => $car->id,
@@ -170,11 +143,26 @@ class BuildDashboardStats
                     'kilometers' => round($totalDistance, 2),
                     'pricePerKilometer' => round($totalStats->price_per_kilometer ?? 0, 2),
                 ],
-                'efficiency' => [
-                    'currentMonth' => $currentMonthEfficiency,
-                    'allTime' => $allTimeEfficiency,
-                ],
+                'efficiency' => $efficiency,
             ],
+        ];
+    }
+
+    private function calculateEfficiency(int $carId, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    {
+        $currentMonthLiters = Refuel::where('car_id', $carId)
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->sum('liters_refueled');
+
+        $totalLiters = Refuel::where('car_id', $carId)->sum('liters_refueled');
+
+        return [
+            'currentMonth' => ($currentMonthLiters > 0 && $currentMonthDistance > 0)
+                ? round((float) $currentMonthLiters / $currentMonthDistance * 100, 1)
+                : null,
+            'allTime' => ($totalLiters > 0 && $totalDistance > 0)
+                ? round((float) $totalLiters / $totalDistance * 100, 1)
+                : null,
         ];
     }
 }
