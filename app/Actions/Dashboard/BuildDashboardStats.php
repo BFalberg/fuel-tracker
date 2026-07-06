@@ -2,6 +2,7 @@
 
 namespace App\Actions\Dashboard;
 
+use App\Models\Car;
 use App\Models\CarExpense;
 use App\Models\Refuel;
 use Carbon\Carbon;
@@ -40,7 +41,7 @@ class BuildDashboardStats
         };
     }
 
-    private function buildEvStats($car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    private function buildEvStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
     {
         $currentMonthAmount = CarExpense::where('car_id', $car->id)
             ->where('expense_type', 'Abonnement')
@@ -88,7 +89,7 @@ class BuildDashboardStats
         ];
     }
 
-    private function buildGasStats($car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    private function buildGasStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
     {
         $monthlyAmountStats = Refuel::where('car_id', $car->id)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
