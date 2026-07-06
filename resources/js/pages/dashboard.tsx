@@ -3,11 +3,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head } from '@inertiajs/react';
-import { Car, ChartNoAxesCombined, Coins, Wallet } from 'lucide-react';
+import { Car, ChartNoAxesCombined, Coins, Gauge, Wallet } from 'lucide-react';
 
 interface CarStats {
     id: number;
     name: string;
+    isElectric: boolean;
     stats: {
         currentMonth: {
             amount: number;
@@ -21,6 +22,10 @@ interface CarStats {
             amount: number;
             kilometers: number;
             pricePerKilometer: number;
+        };
+        efficiency: {
+            currentMonth: number | null;
+            allTime: number | null;
         };
     };
 }
@@ -74,8 +79,8 @@ export default function Dashboard({ cars, message }: Props) {
                             <div className="flex items-center justify-between">
                                 <Skeleton className="h-8 w-40" />
                             </div>
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                {Array.from({ length: 4 }).map((_, index) => (
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                                {Array.from({ length: 5 }).map((_, index) => (
                                     <Card key={index}>
                                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                             <Skeleton className="h-4 w-24" />
@@ -96,7 +101,7 @@ export default function Dashboard({ cars, message }: Props) {
                             <div className="flex items-center justify-between">
                                 <h1 className="text-2xl font-bold">{car.name}</h1>
                             </div>
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <CardTitle className="text-sm font-medium">This Month</CardTitle>
@@ -140,6 +145,25 @@ export default function Dashboard({ cars, message }: Props) {
                                     <CardContent>
                                         <div className="text-2xl font-bold">{formatCurrency(car.stats.totals.amount)}</div>
                                         <p className="text-muted-foreground text-xs">{formatNumber(car.stats.totals.kilometers)} km driven</p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Efficiency</CardTitle>
+                                        <Gauge className="text-muted-foreground h-4 w-4" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">
+                                            {car.stats.efficiency.currentMonth !== null
+                                                ? `${car.stats.efficiency.currentMonth} ${car.isElectric ? 'kWh' : 'L'}/100km`
+                                                : '—'}
+                                        </div>
+                                        <p className="text-muted-foreground text-xs">
+                                            {car.stats.efficiency.allTime !== null
+                                                ? `Avg. ${car.stats.efficiency.allTime} ${car.isElectric ? 'kWh' : 'L'}/100km all-time`
+                                                : '—'}
+                                        </p>
                                     </CardContent>
                                 </Card>
                             </div>
