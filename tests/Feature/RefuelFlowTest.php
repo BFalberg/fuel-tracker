@@ -94,3 +94,34 @@ test('refuels list can be filtered by car', function () {
         )
     );
 });
+
+test('co-driver can add a refuel to a shared car', function () {
+    $owner = User::factory()->create();
+    $coDriver = User::factory()->create();
+    $car = Car::factory()->ownedBy($owner)->create();
+    $car->users()->attach($coDriver->id, ['role' => 'co_driver']);
+
+    $this->actingAs($coDriver)
+        ->post(route('refuels.store'), [
+            'car_id' => $car->id,
+            'liters_refueled' => 40,
+            'total_price' => 0,
+            'mileage' => 1000,
+        ])
+        ->assertRedirect(route('refuels.index'));
+});
+
+test('stranger cannot add a refuel to a car they have no access to', function () {
+    $owner = User::factory()->create();
+    $stranger = User::factory()->create();
+    $car = Car::factory()->ownedBy($owner)->create();
+
+    $this->actingAs($stranger)
+        ->post(route('refuels.store'), [
+            'car_id' => $car->id,
+            'liters_refueled' => 40,
+            'total_price' => 0,
+            'mileage' => 1000,
+        ])
+        ->assertForbidden();
+});

@@ -55,6 +55,9 @@ class RefuelController extends Controller
      */
     public function store(Request $request, CreateRefuel $createRefuel)
     {
+        $car = Car::findOrFail($request->input('car_id'));
+        $this->authorize('view', $car);
+
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
             'gas_station_id' => 'nullable|exists:gas_stations,id',
@@ -66,8 +69,8 @@ class RefuelController extends Controller
                 'required',
                 'integer',
                 'min:0',
-                function ($attribute, $value, $fail) use ($request) {
-                    $lastRefuel = Refuel::where('car_id', $request->car_id)
+                function ($attribute, $value, $fail) use ($car) {
+                    $lastRefuel = Refuel::where('car_id', $car->id)
                         ->orderByDesc('mileage')
                         ->first();
 
@@ -77,8 +80,6 @@ class RefuelController extends Controller
                 },
             ],
         ]);
-
-        $this->authorize('view', Car::findOrFail($validated['car_id']));
 
         $createRefuel->handle($validated);
 
