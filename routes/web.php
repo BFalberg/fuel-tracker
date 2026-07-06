@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\CarController;
+use App\Http\Controllers\CarExpenseController;
+use App\Http\Controllers\CarUserController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GasStationController;
+use App\Http\Controllers\RefuelController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\CarController;
-use App\Http\Controllers\RefuelController;
-use App\Http\Controllers\GasStationController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\CarExpenseController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -67,7 +68,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('expenses/{expense}', [CarExpenseController::class, 'update'])->name('cars.expenses.update');
         Route::delete('expenses/{expense}', [CarExpenseController::class, 'destroy'])->name('cars.expenses.destroy');
     });
+
+    // Car user management
+    Route::post('cars/{car}/users', [CarUserController::class, 'store'])->name('cars.users.store');
+    Route::delete('cars/{car}/users/{user}', [CarUserController::class, 'destroy'])->name('cars.users.destroy');
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
