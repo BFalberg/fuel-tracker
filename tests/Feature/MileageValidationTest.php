@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 
 test('mileage must exceed the highest existing mileage, not just the most recent by date', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create(['is_electric' => false]);
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
     $station = GasStation::factory()->create();
 
     // First refuel at 1000 km, created first
@@ -51,7 +51,7 @@ test('mileage must exceed the highest existing mileage, not just the most recent
 
 test('mileage must exceed highest existing mileage on update', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create(['is_electric' => false]);
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
     $station = GasStation::factory()->create();
 
     $first = Refuel::create([
@@ -88,7 +88,7 @@ test('mileage must exceed highest existing mileage on update', function () {
 
 test('new refuel above highest existing mileage passes', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create(['is_electric' => false]);
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
     $station = GasStation::factory()->create();
 
     Refuel::create([

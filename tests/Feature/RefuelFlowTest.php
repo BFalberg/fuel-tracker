@@ -11,7 +11,7 @@ uses(RefreshDatabase::class);
 
 test('stores refuel type based on car type', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create(['is_electric' => true]);
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => true]);
     $station = GasStation::factory()->create();
 
     $payload = [
@@ -33,7 +33,7 @@ test('stores refuel type based on car type', function () {
 
 test('creates a new station when provided during refuel creation', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create(['is_electric' => false]);
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
 
     $payload = [
         'car_id' => $car->id,
@@ -59,8 +59,8 @@ test('creates a new station when provided during refuel creation', function () {
 
 test('refuels list can be filtered by car', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create();
-    $otherCar = Car::factory()->for($user)->create();
+    $car = Car::factory()->ownedBy($user)->create();
+    $otherCar = Car::factory()->ownedBy($user)->create();
     $station = GasStation::factory()->create();
 
     Refuel::create([
@@ -93,4 +93,35 @@ test('refuels list can be filtered by car', function () {
             ->where('refuels.data.0.car_id', $car->id)
         )
     );
+});
+
+test('co-driver can add a refuel to a shared car', function () {
+    $owner = User::factory()->create();
+    $coDriver = User::factory()->create();
+    $car = Car::factory()->ownedBy($owner)->create();
+    $car->users()->attach($coDriver->id, ['role' => 'co_driver']);
+
+    $this->actingAs($coDriver)
+        ->post(route('refuels.store'), [
+            'car_id' => $car->id,
+            'liters_refueled' => 40,
+            'total_price' => 0,
+            'mileage' => 1000,
+        ])
+        ->assertRedirect(route('refuels.index'));
+});
+
+test('stranger cannot add a refuel to a car they have no access to', function () {
+    $owner = User::factory()->create();
+    $stranger = User::factory()->create();
+    $car = Car::factory()->ownedBy($owner)->create();
+
+    $this->actingAs($stranger)
+        ->post(route('refuels.store'), [
+            'car_id' => $car->id,
+            'liters_refueled' => 40,
+            'total_price' => 0,
+            'mileage' => 1000,
+        ])
+        ->assertForbidden();
 });

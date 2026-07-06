@@ -13,7 +13,7 @@ class ShowCar
      */
     public function handle(Car $car): array
     {
-        $car->load('user:id,name');
+        $car->load(['users' => fn ($q) => $q->wherePivot('role', 'owner')->select('users.id', 'users.name')]);
 
         return [
             'car' => $car,

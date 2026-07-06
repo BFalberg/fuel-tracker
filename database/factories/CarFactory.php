@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Car;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,11 +11,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class CarFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
@@ -25,5 +21,17 @@ class CarFactory extends Factory
             'sale_price' => null,
             'is_electric' => false,
         ];
+    }
+
+    public function ownedBy(User $user): static
+    {
+        return $this->afterCreating(function (Car $car) use ($user) {
+            $car->users()->attach($user->id, ['role' => 'owner']);
+        });
+    }
+
+    public function electric(): static
+    {
+        return $this->state(['is_electric' => true]);
     }
 }

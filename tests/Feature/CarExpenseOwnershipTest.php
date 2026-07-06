@@ -9,8 +9,8 @@ uses(RefreshDatabase::class);
 
 test('editing an expense from a different car returns 404', function () {
     $user = User::factory()->create();
-    $carA = Car::factory()->for($user)->create();
-    $carB = Car::factory()->for($user)->create();
+    $carA = Car::factory()->ownedBy($user)->create();
+    $carB = Car::factory()->ownedBy($user)->create();
 
     $expense = CarExpense::create([
         'car_id' => $carB->id,
@@ -25,8 +25,8 @@ test('editing an expense from a different car returns 404', function () {
 
 test('updating an expense from a different car returns 404', function () {
     $user = User::factory()->create();
-    $carA = Car::factory()->for($user)->create();
-    $carB = Car::factory()->for($user)->create();
+    $carA = Car::factory()->ownedBy($user)->create();
+    $carB = Car::factory()->ownedBy($user)->create();
 
     $expense = CarExpense::create([
         'car_id' => $carB->id,
@@ -46,8 +46,8 @@ test('updating an expense from a different car returns 404', function () {
 
 test('deleting an expense from a different car returns 404', function () {
     $user = User::factory()->create();
-    $carA = Car::factory()->for($user)->create();
-    $carB = Car::factory()->for($user)->create();
+    $carA = Car::factory()->ownedBy($user)->create();
+    $carB = Car::factory()->ownedBy($user)->create();
 
     $expense = CarExpense::create([
         'car_id' => $carB->id,
@@ -65,7 +65,7 @@ test('deleting an expense from a different car returns 404', function () {
 
 test('editing an expense belonging to the correct car succeeds', function () {
     $user = User::factory()->create();
-    $car = Car::factory()->for($user)->create();
+    $car = Car::factory()->ownedBy($user)->create();
 
     $expense = CarExpense::create([
         'car_id' => $car->id,

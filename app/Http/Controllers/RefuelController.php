@@ -8,13 +8,17 @@ use App\Actions\Refuel\GetRefuelFormData;
 use App\Actions\Refuel\GetRefuelIndexData;
 use App\Actions\Refuel\ListRefuels;
 use App\Actions\Refuel\UpdateRefuel;
+use App\Models\Car;
 use App\Models\Refuel;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RefuelController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
@@ -51,6 +55,9 @@ class RefuelController extends Controller
      */
     public function store(Request $request, CreateRefuel $createRefuel)
     {
+        $car = Car::findOrFail($request->input('car_id'));
+        $this->authorize('view', $car);
+
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
             'gas_station_id' => 'nullable|exists:gas_stations,id',
@@ -62,8 +69,8 @@ class RefuelController extends Controller
                 'required',
                 'integer',
                 'min:0',
-                function ($attribute, $value, $fail) use ($request) {
-                    $lastRefuel = Refuel::where('car_id', $request->car_id)
+                function ($attribute, $value, $fail) use ($car) {
+                    $lastRefuel = Refuel::where('car_id', $car->id)
                         ->orderByDesc('mileage')
                         ->first();
 

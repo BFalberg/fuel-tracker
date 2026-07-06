@@ -4,21 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from '@inertiajs/react';
 import { Car, MoreVertical, Pencil, Trash2, User } from 'lucide-react';
+
 interface CarCardProps {
     car: {
         id: number;
         name: string;
         registration_number: string;
         is_electric?: boolean;
-        user?: {
-            id: number;
-            name: string;
-        };
+        users?: { id: number; name: string }[];
+        pivot?: { role: 'owner' | 'co_driver' };
     };
     onDelete?: (car: CarCardProps['car']) => void;
 }
 
 export default function CarCard({ car, onDelete }: CarCardProps) {
+    const isOwner = car.pivot?.role === 'owner';
+    const ownerName = car.users?.[0]?.name ?? '-';
+
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -30,27 +32,29 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
                     </CardTitle>
                     <Badge variant={car.is_electric ? 'secondary' : 'outline'}>{car.is_electric ? 'EV' : 'Fossil'}</Badge>
                 </div>
-                <div className="flex gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                                <Link href={route('cars.edit', { car: car.id })} className="flex items-center">
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Edit
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onDelete?.(car)} className="text-red-600">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
+                {isOwner && (
+                    <div className="flex gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={route('cars.edit', { car: car.id })} className="flex items-center">
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Edit
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => onDelete?.(car)} className="text-red-600">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )}
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-5 gap-4">
@@ -60,7 +64,7 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
                     </p>
                     <p className="text-muted-foreground col-span-3 flex items-center gap-2 text-sm">
                         <User className="size-5" />
-                        {car.user?.name ?? '-'}
+                        {ownerName}
                     </p>
                 </div>
             </CardContent>

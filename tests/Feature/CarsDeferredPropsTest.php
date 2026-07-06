@@ -9,7 +9,7 @@ uses(RefreshDatabase::class);
 
 test('cars index defers cars list', function () {
     $user = User::factory()->create();
-    Car::factory()->for($user)->count(2)->create();
+    Car::factory()->ownedBy($user)->count(2)->create();
 
     $response = $this->actingAs($user)->get('/cars');
 

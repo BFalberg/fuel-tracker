@@ -2,11 +2,12 @@
 
 namespace App\Actions\Dashboard;
 
+use App\Models\Car;
+use App\Models\CarExpense;
 use App\Models\Refuel;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class BuildDashboardStats
 {
@@ -19,73 +20,123 @@ class BuildDashboardStats
 
             return $cars->map(function ($car) use ($startOfMonth, $endOfMonth): array {
                 $mileageStats = Refuel::where('car_id', $car->id)
-                    ->selectRaw('
-                        MIN(mileage) as first_mileage,
-                        MAX(mileage) as latest_mileage
-                    ')
+                    ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
                     ->first();
 
-                $totalDistance = $mileageStats->latest_mileage - $mileageStats->first_mileage;
+                $totalDistance = ($mileageStats->latest_mileage ?? 0) - ($mileageStats->first_mileage ?? 0);
 
                 $monthlyMileageStats = Refuel::where('car_id', $car->id)
                     ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                    ->selectRaw('
-                        MIN(mileage) as first_mileage,
-                        MAX(mileage) as latest_mileage,
-                        SUM(total_price) as total_amount
-                    ')
+                    ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
                     ->first();
 
-                $currentMonthDistance = $monthlyMileageStats->latest_mileage - $monthlyMileageStats->first_mileage;
+                $currentMonthDistance = ($monthlyMileageStats->latest_mileage ?? 0) - ($monthlyMileageStats->first_mileage ?? 0);
 
-                $averageStats = DB::table(function ($query) use ($car): void {
-                    $query->from('refuels')
-                        ->where('car_id', $car->id)
-                        ->selectRaw('
-                            YEAR(created_at) as year,
-                            MONTH(created_at) as month,
-                            SUM(total_price) as monthly_amount,
-                            MAX(mileage) - MIN(mileage) as monthly_kilometers
-                        ')
-                        ->groupBy('year', 'month');
-                }, 'monthly_stats')
-                    ->selectRaw('
-                        AVG(monthly_amount) as avg_monthly_amount,
-                        AVG(monthly_kilometers) as avg_monthly_kilometers
-                    ')
-                    ->first();
+                if ($car->is_electric) {
+                    return $this->buildEvStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
+                }
 
-                $totalStats = Refuel::where('car_id', $car->id)
-                    ->selectRaw('
-                        SUM(total_price) as total_amount_ever,
-                        CASE
-                            WHEN MAX(mileage) - MIN(mileage) > 0
-                            THEN SUM(total_price) / (MAX(mileage) - MIN(mileage))
-                            ELSE 0
-                        END as price_per_kilometer
-                    ')
-                    ->first();
-
-                return [
-                    'id' => $car->id,
-                    'name' => $car->name,
-                    'stats' => [
-                        'currentMonth' => [
-                            'amount' => $monthlyMileageStats->total_amount ?? 0,
-                            'kilometers' => $currentMonthDistance ?? 0,
-                        ],
-                        'averages' => [
-                            'monthlyAmount' => round($averageStats->avg_monthly_amount ?? 0, 2),
-                            'monthlyKilometers' => round($averageStats->avg_monthly_kilometers ?? 0, 2),
-                        ],
-                        'totals' => [
-                            'amount' => round($totalStats->total_amount_ever ?? 0, 2),
-                            'kilometers' => round($totalDistance ?? 0, 2),
-                            'pricePerKilometer' => round($totalStats->price_per_kilometer ?? 0, 2),
-                        ],
-                    ],
-                ];
+                return $this->buildGasStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
             });
         };
+    }
+
+    private function buildEvStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    {
+        $currentMonthAmount = CarExpense::where('car_id', $car->id)
+            ->where('expense_type', 'Abonnement')
+            ->whereBetween('invoice_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+            ->sum('amount');
+
+        $totalAmount = CarExpense::where('car_id', $car->id)
+            ->where('expense_type', 'Abonnement')
+            ->sum('amount');
+
+        $avgMonthlyAmount = CarExpense::where('car_id', $car->id)
+            ->where('expense_type', 'Abonnement')
+            ->whereNotNull('invoice_date')
+            ->get(['amount', 'invoice_date'])
+            ->groupBy(fn ($e) => Carbon::parse($e->invoice_date)->format('Y-m'))
+            ->map(fn ($group) => $group->sum('amount'))
+            ->avg() ?? 0;
+
+        $avgMonthlyKm = Refuel::where('car_id', $car->id)
+            ->get(['mileage', 'created_at'])
+            ->groupBy(fn ($r) => $r->created_at->format('Y-m'))
+            ->map(fn ($group) => $group->max('mileage') - $group->min('mileage'))
+            ->avg() ?? 0;
+
+        $pricePerKilometer = $totalDistance > 0 ? round($totalAmount / $totalDistance, 2) : 0;
+
+        return [
+            'id' => $car->id,
+            'name' => $car->name,
+            'stats' => [
+                'currentMonth' => [
+                    'amount' => (float) $currentMonthAmount,
+                    'kilometers' => $currentMonthDistance,
+                ],
+                'averages' => [
+                    'monthlyAmount' => round($avgMonthlyAmount, 2),
+                    'monthlyKilometers' => round($avgMonthlyKm, 2),
+                ],
+                'totals' => [
+                    'amount' => round((float) $totalAmount, 2),
+                    'kilometers' => round($totalDistance, 2),
+                    'pricePerKilometer' => $pricePerKilometer,
+                ],
+            ],
+        ];
+    }
+
+    private function buildGasStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    {
+        $monthlyAmountStats = Refuel::where('car_id', $car->id)
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->selectRaw('SUM(total_price) as total_amount')
+            ->first();
+
+        $monthlyRefuels = Refuel::where('car_id', $car->id)
+            ->get(['total_price', 'mileage', 'created_at'])
+            ->groupBy(fn ($r) => $r->created_at->format('Y-m'));
+
+        $avgMonthlyAmount = $monthlyRefuels
+            ->map(fn ($group) => $group->sum('total_price'))
+            ->avg() ?? 0;
+
+        $avgMonthlyKm = $monthlyRefuels
+            ->map(fn ($group) => $group->max('mileage') - $group->min('mileage'))
+            ->avg() ?? 0;
+
+        $totalStats = Refuel::where('car_id', $car->id)
+            ->selectRaw('
+                SUM(total_price) as total_amount_ever,
+                CASE
+                    WHEN MAX(mileage) - MIN(mileage) > 0
+                    THEN SUM(total_price) / (MAX(mileage) - MIN(mileage))
+                    ELSE 0
+                END as price_per_kilometer
+            ')
+            ->first();
+
+        return [
+            'id' => $car->id,
+            'name' => $car->name,
+            'stats' => [
+                'currentMonth' => [
+                    'amount' => (float) ($monthlyAmountStats->total_amount ?? 0),
+                    'kilometers' => $currentMonthDistance,
+                ],
+                'averages' => [
+                    'monthlyAmount' => round($avgMonthlyAmount, 2),
+                    'monthlyKilometers' => round($avgMonthlyKm, 2),
+                ],
+                'totals' => [
+                    'amount' => round($totalStats->total_amount_ever ?? 0, 2),
+                    'kilometers' => round($totalDistance, 2),
+                    'pricePerKilometer' => round($totalStats->price_per_kilometer ?? 0, 2),
+                ],
+            ],
+        ];
     }
 }
