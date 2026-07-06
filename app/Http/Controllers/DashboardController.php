@@ -11,7 +11,7 @@ class DashboardController extends Controller
     public function index(BuildDashboardStats $buildDashboardStats): Response
     {
         $user = auth()->user();
-        $cars = $user->cars()->orderBy('created_at', 'desc')->get();
+        $cars = $user->accessibleCars()->orderBy('cars.created_at', 'desc')->get();
 
         if ($cars->isEmpty()) {
             return Inertia::render('dashboard', [

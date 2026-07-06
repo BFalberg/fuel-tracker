@@ -12,6 +12,9 @@ class CreateCar
      */
     public function handle(User $user, array $data): Car
     {
-        return $user->cars()->create($data);
+        $car = Car::create($data);
+        $car->users()->attach($user->id, ['role' => 'owner']);
+
+        return $car;
     }
 }

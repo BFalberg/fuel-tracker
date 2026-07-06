@@ -2,7 +2,6 @@
 
 namespace App\Actions\Refuel;
 
-use App\Models\Car;
 use App\Models\GasStation;
 use Illuminate\Support\Collection;
 
@@ -13,7 +12,7 @@ class GetRefuelFormData
      */
     public function handle(bool $orderByLatestRefuel): array
     {
-        $cars = Car::select(['id', 'name', 'is_electric'])->get();
+        $cars = auth()->user()->accessibleCars()->select(['cars.id', 'cars.name', 'cars.is_electric'])->get();
 
         if (! $orderByLatestRefuel) {
             return [

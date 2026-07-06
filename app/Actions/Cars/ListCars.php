@@ -2,14 +2,15 @@
 
 namespace App\Actions\Cars;
 
-use App\Models\Car;
 use Illuminate\Database\Eloquent\Collection;
 
 class ListCars
 {
     public function handle(): Collection
     {
-        return Car::latest()
-            ->get(['id', 'name', 'registration_number', 'is_electric']);
+        return auth()->user()->accessibleCars()
+            ->with(['users' => fn ($q) => $q->wherePivot('role', 'owner')->select('users.id', 'users.name')])
+            ->latest('cars.created_at')
+            ->get(['cars.id', 'cars.name', 'cars.registration_number', 'cars.is_electric']);
     }
 }
