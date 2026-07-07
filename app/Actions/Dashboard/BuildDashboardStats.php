@@ -7,37 +7,34 @@ use App\Models\CarExpense;
 use App\Models\Refuel;
 use Carbon\Carbon;
 use Closure;
-use Illuminate\Support\Collection;
 
 class BuildDashboardStats
 {
-    public function handle(Collection $cars): Closure
+    public function handle(Car $car): Closure
     {
-        return function () use ($cars): Collection {
+        return function () use ($car): array {
             $now = Carbon::now();
             $startOfMonth = $now->copy()->startOfMonth();
             $endOfMonth = $now->copy()->endOfMonth();
 
-            return $cars->map(function ($car) use ($startOfMonth, $endOfMonth): array {
-                $mileageStats = Refuel::where('car_id', $car->id)
-                    ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
-                    ->first();
+            $mileageStats = Refuel::where('car_id', $car->id)
+                ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
+                ->first();
 
-                $totalDistance = ($mileageStats->latest_mileage ?? 0) - ($mileageStats->first_mileage ?? 0);
+            $totalDistance = ($mileageStats->latest_mileage ?? 0) - ($mileageStats->first_mileage ?? 0);
 
-                $monthlyMileageStats = Refuel::where('car_id', $car->id)
-                    ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                    ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
-                    ->first();
+            $monthlyMileageStats = Refuel::where('car_id', $car->id)
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
+                ->first();
 
-                $currentMonthDistance = ($monthlyMileageStats->latest_mileage ?? 0) - ($monthlyMileageStats->first_mileage ?? 0);
+            $currentMonthDistance = ($monthlyMileageStats->latest_mileage ?? 0) - ($monthlyMileageStats->first_mileage ?? 0);
 
-                if ($car->is_electric) {
-                    return $this->buildEvStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
-                }
+            if ($car->is_electric) {
+                return $this->buildEvStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
+            }
 
-                return $this->buildGasStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
-            });
+            return $this->buildGasStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
         };
     }
 
@@ -66,9 +63,13 @@ class BuildDashboardStats
             ->map(fn ($group) => $group->max('mileage') - $group->min('mileage'))
             ->avg() ?? 0;
 
-        $pricePerKilometer = $totalDistance > 0 ? round($totalAmount / $totalDistance, 2) : 0;
+        $pricePerKilometer = $totalDistance > 0 ? round((float) $totalAmount / $totalDistance, 2) : 0;
 
         $efficiency = $this->calculateEfficiency($car->id, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
+
+        $refuelsThisMonth = Refuel::where('car_id', $car->id)
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->count();
 
         return [
             'id' => $car->id,
@@ -78,6 +79,7 @@ class BuildDashboardStats
                 'currentMonth' => [
                     'amount' => (float) $currentMonthAmount,
                     'kilometers' => $currentMonthDistance,
+                    'refuelCount' => $refuelsThisMonth,
                 ],
                 'averages' => [
                     'monthlyAmount' => round($avgMonthlyAmount, 2),
@@ -89,6 +91,7 @@ class BuildDashboardStats
                     'pricePerKilometer' => $pricePerKilometer,
                 ],
                 'efficiency' => $efficiency,
+                'monthlyTrends' => $this->buildMonthlyTrends($car),
             ],
         ];
     }
@@ -125,6 +128,10 @@ class BuildDashboardStats
 
         $efficiency = $this->calculateEfficiency($car->id, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
 
+        $refuelsThisMonth = Refuel::where('car_id', $car->id)
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->count();
+
         return [
             'id' => $car->id,
             'name' => $car->name,
@@ -133,6 +140,7 @@ class BuildDashboardStats
                 'currentMonth' => [
                     'amount' => (float) ($monthlyAmountStats->total_amount ?? 0),
                     'kilometers' => $currentMonthDistance,
+                    'refuelCount' => $refuelsThisMonth,
                 ],
                 'averages' => [
                     'monthlyAmount' => round($avgMonthlyAmount, 2),
@@ -144,6 +152,7 @@ class BuildDashboardStats
                     'pricePerKilometer' => round($totalStats->price_per_kilometer ?? 0, 2),
                 ],
                 'efficiency' => $efficiency,
+                'monthlyTrends' => $this->buildMonthlyTrends($car),
             ],
         ];
     }
@@ -164,5 +173,47 @@ class BuildDashboardStats
                 ? round((float) $totalLiters / $totalDistance * 100, 1)
                 : null,
         ];
+    }
+
+    private function buildMonthlyTrends(Car $car): array
+    {
+        $trends = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $start = Carbon::now()->subMonths($i)->startOfMonth();
+            $end = $start->copy()->endOfMonth();
+
+            if ($car->is_electric) {
+                $cost = (float) CarExpense::where('car_id', $car->id)
+                    ->where('expense_type', 'Abonnement')
+                    ->whereBetween('invoice_date', [$start->toDateString(), $end->toDateString()])
+                    ->sum('amount');
+            } else {
+                $cost = (float) Refuel::where('car_id', $car->id)
+                    ->whereBetween('created_at', [$start, $end])
+                    ->sum('total_price');
+            }
+
+            $mileageStats = Refuel::where('car_id', $car->id)
+                ->whereBetween('created_at', [$start, $end])
+                ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage, SUM(liters_refueled) as total_liters')
+                ->first();
+
+            $distance = ($mileageStats->latest_mileage ?? 0) - ($mileageStats->first_mileage ?? 0);
+            $liters = (float) ($mileageStats->total_liters ?? 0);
+
+            $efficiency = ($liters > 0 && $distance > 0)
+                ? round($liters / $distance * 100, 1)
+                : null;
+
+            $trends[] = [
+                'month' => $start->format('Y-m'),
+                'cost' => round($cost, 2),
+                'efficiency' => $efficiency,
+                'distance' => $distance,
+            ];
+        }
+
+        return $trends;
     }
 }
