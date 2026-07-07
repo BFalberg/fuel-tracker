@@ -53,7 +53,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedTo, stats, message }: Props) {
-    const [activeTab, setActiveTab] = useState<ChartTab>('cost');
+    const [activeTab, setActiveTab] = useState<ChartTab>('refuel');
     const [localFrom, setLocalFrom] = useState(selectedFrom);
     const [localTo, setLocalTo] = useState(selectedTo);
 
@@ -186,16 +186,11 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                         Apply
                                     </Button>
                                 )}
-                                {!isDefaultPeriod && (
-                                    <Button size="sm" variant="ghost" onClick={resetPeriod}>
-                                        Reset
-                                    </Button>
-                                )}
                             </div>
                             <Card>
                                 <CardHeader className="gap-2 pb-2">
                                     <div className="flex gap-1">
-                                        {(['cost', 'efficiency', 'distance', 'refuel'] as ChartTab[]).map((tab) => (
+                                        {(['refuel', 'cost', 'efficiency', 'distance'] as ChartTab[]).map((tab) => (
                                             <button
                                                 key={tab}
                                                 onClick={() => setActiveTab(tab)}
