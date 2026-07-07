@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { MonthPicker } from '@/components/ui/month-picker';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -136,21 +137,13 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
 
                 {/* Period picker */}
                 <div className="flex items-center gap-2">
-                    <input
-                        type="month"
-                        value={localFrom}
-                        max={localTo}
-                        onChange={(e) => setLocalFrom(e.target.value)}
-                        className="border-input bg-background flex-1 rounded-md border px-2 py-1.5 text-sm"
-                    />
+                    <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} />
                     <span className="text-muted-foreground text-xs">–</span>
-                    <input
-                        type="month"
+                    <MonthPicker
                         value={localTo}
                         min={localFrom}
                         max={new Date().toISOString().slice(0, 7)}
-                        onChange={(e) => setLocalTo(e.target.value)}
-                        className="border-input bg-background flex-1 rounded-md border px-2 py-1.5 text-sm"
+                        onChange={setLocalTo}
                     />
                     {isDirty && (
                         <Button size="sm" onClick={applyPeriod}>
