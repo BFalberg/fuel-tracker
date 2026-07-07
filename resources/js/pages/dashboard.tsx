@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bar, BarChart, XAxis } from 'recharts';
 
 interface CarItem {
@@ -53,6 +53,13 @@ const chartConfig = {
 
 export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedTo, stats, message }: Props) {
     const [activeTab, setActiveTab] = useState<ChartTab>('cost');
+    const [localFrom, setLocalFrom] = useState(selectedFrom);
+    const [localTo, setLocalTo] = useState(selectedTo);
+
+    useEffect(() => {
+        setLocalFrom(selectedFrom);
+        setLocalTo(selectedTo);
+    }, [selectedFrom, selectedTo]);
 
     const formatCurrency = (amount: number) => new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(amount);
 
@@ -77,9 +84,11 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
         return `${from.toLocaleDateString('da-DK', { month: 'short', year: 'numeric' })} – ${to.toLocaleDateString('da-DK', { month: 'short', year: 'numeric' })}`;
     })();
 
-    const navigatePeriod = (from: string, to: string) => {
-        router.get('/dashboard', { car: selectedCarId ?? undefined, from, to });
+    const applyPeriod = () => {
+        router.get('/dashboard', { car: selectedCarId ?? undefined, from: localFrom, to: localTo });
     };
+
+    const isDirty = localFrom !== selectedFrom || localTo !== selectedTo;
 
     const efficiencyUnit = stats?.isElectric ? 'kWh' : 'L';
 
@@ -129,20 +138,25 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                 <div className="flex items-center gap-2">
                     <input
                         type="month"
-                        value={selectedFrom}
-                        max={selectedTo}
-                        onChange={(e) => navigatePeriod(e.target.value, selectedTo)}
+                        value={localFrom}
+                        max={localTo}
+                        onChange={(e) => setLocalFrom(e.target.value)}
                         className="border-input bg-background flex-1 rounded-md border px-2 py-1.5 text-sm"
                     />
                     <span className="text-muted-foreground text-xs">–</span>
                     <input
                         type="month"
-                        value={selectedTo}
-                        min={selectedFrom}
+                        value={localTo}
+                        min={localFrom}
                         max={new Date().toISOString().slice(0, 7)}
-                        onChange={(e) => navigatePeriod(selectedFrom, e.target.value)}
+                        onChange={(e) => setLocalTo(e.target.value)}
                         className="border-input bg-background flex-1 rounded-md border px-2 py-1.5 text-sm"
                     />
+                    {isDirty && (
+                        <Button size="sm" onClick={applyPeriod}>
+                            Apply
+                        </Button>
+                    )}
                 </div>
 
                 <Deferred
