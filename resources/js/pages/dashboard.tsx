@@ -27,7 +27,7 @@ interface CarStats {
     isElectric: boolean;
     stats: {
         currentMonth: { amount: number; kilometers: number; litersThisMonth: number };
-        averages: { monthlyAmount: number; monthlyKilometers: number };
+        averages: { monthlyAmount: number; monthlyKilometers: number; monthlyLiters: number };
         totals: { amount: number; kilometers: number; pricePerKilometer: number };
         efficiency: { currentMonth: number | null; allTime: number | null };
         monthlyTrends: MonthlyTrend[];
@@ -65,14 +65,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
 
     const chartData = (stats?.stats.monthlyTrends ?? []).map((t) => ({
         month: formatMonthLabel(t.month),
-        value:
-            activeTab === 'cost'
-                ? t.cost
-                : activeTab === 'efficiency'
-                  ? (t.efficiency ?? 0)
-                  : activeTab === 'refuel'
-                    ? t.liters
-                    : t.distance,
+        value: activeTab === 'cost' ? t.cost : activeTab === 'efficiency' ? (t.efficiency ?? 0) : activeTab === 'refuel' ? t.liters : t.distance,
         rawMonth: t.month,
     }));
 
@@ -213,6 +206,9 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                         <p className="mt-0.5 font-semibold">
                                             {formatNumber(stats.stats.currentMonth.litersThisMonth)} {efficiencyUnit}
                                         </p>
+                                        <p className="text-muted-foreground text-xs">
+                                            avg. {formatNumber(stats.stats.averages.monthlyLiters)} {efficiencyUnit}/month
+                                        </p>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -265,7 +261,6 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                             <Bar dataKey="value" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
                                         </BarChart>
                                     </ChartContainer>
-                                    <p className="text-muted-foreground mt-1 text-center text-xs">Current month is partial</p>
                                 </CardContent>
                             </Card>
                         </div>

@@ -57,10 +57,16 @@ class BuildDashboardStats
             ->map(fn ($group) => $group->sum('amount'))
             ->avg() ?? 0;
 
-        $avgMonthlyKm = Refuel::where('car_id', $car->id)
-            ->get(['mileage', 'created_at'])
-            ->groupBy(fn ($r) => $r->created_at->format('Y-m'))
+        $evMonthlyRefuels = Refuel::where('car_id', $car->id)
+            ->get(['mileage', 'liters_refueled', 'created_at'])
+            ->groupBy(fn ($r) => $r->created_at->format('Y-m'));
+
+        $avgMonthlyKm = $evMonthlyRefuels
             ->map(fn ($group) => $group->max('mileage') - $group->min('mileage'))
+            ->avg() ?? 0;
+
+        $avgMonthlyLiters = $evMonthlyRefuels
+            ->map(fn ($group) => $group->sum('liters_refueled'))
             ->avg() ?? 0;
 
         $pricePerKilometer = $totalDistance > 0 ? round((float) $totalAmount / $totalDistance, 2) : 0;
@@ -84,6 +90,7 @@ class BuildDashboardStats
                 'averages' => [
                     'monthlyAmount' => round($avgMonthlyAmount, 2),
                     'monthlyKilometers' => round($avgMonthlyKm, 2),
+                    'monthlyLiters' => round($avgMonthlyLiters, 2),
                 ],
                 'totals' => [
                     'amount' => round((float) $totalAmount, 2),
@@ -104,7 +111,7 @@ class BuildDashboardStats
             ->first();
 
         $monthlyRefuels = Refuel::where('car_id', $car->id)
-            ->get(['total_price', 'mileage', 'created_at'])
+            ->get(['total_price', 'mileage', 'liters_refueled', 'created_at'])
             ->groupBy(fn ($r) => $r->created_at->format('Y-m'));
 
         $avgMonthlyAmount = $monthlyRefuels
@@ -113,6 +120,10 @@ class BuildDashboardStats
 
         $avgMonthlyKm = $monthlyRefuels
             ->map(fn ($group) => $group->max('mileage') - $group->min('mileage'))
+            ->avg() ?? 0;
+
+        $avgMonthlyLiters = $monthlyRefuels
+            ->map(fn ($group) => $group->sum('liters_refueled'))
             ->avg() ?? 0;
 
         $totalStats = Refuel::where('car_id', $car->id)
@@ -145,6 +156,7 @@ class BuildDashboardStats
                 'averages' => [
                     'monthlyAmount' => round($avgMonthlyAmount, 2),
                     'monthlyKilometers' => round($avgMonthlyKm, 2),
+                    'monthlyLiters' => round($avgMonthlyLiters, 2),
                 ],
                 'totals' => [
                     'amount' => round($totalStats->total_amount_ever ?? 0, 2),
