@@ -155,7 +155,7 @@ test('stats include total liters refueled for current month', function () {
     Carbon::setTestNow();
 });
 
-test('monthly trends include last 6 months of cost for gas car', function () {
+test('monthly trends reflect the selected period', function () {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
 
@@ -165,7 +165,10 @@ test('monthly trends include last 6 months of cost for gas car', function () {
     Carbon::setTestNow('2026-07-06');
     Refuel::create(['car_id' => $car->id, 'mileage' => 200, 'liters_refueled' => 40, 'total_price' => 600]);
 
-    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
+    $periodStart = Carbon::parse('2026-02-01');
+    $periodEnd = Carbon::parse('2026-07-31');
+
+    $stats = app(BuildDashboardStats::class)->handle($car, $periodStart, $periodEnd)();
 
     $trends = $stats['stats']['monthlyTrends'];
 

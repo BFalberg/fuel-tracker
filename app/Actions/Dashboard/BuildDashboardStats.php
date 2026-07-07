@@ -94,7 +94,7 @@ class BuildDashboardStats
                     'pricePerKilometer' => $pricePerKilometer,
                 ],
                 'efficiency' => $efficiency,
-                'monthlyTrends' => $this->buildMonthlyTrends($car),
+                'monthlyTrends' => $this->buildMonthlyTrends($car, $startOfMonth, $endOfMonth),
             ],
         ];
     }
@@ -160,7 +160,7 @@ class BuildDashboardStats
                     'pricePerKilometer' => round($totalStats->price_per_kilometer ?? 0, 2),
                 ],
                 'efficiency' => $efficiency,
-                'monthlyTrends' => $this->buildMonthlyTrends($car),
+                'monthlyTrends' => $this->buildMonthlyTrends($car, $startOfMonth, $endOfMonth),
             ],
         ];
     }
@@ -183,13 +183,16 @@ class BuildDashboardStats
         ];
     }
 
-    private function buildMonthlyTrends(Car $car): array
+    private function buildMonthlyTrends(Car $car, Carbon $periodStart, Carbon $periodEnd): array
     {
         $trends = [];
 
-        for ($i = 5; $i >= 0; $i--) {
-            $start = Carbon::now()->subMonths($i)->startOfMonth();
-            $end = $start->copy()->endOfMonth();
+        $current = $periodStart->copy()->startOfMonth();
+        $last = $periodEnd->copy()->startOfMonth();
+
+        while ($current->lte($last)) {
+            $start = $current->copy();
+            $end = $current->copy()->endOfMonth();
 
             if ($car->is_electric) {
                 $cost = (float) CarExpense::where('car_id', $car->id)
@@ -221,6 +224,8 @@ class BuildDashboardStats
                 'distance' => $distance,
                 'liters' => round($liters, 2),
             ];
+
+            $current->addMonth();
         }
 
         return $trends;
