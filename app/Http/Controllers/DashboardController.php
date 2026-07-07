@@ -15,34 +15,36 @@ class DashboardController extends Controller
         $user = auth()->user();
         $cars = $user->accessibleCars()->orderBy('cars.created_at', 'desc')->get();
 
+        $chartStart = $request->query('from')
+            ? Carbon::createFromFormat('Y-m', $request->query('from'))->startOfMonth()
+            : Carbon::now()->subMonths(5)->startOfMonth();
+
+        $chartEnd = $request->query('to')
+            ? Carbon::createFromFormat('Y-m', $request->query('to'))->endOfMonth()
+            : Carbon::now()->endOfMonth();
+
+        if ($chartStart->gt($chartEnd)) {
+            $chartEnd = $chartStart->copy()->endOfMonth();
+        }
+
         if ($cars->isEmpty()) {
             return Inertia::render('dashboard', [
                 'cars' => [],
                 'selectedCarId' => null,
+                'selectedFrom' => $chartStart->format('Y-m'),
+                'selectedTo' => $chartEnd->format('Y-m'),
                 'message' => 'Please add a car to start tracking fuel consumption.',
             ]);
         }
 
         $selectedCar = $cars->firstWhere('id', (int) $request->query('car')) ?? $cars->first();
 
-        $periodStart = $request->query('from')
-            ? Carbon::createFromFormat('Y-m', $request->query('from'))->startOfMonth()
-            : Carbon::now()->startOfMonth();
-
-        $periodEnd = $request->query('to')
-            ? Carbon::createFromFormat('Y-m', $request->query('to'))->endOfMonth()
-            : Carbon::now()->endOfMonth();
-
-        if ($periodStart->gt($periodEnd)) {
-            $periodEnd = $periodStart->copy()->endOfMonth();
-        }
-
         return Inertia::render('dashboard', [
             'cars' => $cars->map(fn ($car) => ['id' => $car->id, 'name' => $car->name])->values(),
             'selectedCarId' => $selectedCar->id,
-            'selectedFrom' => $periodStart->format('Y-m'),
-            'selectedTo' => $periodEnd->format('Y-m'),
-            'stats' => Inertia::defer($buildDashboardStats->handle($selectedCar, $periodStart, $periodEnd)),
+            'selectedFrom' => $chartStart->format('Y-m'),
+            'selectedTo' => $chartEnd->format('Y-m'),
+            'stats' => Inertia::defer($buildDashboardStats->handle($selectedCar, $chartStart, $chartEnd)),
         ]);
     }
 }

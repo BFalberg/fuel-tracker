@@ -10,31 +10,34 @@ use Closure;
 
 class BuildDashboardStats
 {
-    public function handle(Car $car, Carbon $periodStart, Carbon $periodEnd): Closure
+    public function handle(Car $car, Carbon $chartStart, Carbon $chartEnd): Closure
     {
-        return function () use ($car, $periodStart, $periodEnd): array {
+        return function () use ($car, $chartStart, $chartEnd): array {
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
+
             $mileageStats = Refuel::where('car_id', $car->id)
                 ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
                 ->first();
 
             $totalDistance = ($mileageStats->latest_mileage ?? 0) - ($mileageStats->first_mileage ?? 0);
 
-            $periodMileageStats = Refuel::where('car_id', $car->id)
-                ->whereBetween('created_at', [$periodStart, $periodEnd])
+            $currentMonthMileageStats = Refuel::where('car_id', $car->id)
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
                 ->first();
 
-            $periodDistance = ($periodMileageStats->latest_mileage ?? 0) - ($periodMileageStats->first_mileage ?? 0);
+            $currentMonthDistance = ($currentMonthMileageStats->latest_mileage ?? 0) - ($currentMonthMileageStats->first_mileage ?? 0);
 
             if ($car->is_electric) {
-                return $this->buildEvStats($car, $periodStart, $periodEnd, $totalDistance, $periodDistance);
+                return $this->buildEvStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance, $chartStart, $chartEnd);
             }
 
-            return $this->buildGasStats($car, $periodStart, $periodEnd, $totalDistance, $periodDistance);
+            return $this->buildGasStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance, $chartStart, $chartEnd);
         };
     }
 
-    private function buildEvStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    private function buildEvStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance, Carbon $chartStart, Carbon $chartEnd): array
     {
         $currentMonthAmount = CarExpense::where('car_id', $car->id)
             ->where('expense_type', 'Abonnement')
@@ -94,12 +97,12 @@ class BuildDashboardStats
                     'pricePerKilometer' => $pricePerKilometer,
                 ],
                 'efficiency' => $efficiency,
-                'monthlyTrends' => $this->buildMonthlyTrends($car, $startOfMonth, $endOfMonth),
+                'monthlyTrends' => $this->buildMonthlyTrends($car, $chartStart, $chartEnd),
             ],
         ];
     }
 
-    private function buildGasStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    private function buildGasStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance, Carbon $chartStart, Carbon $chartEnd): array
     {
         $monthlyAmountStats = Refuel::where('car_id', $car->id)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
@@ -160,7 +163,7 @@ class BuildDashboardStats
                     'pricePerKilometer' => round($totalStats->price_per_kilometer ?? 0, 2),
                 ],
                 'efficiency' => $efficiency,
-                'monthlyTrends' => $this->buildMonthlyTrends($car, $startOfMonth, $endOfMonth),
+                'monthlyTrends' => $this->buildMonthlyTrends($car, $chartStart, $chartEnd),
             ],
         ];
     }

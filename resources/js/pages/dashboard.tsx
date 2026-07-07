@@ -71,20 +71,6 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
         return new Date(parseInt(year), parseInt(m) - 1).toLocaleDateString('da-DK', { month: 'short' });
     };
 
-    const periodLabel = (() => {
-        const [fy, fm] = selectedFrom.split('-').map(Number);
-        const [ty, tm] = selectedTo.split('-').map(Number);
-        const from = new Date(fy, fm - 1);
-        const to = new Date(ty, tm - 1);
-        if (selectedFrom === selectedTo) {
-            return to.toLocaleDateString('da-DK', { month: 'long', year: 'numeric' });
-        }
-        if (fy === ty) {
-            return `${from.toLocaleDateString('da-DK', { month: 'short' })} – ${to.toLocaleDateString('da-DK', { month: 'long', year: 'numeric' })}`;
-        }
-        return `${from.toLocaleDateString('da-DK', { month: 'short', year: 'numeric' })} – ${to.toLocaleDateString('da-DK', { month: 'short', year: 'numeric' })}`;
-    })();
-
     const applyPeriod = () => {
         router.get('/dashboard', { car: selectedCarId ?? undefined, from: localFrom, to: localTo });
     };
@@ -135,23 +121,6 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                     </div>
                 )}
 
-                {/* Period picker */}
-                <div className="flex items-center gap-2">
-                    <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} />
-                    <span className="text-muted-foreground text-xs">–</span>
-                    <MonthPicker
-                        value={localTo}
-                        min={localFrom}
-                        max={new Date().toISOString().slice(0, 7)}
-                        onChange={setLocalTo}
-                    />
-                    {isDirty && (
-                        <Button size="sm" onClick={applyPeriod}>
-                            Apply
-                        </Button>
-                    )}
-                </div>
-
                 <Deferred
                     data="stats"
                     fallback={
@@ -170,7 +139,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                 ))}
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                {[0, 1, 2, 3].map((i) => (
+                                {[0, 1].map((i) => (
                                     <Card key={i}>
                                         <CardContent className="space-y-1">
                                             <Skeleton className="h-3 w-24" />
@@ -178,6 +147,12 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                         </CardContent>
                                     </Card>
                                 ))}
+                                <Card className="col-span-2">
+                                    <CardContent className="space-y-1">
+                                        <Skeleton className="h-3 w-24" />
+                                        <Skeleton className="h-5 w-20" />
+                                    </CardContent>
+                                </Card>
                             </div>
                             <Card>
                                 <CardContent>
@@ -189,78 +164,24 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                 >
                     {stats && (
                         <div className="flex flex-col gap-4">
-                            {/* Hero cards */}
-                            <div className="grid grid-cols-1 gap-3">
-                                <Card>
-                                    <CardHeader className="pb-1">
-                                        <CardTitle className="text-muted-foreground text-xs font-medium">{periodLabel}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-xl font-bold">{formatCurrency(stats.stats.currentMonth.amount)}</div>
-                                        <p className="text-muted-foreground text-xs">
-                                            avg. {formatCurrency(stats.stats.averages.monthlyAmount)}/month
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="pb-1">
-                                        <CardTitle className="text-muted-foreground text-xs font-medium">Efficiency</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-xl font-bold">
-                                            {stats.stats.efficiency.currentMonth !== null
-                                                ? `${stats.stats.efficiency.currentMonth} ${efficiencyUnit}/100km`
-                                                : '—'}
-                                        </div>
-                                        <p className="text-muted-foreground text-xs">
-                                            {stats.stats.efficiency.allTime !== null
-                                                ? `avg. ${stats.stats.efficiency.allTime} ${efficiencyUnit}/100km`
-                                                : ''}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            {/* Secondary 2×2 grid */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <Card>
-                                    <CardContent>
-                                        <p className="text-muted-foreground text-xs">Distance</p>
-                                        <p className="mt-0.5 font-semibold">{formatNumber(stats.stats.currentMonth.kilometers)} km</p>
-                                        <p className="text-muted-foreground text-xs">
-                                            avg. {formatNumber(stats.stats.averages.monthlyKilometers)} km/month
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardContent>
-                                        <p className="text-muted-foreground text-xs">Price per km</p>
-                                        <p className="mt-0.5 font-semibold">{formatCurrency(stats.stats.totals.pricePerKilometer)}</p>
-                                        <p className="text-muted-foreground text-xs">{formatNumber(stats.stats.totals.kilometers)} km total</p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardContent>
-                                        <p className="text-muted-foreground text-xs">All-Time Cost</p>
-                                        <p className="mt-0.5 font-semibold">{formatCurrency(stats.stats.totals.amount)}</p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardContent>
-                                        <p className="text-muted-foreground text-xs">Fuel</p>
-                                        <p className="mt-0.5 font-semibold">
-                                            {formatNumber(stats.stats.currentMonth.litersThisMonth)} {efficiencyUnit}
-                                        </p>
-                                        <p className="text-muted-foreground text-xs">
-                                            avg. {formatNumber(stats.stats.averages.monthlyLiters)} {efficiencyUnit}/month
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
                             {/* Monthly trend chart */}
                             <Card>
-                                <CardHeader className="pb-2">
+                                <CardHeader className="gap-2 pb-2">
+                                    <div className="flex items-center gap-2">
+                                        <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} />
+                                        <span className="text-muted-foreground text-xs">–</span>
+                                        <MonthPicker
+                                            value={localTo}
+                                            min={localFrom}
+                                            max={new Date().toISOString().slice(0, 7)}
+                                            onChange={setLocalTo}
+                                        />
+                                        {isDirty && (
+                                            <Button size="sm" onClick={applyPeriod}>
+                                                Apply
+                                            </Button>
+                                        )}
+                                    </div>
                                     <div className="flex gap-1">
                                         {(['cost', 'efficiency', 'distance', 'refuel'] as ChartTab[]).map((tab) => (
                                             <button
@@ -308,6 +229,74 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                     </ChartContainer>
                                 </CardContent>
                             </Card>
+                            {/* Hero cards */}
+                            <div className="grid grid-cols-1 gap-3">
+                                <Card>
+                                    <CardHeader className="pb-1">
+                                        <CardTitle className="text-sm">Cost this month</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-xl font-bold">{formatCurrency(stats.stats.currentMonth.amount)}</div>
+                                        <p className="text-muted-foreground text-xs">
+                                            avg. {formatCurrency(stats.stats.averages.monthlyAmount)}/month
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="pb-1">
+                                        <CardTitle className="text-sm">Efficiency</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-xl font-bold">
+                                            {stats.stats.efficiency.currentMonth !== null
+                                                ? `${stats.stats.efficiency.currentMonth} ${efficiencyUnit}/100km`
+                                                : '—'}
+                                        </div>
+                                        <p className="text-muted-foreground text-xs">
+                                            {stats.stats.efficiency.allTime !== null
+                                                ? `avg. ${stats.stats.efficiency.allTime} ${efficiencyUnit}/100km`
+                                                : ''}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Secondary 2×2 grid */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <Card>
+                                    <CardHeader className="pb-1">
+                                        <CardTitle className="text-sm">Distance</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="font-semibold">{formatNumber(stats.stats.currentMonth.kilometers)} km</p>
+                                        <p className="text-muted-foreground text-xs">
+                                            avg. {formatNumber(stats.stats.averages.monthlyKilometers)} km/month
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="pb-1">
+                                        <CardTitle className="text-sm">Price per km</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="font-semibold">{formatCurrency(stats.stats.totals.pricePerKilometer)}</p>
+                                        <p className="text-muted-foreground text-xs">{formatNumber(stats.stats.totals.kilometers)} km total</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="col-span-2">
+                                    <CardHeader className="pb-1">
+                                        <CardTitle className="text-sm">Fuel</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="font-semibold">
+                                            {formatNumber(stats.stats.currentMonth.litersThisMonth)} {efficiencyUnit}
+                                        </p>
+                                        <p className="text-muted-foreground text-xs">
+                                            avg. {formatNumber(stats.stats.averages.monthlyLiters)} {efficiencyUnit}/month
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
                     )}
                 </Deferred>
