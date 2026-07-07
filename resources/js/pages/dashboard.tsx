@@ -46,7 +46,7 @@ type ChartTab = 'cost' | 'efficiency' | 'distance';
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
 const chartConfig = {
-    value: { label: 'Value', color: 'hsl(var(--chart-1))' },
+    value: { label: 'Value', color: 'var(--chart-1)' },
 } satisfies ChartConfig;
 
 export default function Dashboard({ cars, selectedCarId, stats, message }: Props) {
@@ -74,8 +74,8 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
             : null;
 
     const effDelta =
-        stats?.stats.efficiency.currentMonth !== null && stats?.stats.efficiency.allTime !== null
-            ? (stats!.stats.efficiency.currentMonth ?? 0) > (stats!.stats.efficiency.allTime ?? 0)
+        stats && stats.stats.efficiency.currentMonth !== null && stats.stats.efficiency.allTime !== null
+            ? stats.stats.efficiency.currentMonth > stats.stats.efficiency.allTime
                 ? '↑'
                 : '↓'
             : null;
