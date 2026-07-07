@@ -27,7 +27,7 @@ class DashboardController extends Controller
         return Inertia::render('dashboard', [
             'cars' => $cars->map(fn ($car) => ['id' => $car->id, 'name' => $car->name])->values(),
             'selectedCarId' => $selectedCar->id,
-            'stats' => Inertia::defer($buildDashboardStats->handle($selectedCar))->once(),
+            'stats' => Inertia::defer($buildDashboardStats->handle($selectedCar)),
         ]);
     }
 }

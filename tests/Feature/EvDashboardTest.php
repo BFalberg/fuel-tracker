@@ -139,18 +139,18 @@ test('currentMonth efficiency is null when no refuels exist in current month', f
     Carbon::setTestNow();
 });
 
-test('stats include refuel count for current month', function () {
+test('stats include total liters refueled for current month', function () {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
 
     Carbon::setTestNow('2026-07-06');
 
     Refuel::create(['car_id' => $car->id, 'mileage' => 100, 'liters_refueled' => 20, 'total_price' => 300]);
-    Refuel::create(['car_id' => $car->id, 'mileage' => 200, 'liters_refueled' => 20, 'total_price' => 300]);
+    Refuel::create(['car_id' => $car->id, 'mileage' => 200, 'liters_refueled' => 35, 'total_price' => 300]);
 
     $stats = app(BuildDashboardStats::class)->handle($car)();
 
-    expect($stats['stats']['currentMonth']['refuelCount'])->toBe(2);
+    expect($stats['stats']['currentMonth']['litersThisMonth'])->toBe(55.0);
 
     Carbon::setTestNow();
 });

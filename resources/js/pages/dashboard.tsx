@@ -5,7 +5,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, Link, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Bar, BarChart, XAxis } from 'recharts';
 
@@ -26,7 +25,7 @@ interface CarStats {
     name: string;
     isElectric: boolean;
     stats: {
-        currentMonth: { amount: number; kilometers: number; refuelCount: number };
+        currentMonth: { amount: number; kilometers: number; litersThisMonth: number };
         averages: { monthlyAmount: number; monthlyKilometers: number };
         totals: { amount: number; kilometers: number; pricePerKilometer: number };
         efficiency: { currentMonth: number | null; allTime: number | null };
@@ -52,8 +51,7 @@ const chartConfig = {
 export default function Dashboard({ cars, selectedCarId, stats, message }: Props) {
     const [activeTab, setActiveTab] = useState<ChartTab>('cost');
 
-    const formatCurrency = (amount: number) =>
-        new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(amount);
+    const formatCurrency = (amount: number) => new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(amount);
 
     const formatNumber = (n: number) => new Intl.NumberFormat('da-DK').format(n);
 
@@ -62,28 +60,11 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
         return new Date(parseInt(year), parseInt(m) - 1).toLocaleDateString('da-DK', { month: 'short' });
     };
 
-    const currentMonth = new Date().toISOString().slice(0, 7);
-
     const efficiencyUnit = stats?.isElectric ? 'kWh' : 'L';
-
-    const costDelta =
-        stats && stats.stats.averages.monthlyAmount > 0
-            ? stats.stats.currentMonth.amount > stats.stats.averages.monthlyAmount
-                ? '↑'
-                : '↓'
-            : null;
-
-    const effDelta =
-        stats && stats.stats.efficiency.currentMonth !== null && stats.stats.efficiency.allTime !== null
-            ? stats.stats.efficiency.currentMonth > stats.stats.efficiency.allTime
-                ? '↑'
-                : '↓'
-            : null;
 
     const chartData = (stats?.stats.monthlyTrends ?? []).map((t) => ({
         month: formatMonthLabel(t.month),
-        value:
-            activeTab === 'cost' ? t.cost : activeTab === 'efficiency' ? (t.efficiency ?? 0) : t.distance,
+        value: activeTab === 'cost' ? t.cost : activeTab === 'efficiency' ? (t.efficiency ?? 0) : t.distance,
         rawMonth: t.month,
     }));
 
@@ -114,10 +95,8 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                     key={car.id}
                                     onClick={() => router.get('/dashboard', { car: car.id })}
                                     className={[
-                                        'whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
-                                        car.id === selectedCarId
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground',
+                                        'rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
+                                        car.id === selectedCarId ? 'bg-accent text-primary' : 'bg-primary text-primary-foreground',
                                     ].join(' ')}
                                 >
                                     {car.name}
@@ -125,12 +104,6 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                             ))}
                         </div>
                     )}
-                    <Button asChild size="sm" className="ml-auto shrink-0">
-                        <Link href={route('refuels.create')}>
-                            <Plus className="mr-1 h-4 w-4" />
-                            Log Refuel
-                        </Link>
-                    </Button>
                 </div>
 
                 <Deferred
@@ -171,18 +144,15 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                     {stats && (
                         <div className="flex flex-col gap-4">
                             {/* Hero cards */}
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3">
                                 <Card>
                                     <CardHeader className="pb-1">
                                         <CardTitle className="text-muted-foreground text-xs font-medium">This Month</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-xl font-bold">
-                                            {formatCurrency(stats.stats.currentMonth.amount)}
-                                        </div>
+                                        <div className="text-xl font-bold">{formatCurrency(stats.stats.currentMonth.amount)}</div>
                                         <p className="text-muted-foreground text-xs">
                                             avg. {formatCurrency(stats.stats.averages.monthlyAmount)}/month
-                                            {costDelta && ` ${costDelta}`}
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -198,8 +168,8 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                         </div>
                                         <p className="text-muted-foreground text-xs">
                                             {stats.stats.efficiency.allTime !== null
-                                                ? `avg. ${stats.stats.efficiency.allTime} ${efficiencyUnit}/100km${effDelta ? ` ${effDelta}` : ''}`
-                                                : '—'}
+                                                ? `avg. ${stats.stats.efficiency.allTime} ${efficiencyUnit}/100km`
+                                                : ''}
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -210,9 +180,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                 <Card>
                                     <CardContent>
                                         <p className="text-muted-foreground text-xs">Distance This Month</p>
-                                        <p className="mt-0.5 font-semibold">
-                                            {formatNumber(stats.stats.currentMonth.kilometers)} km
-                                        </p>
+                                        <p className="mt-0.5 font-semibold">{formatNumber(stats.stats.currentMonth.kilometers)} km</p>
                                         <p className="text-muted-foreground text-xs">
                                             avg. {formatNumber(stats.stats.averages.monthlyKilometers)} km/month
                                         </p>
@@ -221,27 +189,21 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                 <Card>
                                     <CardContent>
                                         <p className="text-muted-foreground text-xs">Price per km</p>
-                                        <p className="mt-0.5 font-semibold">
-                                            {formatCurrency(stats.stats.totals.pricePerKilometer)}
-                                        </p>
-                                        <p className="text-muted-foreground text-xs">
-                                            {formatNumber(stats.stats.totals.kilometers)} km total
-                                        </p>
+                                        <p className="mt-0.5 font-semibold">{formatCurrency(stats.stats.totals.pricePerKilometer)}</p>
+                                        <p className="text-muted-foreground text-xs">{formatNumber(stats.stats.totals.kilometers)} km total</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent>
                                         <p className="text-muted-foreground text-xs">All-Time Cost</p>
-                                        <p className="mt-0.5 font-semibold">
-                                            {formatCurrency(stats.stats.totals.amount)}
-                                        </p>
+                                        <p className="mt-0.5 font-semibold">{formatCurrency(stats.stats.totals.amount)}</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent>
-                                        <p className="text-muted-foreground text-xs">Refuels This Month</p>
+                                        <p className="text-muted-foreground text-xs">Fuel This Month</p>
                                         <p className="mt-0.5 font-semibold">
-                                            {stats.stats.currentMonth.refuelCount}
+                                            {formatNumber(stats.stats.currentMonth.litersThisMonth)} {efficiencyUnit}
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -257,9 +219,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                                 onClick={() => setActiveTab(tab)}
                                                 className={[
                                                     'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                                                    activeTab === tab
-                                                        ? 'bg-primary text-primary-foreground'
-                                                        : 'text-muted-foreground hover:text-foreground',
+                                                    activeTab === tab ? 'bg-accent text-primary' : 'text-muted-foreground hover:text-foreground',
                                                 ].join(' ')}
                                             >
                                                 {tab === 'cost' ? 'Cost' : tab === 'efficiency' ? 'Efficiency' : 'Distance'}
@@ -270,12 +230,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                 <CardContent>
                                     <ChartContainer config={chartConfig} className="h-44 w-full">
                                         <BarChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-                                            <XAxis
-                                                dataKey="month"
-                                                tickLine={false}
-                                                axisLine={false}
-                                                tick={{ fontSize: 11 }}
-                                            />
+                                            <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
                                             <ChartTooltip
                                                 cursor={false}
                                                 content={
@@ -291,16 +246,10 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                                     />
                                                 }
                                             />
-                                            <Bar
-                                                dataKey="value"
-                                                fill="var(--color-value)"
-                                                radius={[4, 4, 0, 0]}
-                                            />
+                                            <Bar dataKey="value" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
                                         </BarChart>
                                     </ChartContainer>
-                                    <p className="text-muted-foreground mt-1 text-center text-xs">
-                                        Current month is partial
-                                    </p>
+                                    <p className="text-muted-foreground mt-1 text-center text-xs">Current month is partial</p>
                                 </CardContent>
                             </Card>
                         </div>

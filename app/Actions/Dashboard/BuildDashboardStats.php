@@ -67,9 +67,9 @@ class BuildDashboardStats
 
         $efficiency = $this->calculateEfficiency($car->id, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
 
-        $refuelsThisMonth = Refuel::where('car_id', $car->id)
+        $litersThisMonth = (float) Refuel::where('car_id', $car->id)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->count();
+            ->sum('liters_refueled');
 
         return [
             'id' => $car->id,
@@ -79,7 +79,7 @@ class BuildDashboardStats
                 'currentMonth' => [
                     'amount' => (float) $currentMonthAmount,
                     'kilometers' => $currentMonthDistance,
-                    'refuelCount' => $refuelsThisMonth,
+                    'litersThisMonth' => $litersThisMonth,
                 ],
                 'averages' => [
                     'monthlyAmount' => round($avgMonthlyAmount, 2),
@@ -128,9 +128,9 @@ class BuildDashboardStats
 
         $efficiency = $this->calculateEfficiency($car->id, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
 
-        $refuelsThisMonth = Refuel::where('car_id', $car->id)
+        $litersThisMonth = (float) Refuel::where('car_id', $car->id)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->count();
+            ->sum('liters_refueled');
 
         return [
             'id' => $car->id,
@@ -140,7 +140,7 @@ class BuildDashboardStats
                 'currentMonth' => [
                     'amount' => (float) ($monthlyAmountStats->total_amount ?? 0),
                     'kilometers' => $currentMonthDistance,
-                    'refuelCount' => $refuelsThisMonth,
+                    'litersThisMonth' => $litersThisMonth,
                 ],
                 'averages' => [
                     'monthlyAmount' => round($avgMonthlyAmount, 2),
