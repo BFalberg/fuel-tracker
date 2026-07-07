@@ -140,10 +140,10 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                             <div className="grid grid-cols-2 gap-3">
                                 {[0, 1].map((i) => (
                                     <Card key={i}>
-                                        <CardHeader className="pb-1 pt-4">
+                                        <CardHeader className="pb-1">
                                             <Skeleton className="h-3 w-20" />
                                         </CardHeader>
-                                        <CardContent className="space-y-1 pb-4">
+                                        <CardContent className="space-y-1">
                                             <Skeleton className="h-7 w-28" />
                                             <Skeleton className="h-3 w-24" />
                                         </CardContent>
@@ -153,7 +153,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                             <div className="grid grid-cols-2 gap-3">
                                 {[0, 1, 2, 3].map((i) => (
                                     <Card key={i}>
-                                        <CardContent className="space-y-1 pb-4 pt-4">
+                                        <CardContent className="space-y-1">
                                             <Skeleton className="h-3 w-24" />
                                             <Skeleton className="h-5 w-20" />
                                         </CardContent>
@@ -161,7 +161,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                 ))}
                             </div>
                             <Card>
-                                <CardContent className="pb-4 pt-4">
+                                <CardContent>
                                     <Skeleton className="h-44 w-full" />
                                 </CardContent>
                             </Card>
@@ -173,10 +173,10 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                             {/* Hero cards */}
                             <div className="grid grid-cols-2 gap-3">
                                 <Card>
-                                    <CardHeader className="pb-1 pt-4">
+                                    <CardHeader className="pb-1">
                                         <CardTitle className="text-muted-foreground text-xs font-medium">This Month</CardTitle>
                                     </CardHeader>
-                                    <CardContent className="pb-4">
+                                    <CardContent>
                                         <div className="text-xl font-bold">
                                             {formatCurrency(stats.stats.currentMonth.amount)}
                                         </div>
@@ -187,10 +187,10 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                     </CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader className="pb-1 pt-4">
+                                    <CardHeader className="pb-1">
                                         <CardTitle className="text-muted-foreground text-xs font-medium">Efficiency</CardTitle>
                                     </CardHeader>
-                                    <CardContent className="pb-4">
+                                    <CardContent>
                                         <div className="text-xl font-bold">
                                             {stats.stats.efficiency.currentMonth !== null
                                                 ? `${stats.stats.efficiency.currentMonth} ${efficiencyUnit}/100km`
@@ -208,7 +208,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                             {/* Secondary 2×2 grid */}
                             <div className="grid grid-cols-2 gap-3">
                                 <Card>
-                                    <CardContent className="pb-4 pt-4">
+                                    <CardContent>
                                         <p className="text-muted-foreground text-xs">Distance This Month</p>
                                         <p className="mt-0.5 font-semibold">
                                             {formatNumber(stats.stats.currentMonth.kilometers)} km
@@ -219,7 +219,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                     </CardContent>
                                 </Card>
                                 <Card>
-                                    <CardContent className="pb-4 pt-4">
+                                    <CardContent>
                                         <p className="text-muted-foreground text-xs">Price per km</p>
                                         <p className="mt-0.5 font-semibold">
                                             {formatCurrency(stats.stats.totals.pricePerKilometer)}
@@ -230,7 +230,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                     </CardContent>
                                 </Card>
                                 <Card>
-                                    <CardContent className="pb-4 pt-4">
+                                    <CardContent>
                                         <p className="text-muted-foreground text-xs">All-Time Cost</p>
                                         <p className="mt-0.5 font-semibold">
                                             {formatCurrency(stats.stats.totals.amount)}
@@ -238,7 +238,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                     </CardContent>
                                 </Card>
                                 <Card>
-                                    <CardContent className="pb-4 pt-4">
+                                    <CardContent>
                                         <p className="text-muted-foreground text-xs">Refuels This Month</p>
                                         <p className="mt-0.5 font-semibold">
                                             {stats.stats.currentMonth.refuelCount}
@@ -249,7 +249,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
 
                             {/* Monthly trend chart */}
                             <Card>
-                                <CardHeader className="pb-2 pt-4">
+                                <CardHeader className="pb-2">
                                     <div className="flex gap-1">
                                         {(['cost', 'efficiency', 'distance'] as ChartTab[]).map((tab) => (
                                             <button
@@ -267,7 +267,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                         ))}
                                     </div>
                                 </CardHeader>
-                                <CardContent className="pb-4">
+                                <CardContent>
                                     <ChartContainer config={chartConfig} className="h-44 w-full">
                                         <BarChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
                                             <XAxis
