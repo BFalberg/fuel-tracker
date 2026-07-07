@@ -71,11 +71,23 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
         return new Date(parseInt(year), parseInt(m) - 1).toLocaleDateString('da-DK', { month: 'short' });
     };
 
+    const defaultFrom = (() => {
+        const d = new Date();
+        d.setMonth(d.getMonth() - 5);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    })();
+    const defaultTo = new Date().toISOString().slice(0, 7);
+
     const applyPeriod = () => {
         router.get('/dashboard', { car: selectedCarId ?? undefined, from: localFrom, to: localTo });
     };
 
+    const resetPeriod = () => {
+        router.get('/dashboard', { car: selectedCarId ?? undefined });
+    };
+
     const isDirty = localFrom !== selectedFrom || localTo !== selectedTo;
+    const isDefaultPeriod = selectedFrom === defaultFrom && selectedTo === defaultTo;
 
     const efficiencyUnit = stats?.isElectric ? 'kWh' : 'L';
 
@@ -165,23 +177,23 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                     {stats && (
                         <div className="flex flex-col gap-4">
                             {/* Monthly trend chart */}
+                            <div className="flex items-center gap-2">
+                                <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} />
+                                <span className="text-muted-foreground text-xs">–</span>
+                                <MonthPicker value={localTo} min={localFrom} max={new Date().toISOString().slice(0, 7)} onChange={setLocalTo} />
+                                {isDirty && (
+                                    <Button size="sm" onClick={applyPeriod}>
+                                        Apply
+                                    </Button>
+                                )}
+                                {!isDefaultPeriod && (
+                                    <Button size="sm" variant="ghost" onClick={resetPeriod}>
+                                        Reset
+                                    </Button>
+                                )}
+                            </div>
                             <Card>
                                 <CardHeader className="gap-2 pb-2">
-                                    <div className="flex items-center gap-2">
-                                        <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} />
-                                        <span className="text-muted-foreground text-xs">–</span>
-                                        <MonthPicker
-                                            value={localTo}
-                                            min={localFrom}
-                                            max={new Date().toISOString().slice(0, 7)}
-                                            onChange={setLocalTo}
-                                        />
-                                        {isDirty && (
-                                            <Button size="sm" onClick={applyPeriod}>
-                                                Apply
-                                            </Button>
-                                        )}
-                                    </div>
                                     <div className="flex gap-1">
                                         {(['cost', 'efficiency', 'distance', 'refuel'] as ChartTab[]).map((tab) => (
                                             <button
