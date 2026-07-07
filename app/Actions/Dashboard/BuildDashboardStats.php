@@ -7,41 +7,37 @@ use App\Models\CarExpense;
 use App\Models\Refuel;
 use Carbon\Carbon;
 use Closure;
-use Illuminate\Support\Collection;
 
 class BuildDashboardStats
 {
-    public function handle(Collection $cars): Closure
+    public function handle(Car $car, Carbon $chartStart, Carbon $chartEnd): Closure
     {
-        return function () use ($cars): Collection {
-            $now = Carbon::now();
-            $startOfMonth = $now->copy()->startOfMonth();
-            $endOfMonth = $now->copy()->endOfMonth();
+        return function () use ($car, $chartStart, $chartEnd): array {
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
 
-            return $cars->map(function ($car) use ($startOfMonth, $endOfMonth): array {
-                $mileageStats = Refuel::where('car_id', $car->id)
-                    ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
-                    ->first();
+            $mileageStats = Refuel::where('car_id', $car->id)
+                ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
+                ->first();
 
-                $totalDistance = ($mileageStats->latest_mileage ?? 0) - ($mileageStats->first_mileage ?? 0);
+            $totalDistance = ($mileageStats->latest_mileage ?? 0) - ($mileageStats->first_mileage ?? 0);
 
-                $monthlyMileageStats = Refuel::where('car_id', $car->id)
-                    ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                    ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
-                    ->first();
+            $currentMonthMileageStats = Refuel::where('car_id', $car->id)
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage')
+                ->first();
 
-                $currentMonthDistance = ($monthlyMileageStats->latest_mileage ?? 0) - ($monthlyMileageStats->first_mileage ?? 0);
+            $currentMonthDistance = ($currentMonthMileageStats->latest_mileage ?? 0) - ($currentMonthMileageStats->first_mileage ?? 0);
 
-                if ($car->is_electric) {
-                    return $this->buildEvStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
-                }
+            if ($car->is_electric) {
+                return $this->buildEvStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance, $chartStart, $chartEnd);
+            }
 
-                return $this->buildGasStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
-            });
+            return $this->buildGasStats($car, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance, $chartStart, $chartEnd);
         };
     }
 
-    private function buildEvStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    private function buildEvStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance, Carbon $chartStart, Carbon $chartEnd): array
     {
         $currentMonthAmount = CarExpense::where('car_id', $car->id)
             ->where('expense_type', 'Abonnement')
@@ -60,15 +56,25 @@ class BuildDashboardStats
             ->map(fn ($group) => $group->sum('amount'))
             ->avg() ?? 0;
 
-        $avgMonthlyKm = Refuel::where('car_id', $car->id)
-            ->get(['mileage', 'created_at'])
-            ->groupBy(fn ($r) => $r->created_at->format('Y-m'))
+        $evMonthlyRefuels = Refuel::where('car_id', $car->id)
+            ->get(['mileage', 'liters_refueled', 'created_at'])
+            ->groupBy(fn ($r) => $r->created_at->format('Y-m'));
+
+        $avgMonthlyKm = $evMonthlyRefuels
             ->map(fn ($group) => $group->max('mileage') - $group->min('mileage'))
             ->avg() ?? 0;
 
-        $pricePerKilometer = $totalDistance > 0 ? round($totalAmount / $totalDistance, 2) : 0;
+        $avgMonthlyLiters = $evMonthlyRefuels
+            ->map(fn ($group) => $group->sum('liters_refueled'))
+            ->avg() ?? 0;
+
+        $pricePerKilometer = $totalDistance > 0 ? round((float) $totalAmount / $totalDistance, 2) : 0;
 
         $efficiency = $this->calculateEfficiency($car->id, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
+
+        $litersThisMonth = (float) Refuel::where('car_id', $car->id)
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->sum('liters_refueled');
 
         return [
             'id' => $car->id,
@@ -78,10 +84,12 @@ class BuildDashboardStats
                 'currentMonth' => [
                     'amount' => (float) $currentMonthAmount,
                     'kilometers' => $currentMonthDistance,
+                    'litersThisMonth' => $litersThisMonth,
                 ],
                 'averages' => [
                     'monthlyAmount' => round($avgMonthlyAmount, 2),
                     'monthlyKilometers' => round($avgMonthlyKm, 2),
+                    'monthlyLiters' => round($avgMonthlyLiters, 2),
                 ],
                 'totals' => [
                     'amount' => round((float) $totalAmount, 2),
@@ -89,11 +97,12 @@ class BuildDashboardStats
                     'pricePerKilometer' => $pricePerKilometer,
                 ],
                 'efficiency' => $efficiency,
+                'monthlyTrends' => $this->buildMonthlyTrends($car, $chartStart, $chartEnd),
             ],
         ];
     }
 
-    private function buildGasStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance): array
+    private function buildGasStats(Car $car, Carbon $startOfMonth, Carbon $endOfMonth, float $totalDistance, int $currentMonthDistance, Carbon $chartStart, Carbon $chartEnd): array
     {
         $monthlyAmountStats = Refuel::where('car_id', $car->id)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
@@ -101,7 +110,7 @@ class BuildDashboardStats
             ->first();
 
         $monthlyRefuels = Refuel::where('car_id', $car->id)
-            ->get(['total_price', 'mileage', 'created_at'])
+            ->get(['total_price', 'mileage', 'liters_refueled', 'created_at'])
             ->groupBy(fn ($r) => $r->created_at->format('Y-m'));
 
         $avgMonthlyAmount = $monthlyRefuels
@@ -110,6 +119,10 @@ class BuildDashboardStats
 
         $avgMonthlyKm = $monthlyRefuels
             ->map(fn ($group) => $group->max('mileage') - $group->min('mileage'))
+            ->avg() ?? 0;
+
+        $avgMonthlyLiters = $monthlyRefuels
+            ->map(fn ($group) => $group->sum('liters_refueled'))
             ->avg() ?? 0;
 
         $totalStats = Refuel::where('car_id', $car->id)
@@ -125,6 +138,10 @@ class BuildDashboardStats
 
         $efficiency = $this->calculateEfficiency($car->id, $startOfMonth, $endOfMonth, $totalDistance, $currentMonthDistance);
 
+        $litersThisMonth = (float) Refuel::where('car_id', $car->id)
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->sum('liters_refueled');
+
         return [
             'id' => $car->id,
             'name' => $car->name,
@@ -133,10 +150,12 @@ class BuildDashboardStats
                 'currentMonth' => [
                     'amount' => (float) ($monthlyAmountStats->total_amount ?? 0),
                     'kilometers' => $currentMonthDistance,
+                    'litersThisMonth' => $litersThisMonth,
                 ],
                 'averages' => [
                     'monthlyAmount' => round($avgMonthlyAmount, 2),
                     'monthlyKilometers' => round($avgMonthlyKm, 2),
+                    'monthlyLiters' => round($avgMonthlyLiters, 2),
                 ],
                 'totals' => [
                     'amount' => round($totalStats->total_amount_ever ?? 0, 2),
@@ -144,6 +163,7 @@ class BuildDashboardStats
                     'pricePerKilometer' => round($totalStats->price_per_kilometer ?? 0, 2),
                 ],
                 'efficiency' => $efficiency,
+                'monthlyTrends' => $this->buildMonthlyTrends($car, $chartStart, $chartEnd),
             ],
         ];
     }
@@ -164,5 +184,53 @@ class BuildDashboardStats
                 ? round((float) $totalLiters / $totalDistance * 100, 1)
                 : null,
         ];
+    }
+
+    private function buildMonthlyTrends(Car $car, Carbon $periodStart, Carbon $periodEnd): array
+    {
+        $trends = [];
+
+        $current = $periodStart->copy()->startOfMonth();
+        $last = $periodEnd->copy()->startOfMonth();
+
+        while ($current->lte($last)) {
+            $start = $current->copy();
+            $end = $current->copy()->endOfMonth();
+
+            if ($car->is_electric) {
+                $cost = (float) CarExpense::where('car_id', $car->id)
+                    ->where('expense_type', 'Abonnement')
+                    ->whereBetween('invoice_date', [$start->toDateString(), $end->toDateString()])
+                    ->sum('amount');
+            } else {
+                $cost = (float) Refuel::where('car_id', $car->id)
+                    ->whereBetween('created_at', [$start, $end])
+                    ->sum('total_price');
+            }
+
+            $mileageStats = Refuel::where('car_id', $car->id)
+                ->whereBetween('created_at', [$start, $end])
+                ->selectRaw('MIN(mileage) as first_mileage, MAX(mileage) as latest_mileage, SUM(liters_refueled) as total_liters')
+                ->first();
+
+            $distance = ($mileageStats->latest_mileage ?? 0) - ($mileageStats->first_mileage ?? 0);
+            $liters = (float) ($mileageStats->total_liters ?? 0);
+
+            $efficiency = ($liters > 0 && $distance > 0)
+                ? round($liters / $distance * 100, 1)
+                : null;
+
+            $trends[] = [
+                'month' => $start->format('Y-m'),
+                'cost' => round($cost, 2),
+                'efficiency' => $efficiency,
+                'distance' => $distance,
+                'liters' => round($liters, 2),
+            ];
+
+            $current->addMonth();
+        }
+
+        return $trends;
     }
 }
