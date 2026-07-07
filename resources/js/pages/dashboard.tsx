@@ -37,6 +37,8 @@ interface CarStats {
 interface Props {
     cars: CarItem[];
     selectedCarId: number | null;
+    selectedFrom: string;
+    selectedTo: string;
     stats?: CarStats;
     message?: string;
 }
@@ -49,7 +51,7 @@ const chartConfig = {
     value: { label: 'Value', color: 'var(--chart-1)' },
 } satisfies ChartConfig;
 
-export default function Dashboard({ cars, selectedCarId, stats, message }: Props) {
+export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedTo, stats, message }: Props) {
     const [activeTab, setActiveTab] = useState<ChartTab>('cost');
 
     const formatCurrency = (amount: number) => new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(amount);
@@ -59,6 +61,24 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
     const formatMonthLabel = (month: string) => {
         const [year, m] = month.split('-');
         return new Date(parseInt(year), parseInt(m) - 1).toLocaleDateString('da-DK', { month: 'short' });
+    };
+
+    const periodLabel = (() => {
+        const [fy, fm] = selectedFrom.split('-').map(Number);
+        const [ty, tm] = selectedTo.split('-').map(Number);
+        const from = new Date(fy, fm - 1);
+        const to = new Date(ty, tm - 1);
+        if (selectedFrom === selectedTo) {
+            return to.toLocaleDateString('da-DK', { month: 'long', year: 'numeric' });
+        }
+        if (fy === ty) {
+            return `${from.toLocaleDateString('da-DK', { month: 'short' })} – ${to.toLocaleDateString('da-DK', { month: 'long', year: 'numeric' })}`;
+        }
+        return `${from.toLocaleDateString('da-DK', { month: 'short', year: 'numeric' })} – ${to.toLocaleDateString('da-DK', { month: 'short', year: 'numeric' })}`;
+    })();
+
+    const navigatePeriod = (from: string, to: string) => {
+        router.get('/dashboard', { car: selectedCarId ?? undefined, from, to });
     };
 
     const efficiencyUnit = stats?.isElectric ? 'kWh' : 'L';
@@ -87,24 +107,42 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex flex-col gap-4">
-                {/* Car switcher + Log Refuel */}
-                <div className="flex items-center gap-3">
-                    {cars.length > 1 && (
-                        <div className="flex flex-1 gap-2 overflow-x-auto pb-0.5">
-                            {cars.map((car) => (
-                                <button
-                                    key={car.id}
-                                    onClick={() => router.get('/dashboard', { car: car.id })}
-                                    className={[
-                                        'rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
-                                        car.id === selectedCarId ? 'bg-accent text-primary' : 'bg-primary text-primary-foreground',
-                                    ].join(' ')}
-                                >
-                                    {car.name}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                {/* Car switcher */}
+                {cars.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-0.5">
+                        {cars.map((car) => (
+                            <button
+                                key={car.id}
+                                onClick={() => router.get('/dashboard', { car: car.id, from: selectedFrom, to: selectedTo })}
+                                className={[
+                                    'rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
+                                    car.id === selectedCarId ? 'bg-accent text-primary' : 'bg-primary text-primary-foreground',
+                                ].join(' ')}
+                            >
+                                {car.name}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Period picker */}
+                <div className="flex items-center gap-2">
+                    <input
+                        type="month"
+                        value={selectedFrom}
+                        max={selectedTo}
+                        onChange={(e) => navigatePeriod(e.target.value, selectedTo)}
+                        className="border-input bg-background flex-1 rounded-md border px-2 py-1.5 text-sm"
+                    />
+                    <span className="text-muted-foreground text-xs">–</span>
+                    <input
+                        type="month"
+                        value={selectedTo}
+                        min={selectedFrom}
+                        max={new Date().toISOString().slice(0, 7)}
+                        onChange={(e) => navigatePeriod(selectedFrom, e.target.value)}
+                        className="border-input bg-background flex-1 rounded-md border px-2 py-1.5 text-sm"
+                    />
                 </div>
 
                 <Deferred
@@ -148,7 +186,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                             <div className="grid grid-cols-1 gap-3">
                                 <Card>
                                     <CardHeader className="pb-1">
-                                        <CardTitle className="text-muted-foreground text-xs font-medium">This Month</CardTitle>
+                                        <CardTitle className="text-muted-foreground text-xs font-medium">{periodLabel}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="text-xl font-bold">{formatCurrency(stats.stats.currentMonth.amount)}</div>
@@ -180,7 +218,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                             <div className="grid grid-cols-2 gap-3">
                                 <Card>
                                     <CardContent>
-                                        <p className="text-muted-foreground text-xs">Distance This Month</p>
+                                        <p className="text-muted-foreground text-xs">Distance</p>
                                         <p className="mt-0.5 font-semibold">{formatNumber(stats.stats.currentMonth.kilometers)} km</p>
                                         <p className="text-muted-foreground text-xs">
                                             avg. {formatNumber(stats.stats.averages.monthlyKilometers)} km/month
@@ -202,7 +240,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                 </Card>
                                 <Card>
                                     <CardContent>
-                                        <p className="text-muted-foreground text-xs">Fuel This Month</p>
+                                        <p className="text-muted-foreground text-xs">Fuel</p>
                                         <p className="mt-0.5 font-semibold">
                                             {formatNumber(stats.stats.currentMonth.litersThisMonth)} {efficiencyUnit}
                                         </p>

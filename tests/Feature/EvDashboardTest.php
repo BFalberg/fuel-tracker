@@ -26,7 +26,7 @@ test('ev dashboard uses subscription expenses for monthly cost', function () {
     Refuel::create(['car_id' => $car->id, 'liters_refueled' => 50, 'total_price' => 0, 'mileage' => 1000]);
     Refuel::create(['car_id' => $car->id, 'liters_refueled' => 50, 'total_price' => 0, 'mileage' => 1500]);
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     expect($stats['stats']['currentMonth']['amount'])->toBe(299.0)
         ->and($stats['stats']['totals']['amount'])->toBe(299.0)
@@ -44,7 +44,7 @@ test('gas car dashboard is unaffected by ev logic', function () {
     Refuel::create(['car_id' => $car->id, 'liters_refueled' => 40, 'total_price' => 600, 'mileage' => 1000]);
     Refuel::create(['car_id' => $car->id, 'liters_refueled' => 40, 'total_price' => 550, 'mileage' => 1400]);
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     expect($stats['stats']['currentMonth']['amount'])->toBe(1150.0);
 
@@ -67,7 +67,7 @@ test('ev price per kilometer uses subscription cost divided by total distance', 
     Refuel::create(['car_id' => $car->id, 'liters_refueled' => 0, 'total_price' => 0, 'mileage' => 0]);
     Refuel::create(['car_id' => $car->id, 'liters_refueled' => 0, 'total_price' => 0, 'mileage' => 2000]);
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     expect($stats['stats']['totals']['pricePerKilometer'])->toBe(0.5);
 
@@ -84,7 +84,7 @@ test('gas car efficiency stats are calculated correctly', function () {
     Refuel::create(['car_id' => $car->id, 'mileage' => 100, 'liters_refueled' => 20, 'total_price' => 300]);
     Refuel::create(['car_id' => $car->id, 'mileage' => 200, 'liters_refueled' => 20, 'total_price' => 300]);
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     expect($stats['isElectric'])->toBeFalse()
         ->and($stats['stats']['efficiency']['currentMonth'])->toBe(40.0)
@@ -103,7 +103,7 @@ test('ev car efficiency stats are calculated correctly', function () {
     Refuel::create(['car_id' => $car->id, 'mileage' => 0, 'liters_refueled' => 50, 'total_price' => 0]);
     Refuel::create(['car_id' => $car->id, 'mileage' => 500, 'liters_refueled' => 50, 'total_price' => 0]);
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     expect($stats['isElectric'])->toBeTrue()
         ->and($stats['stats']['efficiency']['currentMonth'])->toBe(20.0)
@@ -116,7 +116,7 @@ test('efficiency stats are null when no refuels exist', function () {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create();
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     expect($stats['stats']['efficiency']['currentMonth'])->toBeNull()
         ->and($stats['stats']['efficiency']['allTime'])->toBeNull();
@@ -131,7 +131,7 @@ test('currentMonth efficiency is null when no refuels exist in current month', f
     Refuel::create(['car_id' => $car->id, 'mileage' => 200, 'liters_refueled' => 20, 'total_price' => 300]);
 
     Carbon::setTestNow('2026-07-06');
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     expect($stats['stats']['efficiency']['currentMonth'])->toBeNull()
         ->and($stats['stats']['efficiency']['allTime'])->toBe(40.0);
@@ -148,7 +148,7 @@ test('stats include total liters refueled for current month', function () {
     Refuel::create(['car_id' => $car->id, 'mileage' => 100, 'liters_refueled' => 20, 'total_price' => 300]);
     Refuel::create(['car_id' => $car->id, 'mileage' => 200, 'liters_refueled' => 35, 'total_price' => 300]);
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     expect($stats['stats']['currentMonth']['litersThisMonth'])->toBe(55.0);
 
@@ -165,7 +165,7 @@ test('monthly trends include last 6 months of cost for gas car', function () {
     Carbon::setTestNow('2026-07-06');
     Refuel::create(['car_id' => $car->id, 'mileage' => 200, 'liters_refueled' => 40, 'total_price' => 600]);
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     $trends = $stats['stats']['monthlyTrends'];
 
@@ -186,7 +186,7 @@ test('monthly trends efficiency is null when data is insufficient', function () 
 
     Carbon::setTestNow('2026-07-06');
 
-    $stats = app(BuildDashboardStats::class)->handle($car)();
+    $stats = app(BuildDashboardStats::class)->handle($car, Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth())();
 
     $july = collect($stats['stats']['monthlyTrends'])->firstWhere('month', '2026-07');
 
