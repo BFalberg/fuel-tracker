@@ -211,6 +211,7 @@ class BuildDashboardStats
                 'cost' => round($cost, 2),
                 'efficiency' => $efficiency,
                 'distance' => $distance,
+                'liters' => round($liters, 2),
             ];
         }
 

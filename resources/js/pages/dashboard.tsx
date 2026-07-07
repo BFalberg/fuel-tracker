@@ -18,6 +18,7 @@ interface MonthlyTrend {
     cost: number;
     efficiency: number | null;
     distance: number;
+    liters: number;
 }
 
 interface CarStats {
@@ -40,7 +41,7 @@ interface Props {
     message?: string;
 }
 
-type ChartTab = 'cost' | 'efficiency' | 'distance';
+type ChartTab = 'cost' | 'efficiency' | 'distance' | 'refuel';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
@@ -64,7 +65,14 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
 
     const chartData = (stats?.stats.monthlyTrends ?? []).map((t) => ({
         month: formatMonthLabel(t.month),
-        value: activeTab === 'cost' ? t.cost : activeTab === 'efficiency' ? (t.efficiency ?? 0) : t.distance,
+        value:
+            activeTab === 'cost'
+                ? t.cost
+                : activeTab === 'efficiency'
+                  ? (t.efficiency ?? 0)
+                  : activeTab === 'refuel'
+                    ? t.liters
+                    : t.distance,
         rawMonth: t.month,
     }));
 
@@ -213,7 +221,7 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                             <Card>
                                 <CardHeader className="pb-2">
                                     <div className="flex gap-1">
-                                        {(['cost', 'efficiency', 'distance'] as ChartTab[]).map((tab) => (
+                                        {(['cost', 'efficiency', 'distance', 'refuel'] as ChartTab[]).map((tab) => (
                                             <button
                                                 key={tab}
                                                 onClick={() => setActiveTab(tab)}
@@ -222,7 +230,13 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                                     activeTab === tab ? 'bg-accent text-primary' : 'text-muted-foreground hover:text-foreground',
                                                 ].join(' ')}
                                             >
-                                                {tab === 'cost' ? 'Cost' : tab === 'efficiency' ? 'Efficiency' : 'Distance'}
+                                                {tab === 'cost'
+                                                    ? 'Cost'
+                                                    : tab === 'efficiency'
+                                                      ? 'Efficiency'
+                                                      : tab === 'refuel'
+                                                        ? 'Refuel'
+                                                        : 'Distance'}
                                             </button>
                                         ))}
                                     </div>
@@ -241,7 +255,9 @@ export default function Dashboard({ cars, selectedCarId, stats, message }: Props
                                                                 ? formatCurrency(value as number)
                                                                 : activeTab === 'efficiency'
                                                                   ? `${value} ${efficiencyUnit}/100km`
-                                                                  : `${formatNumber(value as number)} km`
+                                                                  : activeTab === 'refuel'
+                                                                    ? `${formatNumber(value as number)} ${efficiencyUnit}`
+                                                                    : `${formatNumber(value as number)} km`
                                                         }
                                                     />
                                                 }
