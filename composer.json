@@ -60,12 +60,19 @@
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
         ],
-        "check": [
+        "lint": [
             "vendor/bin/pint --test",
             "npm run format:check",
             "npm run lint:check",
-            "npm run typecheck",
+            "npm run typecheck"
+        ],
+        "test": [
+            "@php artisan config:clear --ansi",
             "@php artisan test --compact"
+        ],
+        "check": [
+            "@lint",
+            "@test"
         ],
         "fix": [
             "vendor/bin/pint",
@@ -74,7 +81,9 @@
         ]
     },
     "scripts-descriptions": {
-        "check": "Run every code quality check the CI pipeline runs: Pint, Prettier, ESLint, tsc and the test suite.",
+        "lint": "Static analysis only, report mode: Pint, Prettier, ESLint and tsc. Mirrors the linter workflow.",
+        "test": "Run the Pest suite. Mirrors the tests workflow.",
+        "check": "Everything CI runs: lint then test.",
         "fix": "Auto-fix what can be fixed: Pint, Prettier and ESLint."
     },
     "extra": {
