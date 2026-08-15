@@ -59,7 +59,7 @@ class CarController extends Controller
         ]);
     }
 
-    public function edit(Car $car): Response
+    public function edit(Request $request, Car $car): Response
     {
         $this->authorize('update', $car);
 
@@ -73,7 +73,7 @@ class CarController extends Controller
         return Inertia::render('Cars/CarEdit', [
             'car' => $car,
             'carUsers' => $carUsers,
-            'isOwner' => true,
+            'isOwner' => $request->user()->can('manageUsers', $car),
         ]);
     }
 
@@ -98,6 +98,16 @@ class CarController extends Controller
     public function destroy(Car $car, DeleteCar $deleteCar)
     {
         $this->authorize('delete', $car);
+
+        /**
+         * A car's refuel and expense history is not disposable. Deleting is only
+         * offered for cars that never got used; anything else must be kept.
+         */
+        if ($car->hasHistory()) {
+            return redirect()->back()->withErrors([
+                'car' => 'This car has refuels or expenses recorded and cannot be deleted.',
+            ]);
+        }
 
         $deleteCar->handle($car);
 

@@ -22,12 +22,9 @@ class CarUserController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (! $user) {
-            return back()->withErrors(['email' => 'No user found with this email address.']);
-        }
-
-        if ($car->users()->where('users.id', $user->id)->exists()) {
-            return back()->withErrors(['email' => 'This user already has access to this car.']);
+        /** One message for both cases, so this cannot be used to probe which emails are registered. */
+        if (! $user || $car->users()->where('users.id', $user->id)->exists()) {
+            return back()->withErrors(['email' => 'That email address could not be added as a co-driver.']);
         }
 
         $car->users()->attach($user->id, ['role' => 'co_driver']);

@@ -13,55 +13,15 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Cars routes
-    Route::resource('cars', CarController::class)
-        ->only(['index']);
-    Route::get('cars/create', [CarController::class, 'create'])
-        ->name('cars.create');
-    Route::post('cars', [CarController::class, 'store'])
-        ->name('cars.store');
-    Route::get('cars/{car}/edit', [CarController::class, 'edit'])
-        ->name('cars.edit');
-    Route::put('cars/{car}', [CarController::class, 'update'])
-        ->name('cars.update');
-    Route::delete('cars/{car}', [CarController::class, 'destroy'])
-        ->name('cars.destroy');
-    Route::get('cars/{car}', [CarController::class, 'show'])->name('cars.show');
-
-    // Refuels routes
-    Route::resource('refuels', RefuelController::class)
-        ->only(['index']);
-    Route::get('refuels/create', [RefuelController::class, 'create'])
-        ->name('refuels.create');
-    Route::post('refuels', [RefuelController::class, 'store'])
-        ->name('refuels.store');
-    Route::get('refuels/{refuel}/edit', [RefuelController::class, 'edit'])
-        ->name('refuels.edit');
-    Route::put('refuels/{refuel}', [RefuelController::class, 'update'])
-        ->name('refuels.update');
-    Route::delete('refuels/{refuel}', [RefuelController::class, 'destroy'])
-        ->name('refuels.destroy');
-
-    // Gas Stations routes
-    Route::resource('gas-stations', GasStationController::class)
-        ->only(['index']);
-    Route::get('gas-stations/create', [GasStationController::class, 'create'])
-        ->name('gas-stations.create');
-    Route::post('gas-stations', [GasStationController::class, 'store'])
-        ->name('gas-stations.store');
-    Route::get('gas-stations/{gas_station}/edit', [GasStationController::class, 'edit'])
-        ->name('gas-stations.edit');
-    Route::put('gas-stations/{gas_station}', [GasStationController::class, 'update'])
-        ->name('gas-stations.update');
-    Route::delete('gas-stations/{gas_station}', [GasStationController::class, 'destroy'])
-        ->name('gas-stations.destroy');
+    Route::resource('cars', CarController::class);
+    Route::resource('refuels', RefuelController::class)->except(['show']);
+    Route::resource('gas-stations', GasStationController::class)->except(['show']);
 
     // Car Expenses routes
     Route::prefix('cars/{car}')->group(function () {
-        Route::get('expenses', [CarExpenseController::class, 'index'])->name('cars.expenses.index');
         Route::get('expenses/create', [CarExpenseController::class, 'create'])->name('cars.expenses.create');
         Route::post('expenses', [CarExpenseController::class, 'store'])->name('cars.expenses.store');
         Route::get('expenses/{expense}/edit', [CarExpenseController::class, 'edit'])->name('cars.expenses.edit');

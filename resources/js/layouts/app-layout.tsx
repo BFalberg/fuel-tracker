@@ -1,3 +1,4 @@
+import FlashMessage from '@/components/flash-message';
 import AppLayoutTemplate from '@/layouts/app/app-header-layout';
 import { type BreadcrumbItem } from '@/types';
 
@@ -30,6 +31,7 @@ export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => (
                 </defs>
             </svg>
         </div>
+        <FlashMessage />
         <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
             {children}
         </AppLayoutTemplate>

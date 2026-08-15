@@ -12,7 +12,7 @@ class GetRefuelFormData
      */
     public function handle(bool $orderByLatestRefuel): array
     {
-        $cars = auth()->user()->accessibleCars()->select(['cars.id', 'cars.name', 'cars.is_electric'])->get();
+        $cars = auth()->user()->cars()->select(['cars.id', 'cars.name', 'cars.is_electric'])->get();
 
         if (! $orderByLatestRefuel) {
             return [

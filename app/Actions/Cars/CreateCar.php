@@ -4,6 +4,7 @@ namespace App\Actions\Cars;
 
 use App\Models\Car;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class CreateCar
 {
@@ -12,9 +13,11 @@ class CreateCar
      */
     public function handle(User $user, array $data): Car
     {
-        $car = Car::create($data);
-        $car->users()->attach($user->id, ['role' => 'owner']);
+        return DB::transaction(function () use ($user, $data): Car {
+            $car = Car::create($data);
+            $car->users()->attach($user->id, ['role' => 'owner']);
 
-        return $car;
+            return $car;
+        });
     }
 }

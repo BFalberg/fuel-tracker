@@ -32,6 +32,9 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Every car the user can access, as either owner or co-driver.
+     */
     public function cars(): BelongsToMany
     {
         return $this->belongsToMany(Car::class)->withPivot('role')->withTimestamps();
@@ -40,10 +43,5 @@ class User extends Authenticatable
     public function ownedCars(): BelongsToMany
     {
         return $this->belongsToMany(Car::class)->withPivot('role')->withTimestamps()->wherePivot('role', 'owner');
-    }
-
-    public function accessibleCars(): BelongsToMany
-    {
-        return $this->belongsToMany(Car::class)->withPivot('role')->withTimestamps();
     }
 }

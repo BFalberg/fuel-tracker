@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Actions\Refuel\CreateRefuel;
 use App\Actions\Refuel\DeleteRefuel;
+use App\Actions\Refuel\GetMileageBounds;
 use App\Actions\Refuel\GetRefuelFormData;
 use App\Actions\Refuel\GetRefuelIndexData;
 use App\Actions\Refuel\ListRefuels;
 use App\Actions\Refuel\UpdateRefuel;
 use App\Models\Car;
 use App\Models\Refuel;
+use App\Rules\MileageFitsCarSeries;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,18 +24,25 @@ class RefuelController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(ListRefuels $listRefuels, GetRefuelIndexData $getRefuelIndexData): Response
+    public function index(Request $request, ListRefuels $listRefuels, GetRefuelIndexData $getRefuelIndexData): Response
     {
-        $selectedCarId = request()->query('car_id');
+        $validated = $request->validate([
+            'car_id' => 'nullable|integer',
+        ]);
 
-        $refuels = $listRefuels->handle($selectedCarId ? (int) $selectedCarId : null);
-        $indexData = $getRefuelIndexData->handle();
+        $selectedCarId = isset($validated['car_id']) ? (int) $validated['car_id'] : null;
+        $user = $request->user();
+
+        $indexData = null;
+        $resolveIndexData = function () use (&$indexData, $getRefuelIndexData): array {
+            return $indexData ??= $getRefuelIndexData->handle();
+        };
 
         return Inertia::render('Refuels/Index', [
-            'refuels' => Inertia::defer(fn () => $refuels),
-            'cars' => Inertia::defer(fn () => $indexData['cars']),
+            'refuels' => Inertia::defer(fn () => $listRefuels->handle($user, $selectedCarId)),
+            'cars' => Inertia::defer(fn () => $resolveIndexData()['cars']),
             'selectedCarId' => $selectedCarId,
-            'gasStations' => Inertia::defer(fn () => $indexData['gasStations']),
+            'gasStations' => Inertia::defer(fn () => $resolveIndexData()['gasStations']),
         ]);
     }
 
@@ -63,22 +72,9 @@ class RefuelController extends Controller
             'gas_station_id' => 'nullable|exists:gas_stations,id',
             'new_gas_station_name' => 'nullable|string|max:255',
             'new_gas_station_address' => 'nullable|string|max:255',
-            'liters_refueled' => 'required|numeric|min:0',
+            'liters_refueled' => 'required|numeric|gt:0',
             'total_price' => 'required|numeric|min:0',
-            'mileage' => [
-                'required',
-                'integer',
-                'min:0',
-                function ($attribute, $value, $fail) use ($car) {
-                    $lastRefuel = Refuel::where('car_id', $car->id)
-                        ->orderByDesc('mileage')
-                        ->first();
-
-                    if ($lastRefuel && $value <= $lastRefuel->mileage) {
-                        $fail("The mileage must be greater than the last refuel's mileage ({$lastRefuel->mileage}).");
-                    }
-                },
-            ],
+            'mileage' => ['required', 'integer', 'min:0', MileageFitsCarSeries::whenCreating($car)],
         ]);
 
         $createRefuel->handle($validated);
@@ -87,18 +83,12 @@ class RefuelController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Refuel $refuel)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Refuel $refuel, GetRefuelFormData $getRefuelFormData): Response
+    public function edit(Refuel $refuel, GetRefuelFormData $getRefuelFormData, GetMileageBounds $getMileageBounds): Response
     {
+        $this->authorize('update', $refuel);
+
         $refuelData = $refuel->load(['car', 'gasStation']);
         $formData = $getRefuelFormData->handle(false);
 
@@ -106,6 +96,7 @@ class RefuelController extends Controller
             'refuel' => $refuelData,
             'cars' => $formData['cars'],
             'gasStations' => $formData['gasStations'],
+            'mileageBounds' => $getMileageBounds->handle($refuel),
         ]);
     }
 
@@ -114,28 +105,20 @@ class RefuelController extends Controller
      */
     public function update(Request $request, Refuel $refuel, UpdateRefuel $updateRefuel)
     {
+        $this->authorize('update', $refuel);
+
+        /**
+         * `car_id` is deliberately absent: a refuel cannot be moved between cars,
+         * because mileage is a per-car monotonic series and re-parenting would
+         * retroactively corrupt the consumption history of both cars.
+         */
         $validated = $request->validate([
-            'car_id' => 'required|exists:cars,id',
             'gas_station_id' => 'nullable|exists:gas_stations,id',
             'new_gas_station_name' => 'nullable|string|max:255',
             'new_gas_station_address' => 'nullable|string|max:255',
-            'liters_refueled' => 'required|numeric|min:0',
+            'liters_refueled' => 'required|numeric|gt:0',
             'total_price' => 'required|numeric|min:0',
-            'mileage' => [
-                'required',
-                'integer',
-                'min:0',
-                function ($attribute, $value, $fail) use ($request, $refuel) {
-                    $lastRefuel = Refuel::where('car_id', $request->car_id)
-                        ->where('id', '!=', $refuel->id)
-                        ->orderByDesc('mileage')
-                        ->first();
-
-                    if ($lastRefuel && $value <= $lastRefuel->mileage) {
-                        $fail("The mileage must be greater than the last refuel's mileage ({$lastRefuel->mileage}).");
-                    }
-                },
-            ],
+            'mileage' => ['required', 'integer', 'min:0', MileageFitsCarSeries::whenUpdating($refuel)],
         ]);
 
         $updateRefuel->handle($refuel, $validated);
@@ -148,6 +131,8 @@ class RefuelController extends Controller
      */
     public function destroy(Refuel $refuel, DeleteRefuel $deleteRefuel)
     {
+        $this->authorize('delete', $refuel);
+
         $deleteRefuel->handle($refuel);
 
         return redirect()->back()->with('success', 'Refuel deleted successfully');

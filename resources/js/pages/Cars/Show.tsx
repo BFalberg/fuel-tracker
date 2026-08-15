@@ -2,6 +2,7 @@ import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem, type Refuel } from '@/types';
 import { Deferred, Head } from '@inertiajs/react';
 import { Car, User } from 'lucide-react';
 import CarExpensesList from '../CarExpenses/CarExpensesList';
@@ -27,22 +28,10 @@ type ExpenseType = {
     invoice_date: string;
 };
 
-type RefuelType = {
-    id: number;
-    date: string;
-    amount: number;
-    price: number;
-};
-
-type BreadcrumbItem = {
-    title: string;
-    href: string;
-};
-
 interface ShowProps {
     car: CarType;
     expenses?: ExpenseType[];
-    refuels?: RefuelType[];
+    refuels?: Refuel[];
     start_milage: number | null;
 }
 

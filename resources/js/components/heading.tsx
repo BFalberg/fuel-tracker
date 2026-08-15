@@ -1,5 +1,7 @@
+import type React from 'react';
+
 export default function Heading({ level = 1, title, description }: { level?: 1 | 2 | 3 | 4 | 5 | 6; title: string; description?: string }) {
-    const Tag = `h${level}` as keyof JSX.IntrinsicElements;
+    const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
 
     return (
         <>

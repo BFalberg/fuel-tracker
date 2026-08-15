@@ -86,7 +86,7 @@ test('refuels list can be filtered by car', function () {
     $response->assertOk();
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('Refuels/Index')
-        ->where('selectedCarId', (string) $car->id)
+        ->where('selectedCarId', $car->id)
         ->missing('refuels')
         ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
             ->has('refuels.data', 1)

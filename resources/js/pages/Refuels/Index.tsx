@@ -1,31 +1,14 @@
+import DeleteConfirmation from '@/components/delete-confirmation';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type Refuel } from '@/types';
 import { Deferred, Head, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
-import DeleteConfirmation from './DeleteConfirmation';
 import RefuelCard from './RefuelCard';
-
-interface Refuel {
-    id: number;
-    car_id: number;
-    gas_station_id?: number | null;
-    liters_refueled: number;
-    total_price: number;
-    mileage: number;
-    type?: 'fossil' | 'charge';
-    car: {
-        name: string;
-        is_electric?: boolean;
-    };
-    gasStation?: {
-        name: string;
-    } | null;
-}
 
 interface Props {
     refuels?: {

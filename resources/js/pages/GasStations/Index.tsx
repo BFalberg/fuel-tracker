@@ -1,9 +1,10 @@
+import DeleteConfirmation from '@/components/delete-confirmation';
 import Heading from '@/components/heading';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import DeleteConfirmation from './DeleteConfirmation';
 import GasStationCard from './GasStationCard';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -17,6 +18,7 @@ interface GasStation {
     id: number;
     name: string;
     address: string;
+    refuels_count?: number;
 }
 
 interface Props {
@@ -33,10 +35,27 @@ export default function GasStations({ gasStations }: Props) {
     };
 
     const confirmDelete = () => {
-        if (selectedStation) {
-            router.delete(`/gas-stations/${selectedStation.id}`);
-            setIsDeleteOpen(false);
+        if (!selectedStation) {
+            return;
         }
+
+        router.delete(route('gas-stations.destroy', { gas_station: selectedStation.id }), {
+            onSuccess: () => {
+                setIsDeleteOpen(false);
+                setSelectedStation(null);
+            },
+        });
+    };
+
+    // Deleting a station never removes refuels - it only clears their station reference.
+    const deleteDescription = (station: GasStation) => {
+        const count = station.refuels_count ?? 0;
+
+        if (count === 0) {
+            return `Are you sure you want to delete ${station.name}? This action cannot be undone.`;
+        }
+
+        return `${count} refuel${count === 1 ? '' : 's'} will lose their station and show as "Unknown Station". The refuels themselves are kept. This action cannot be undone.`;
     };
 
     return (
@@ -76,7 +95,7 @@ export default function GasStations({ gasStations }: Props) {
                         onOpenChange={setIsDeleteOpen}
                         onConfirm={confirmDelete}
                         title={`Delete ${selectedStation.name}`}
-                        description={`Are you sure you want to delete ${selectedStation.name}? This action cannot be undone.`}
+                        description={deleteDescription(selectedStation)}
                     />
                 )}
             </div>

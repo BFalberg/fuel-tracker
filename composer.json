@@ -59,7 +59,23 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+        ],
+        "check": [
+            "vendor/bin/pint --test",
+            "npm run format:check",
+            "npm run lint:check",
+            "npm run typecheck",
+            "@php artisan test --compact"
+        ],
+        "fix": [
+            "vendor/bin/pint",
+            "npm run format",
+            "npm run lint"
         ]
+    },
+    "scripts-descriptions": {
+        "check": "Run every code quality check the CI pipeline runs: Pint, Prettier, ESLint, tsc and the test suite.",
+        "fix": "Auto-fix what can be fixed: Pint, Prettier and ESLint."
     },
     "extra": {
         "laravel": {
