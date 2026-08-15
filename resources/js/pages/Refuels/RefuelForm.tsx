@@ -17,14 +17,22 @@ interface Refuel {
     type?: 'fossil' | 'charge';
 }
 
+export interface MileageBounds {
+    min: number | null;
+    max: number | null;
+}
+
 interface RefuelFormProps {
     refuel?: Refuel;
     cars: Array<{ id: number; name: string; is_electric?: boolean }>;
     gasStations: Array<{ id: number; name: string }>;
+    mileageBounds?: MileageBounds;
     formType: 'create' | 'edit';
 }
 
-export default function RefuelForm({ refuel, cars, gasStations, formType }: RefuelFormProps) {
+const formatMileage = (value: number) => value.toLocaleString('da-DK');
+
+export default function RefuelForm({ refuel, cars, gasStations, mileageBounds, formType }: RefuelFormProps) {
     const isEditing = formType === 'edit';
     const [showNewStation, setShowNewStation] = useState(false);
 
@@ -43,6 +51,19 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
     const energyLabel = isElectric ? 'kWh Charged' : 'Liters Refueled';
 
     const shouldShowNewStation = showNewStation || Boolean(data.new_gas_station_name || data.new_gas_station_address);
+
+    const previousMileage = mileageBounds?.min ?? null;
+    const nextMileage = mileageBounds?.max ?? null;
+
+    let mileageHint: string | null = null;
+
+    if (previousMileage !== null && nextMileage !== null) {
+        mileageHint = `Must be above ${formatMileage(previousMileage)} km and below ${formatMileage(nextMileage)} km — the surrounding refuels.`;
+    } else if (previousMileage !== null) {
+        mileageHint = `Must be above ${formatMileage(previousMileage)} km — the previous refuel.`;
+    } else if (nextMileage !== null) {
+        mileageHint = `Must be below ${formatMileage(nextMileage)} km — the next refuel.`;
+    }
 
     const handleUseCurrentLocation = () => {
         if (!navigator.geolocation) {
@@ -159,10 +180,13 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
                             inputMode="decimal"
                             tabIndex={3}
                             autoComplete="off"
+                            min={previousMileage !== null ? previousMileage + 1 : 0}
+                            max={nextMileage !== null ? nextMileage - 1 : undefined}
                             value={data.mileage}
                             onChange={(e) => setData('mileage', e.target.value)}
                             placeholder="Mileage"
                         />
+                        {mileageHint && <p className="text-muted-foreground text-xs">{mileageHint}</p>}
                         <InputError message={errors.mileage} />
                     </div>
                     <div className="grid gap-2">

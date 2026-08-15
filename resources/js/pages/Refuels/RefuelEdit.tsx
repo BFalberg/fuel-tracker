@@ -1,6 +1,6 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
-import RefuelForm from './RefuelForm';
+import RefuelForm, { type MileageBounds } from './RefuelForm';
 
 interface Refuel {
     id: number;
@@ -16,15 +16,16 @@ interface RefuelEditProps {
     refuel: Refuel;
     cars: Array<{ id: number; name: string; is_electric?: boolean }>;
     gasStations: Array<{ id: number; name: string }>;
+    mileageBounds: MileageBounds;
 }
 
 const breadcrumbs = [{ title: 'Edit Refuel', href: '/refuels/edit' }];
 
-export default function RefuelEdit({ refuel, cars, gasStations }: RefuelEditProps) {
+export default function RefuelEdit({ refuel, cars, gasStations, mileageBounds }: RefuelEditProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Heading level={1} title={breadcrumbs[0].title} />
-            <RefuelForm refuel={refuel} cars={cars} gasStations={gasStations} formType="edit" />
+            <RefuelForm refuel={refuel} cars={cars} gasStations={gasStations} mileageBounds={mileageBounds} formType="edit" />
         </AppLayout>
     );
 }

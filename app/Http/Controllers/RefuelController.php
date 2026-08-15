@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Actions\Refuel\CreateRefuel;
 use App\Actions\Refuel\DeleteRefuel;
+use App\Actions\Refuel\GetMileageBounds;
 use App\Actions\Refuel\GetRefuelFormData;
 use App\Actions\Refuel\GetRefuelIndexData;
 use App\Actions\Refuel\ListRefuels;
 use App\Actions\Refuel\UpdateRefuel;
 use App\Models\Car;
 use App\Models\Refuel;
+use App\Rules\MileageFitsCarSeries;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -72,20 +74,7 @@ class RefuelController extends Controller
             'new_gas_station_address' => 'nullable|string|max:255',
             'liters_refueled' => 'required|numeric|gt:0',
             'total_price' => 'required|numeric|min:0',
-            'mileage' => [
-                'required',
-                'integer',
-                'min:0',
-                function ($attribute, $value, $fail) use ($car) {
-                    $lastRefuel = Refuel::where('car_id', $car->id)
-                        ->orderByDesc('mileage')
-                        ->first();
-
-                    if ($lastRefuel && $value <= $lastRefuel->mileage) {
-                        $fail("The mileage must be greater than the last refuel's mileage ({$lastRefuel->mileage}).");
-                    }
-                },
-            ],
+            'mileage' => ['required', 'integer', 'min:0', MileageFitsCarSeries::whenCreating($car)],
         ]);
 
         $createRefuel->handle($validated);
@@ -96,7 +85,7 @@ class RefuelController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Refuel $refuel, GetRefuelFormData $getRefuelFormData): Response
+    public function edit(Refuel $refuel, GetRefuelFormData $getRefuelFormData, GetMileageBounds $getMileageBounds): Response
     {
         $this->authorize('update', $refuel);
 
@@ -107,6 +96,7 @@ class RefuelController extends Controller
             'refuel' => $refuelData,
             'cars' => $formData['cars'],
             'gasStations' => $formData['gasStations'],
+            'mileageBounds' => $getMileageBounds->handle($refuel),
         ]);
     }
 
@@ -128,21 +118,7 @@ class RefuelController extends Controller
             'new_gas_station_address' => 'nullable|string|max:255',
             'liters_refueled' => 'required|numeric|gt:0',
             'total_price' => 'required|numeric|min:0',
-            'mileage' => [
-                'required',
-                'integer',
-                'min:0',
-                function ($attribute, $value, $fail) use ($refuel) {
-                    $lastRefuel = Refuel::where('car_id', $refuel->car_id)
-                        ->where('id', '!=', $refuel->id)
-                        ->orderByDesc('mileage')
-                        ->first();
-
-                    if ($lastRefuel && $value <= $lastRefuel->mileage) {
-                        $fail("The mileage must be greater than the last refuel's mileage ({$lastRefuel->mileage}).");
-                    }
-                },
-            ],
+            'mileage' => ['required', 'integer', 'min:0', MileageFitsCarSeries::whenUpdating($refuel)],
         ]);
 
         $updateRefuel->handle($refuel, $validated);
