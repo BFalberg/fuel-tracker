@@ -24,6 +24,9 @@ class Car extends Model
     {
         return [
             'is_electric' => 'boolean',
+            'start_milage' => 'integer',
+            'purchase_price' => 'decimal:2',
+            'sale_price' => 'decimal:2',
         ];
     }
 
@@ -40,5 +43,14 @@ class Car extends Model
     public function carExpenses(): HasMany
     {
         return $this->hasMany(CarExpense::class);
+    }
+
+    /**
+     * Whether this car has any recorded history. A car with history can never
+     * be deleted — the database enforces this too, via restrictOnDelete.
+     */
+    public function hasHistory(): bool
+    {
+        return $this->refuels()->exists() || $this->carExpenses()->exists();
     }
 }

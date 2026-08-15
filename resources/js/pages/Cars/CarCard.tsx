@@ -13,6 +13,7 @@ interface CarCardProps {
         is_electric?: boolean;
         users?: { id: number; name: string }[];
         pivot?: { role: 'owner' | 'co_driver' };
+        can_delete?: boolean;
     };
     onDelete?: (car: CarCardProps['car']) => void;
 }
@@ -20,6 +21,8 @@ interface CarCardProps {
 export default function CarCard({ car, onDelete }: CarCardProps) {
     const isOwner = car.pivot?.role === 'owner';
     const ownerName = car.users?.[0]?.name ?? '-';
+    // Cars with recorded refuels or expenses are kept permanently; the server enforces this too.
+    const canDelete = car.can_delete ?? false;
 
     return (
         <Card>
@@ -47,7 +50,12 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
                                         Edit
                                     </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onDelete?.(car)} className="text-red-600">
+                                <DropdownMenuItem
+                                    onClick={() => onDelete?.(car)}
+                                    disabled={!canDelete}
+                                    className={canDelete ? 'text-red-600' : undefined}
+                                    title={canDelete ? undefined : 'This car has refuels or expenses recorded'}
+                                >
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>

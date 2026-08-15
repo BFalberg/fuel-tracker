@@ -71,23 +71,11 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
         return new Date(parseInt(year), parseInt(m) - 1).toLocaleDateString('da-DK', { month: 'short' });
     };
 
-    const defaultFrom = (() => {
-        const d = new Date();
-        d.setMonth(d.getMonth() - 5);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    })();
-    const defaultTo = new Date().toISOString().slice(0, 7);
-
     const applyPeriod = () => {
         router.get('/dashboard', { car: selectedCarId ?? undefined, from: localFrom, to: localTo });
     };
 
-    const resetPeriod = () => {
-        router.get('/dashboard', { car: selectedCarId ?? undefined });
-    };
-
     const isDirty = localFrom !== selectedFrom || localTo !== selectedTo;
-    const isDefaultPeriod = selectedFrom === defaultFrom && selectedTo === defaultTo;
 
     const efficiencyUnit = stats?.isElectric ? 'kWh' : 'L';
 

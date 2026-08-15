@@ -1,8 +1,10 @@
+import DeleteConfirmation from '@/components/delete-confirmation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link, router } from '@inertiajs/react';
 import { Banknote, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 type Expense = {
     id: number;
@@ -19,6 +21,27 @@ type CarExpensesListProps = {
 };
 
 export default function CarExpensesList({ expenses, carId }: CarExpensesListProps) {
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+
+    const handleDelete = (expense: Expense) => {
+        setSelectedExpense(expense);
+        setIsDeleteOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (!selectedExpense) {
+            return;
+        }
+
+        router.delete(route('cars.expenses.destroy', { car: carId, expense: selectedExpense.id }), {
+            onSuccess: () => {
+                setIsDeleteOpen(false);
+                setSelectedExpense(null);
+            },
+        });
+    };
+
     return (
         <Card>
             <CardHeader className="">
@@ -63,12 +86,7 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
                                                             Edit
                                                         </Link>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() =>
-                                                            router.delete(route('cars.expenses.destroy', { car: carId, expense: expense.id }))
-                                                        }
-                                                        className="text-red-600"
-                                                    >
+                                                    <DropdownMenuItem onClick={() => handleDelete(expense)} className="text-red-600">
                                                         <Trash2 className="mr-2 h-4 w-4" />
                                                         Delete
                                                     </DropdownMenuItem>
@@ -92,6 +110,16 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
                     )}
                 </div>
             </CardContent>
+
+            {selectedExpense && (
+                <DeleteConfirmation
+                    open={isDeleteOpen}
+                    onOpenChange={setIsDeleteOpen}
+                    onConfirm={confirmDelete}
+                    title={`Delete ${selectedExpense.expense_type} expense`}
+                    description="This expense will be permanently removed. This action cannot be undone."
+                />
+            )}
         </Card>
     );
 }

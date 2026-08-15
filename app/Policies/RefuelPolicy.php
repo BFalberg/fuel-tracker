@@ -4,63 +4,58 @@ namespace App\Policies;
 
 use App\Models\Refuel;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
+/**
+ * A refuel belongs to a car, as a single shared ledger. Every member of that
+ * car — owner or co-driver — may view, edit and delete any refuel on it.
+ */
 class RefuelPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * The listing is filtered by Refuel::scopeAccessibleBy(); a policy cannot
+     * scope a collection, so this only gates access to the page itself.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Refuel $refuel): bool
     {
-        return false;
+        return $this->belongsToUsersCar($user, $refuel);
     }
 
     /**
-     * Determine whether the user can create models.
+     * Creation is authorized against the target car in RefuelController::store,
+     * because the car is only known from the request payload.
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Refuel $refuel): bool
     {
-        return false;
+        return $this->belongsToUsersCar($user, $refuel);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Refuel $refuel): bool
     {
-        return false;
+        return $this->belongsToUsersCar($user, $refuel);
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
     public function restore(User $user, Refuel $refuel): bool
     {
         return false;
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
     public function forceDelete(User $user, Refuel $refuel): bool
     {
         return false;
+    }
+
+    private function belongsToUsersCar(User $user, Refuel $refuel): bool
+    {
+        return $user->cars()->where('cars.id', $refuel->car_id)->exists();
     }
 }

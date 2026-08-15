@@ -13,7 +13,7 @@ class GetRefuelIndexData
     public function handle(): array
     {
         return [
-            'cars' => auth()->user()->accessibleCars()->select(['cars.id', 'cars.name', 'cars.is_electric'])->get(),
+            'cars' => auth()->user()->cars()->select(['cars.id', 'cars.name', 'cars.is_electric'])->get(),
             'gasStations' => GasStation::select(['gas_stations.id', 'gas_stations.name'])
                 ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
                 ->groupBy('gas_stations.id', 'gas_stations.name')

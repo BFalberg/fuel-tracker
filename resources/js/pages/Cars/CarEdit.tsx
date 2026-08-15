@@ -1,6 +1,6 @@
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
@@ -44,13 +44,7 @@ function AddCoDriverForm({ carId }: { carId: number }) {
     return (
         <form onSubmit={handleSubmit} className="flex gap-2">
             <div className="flex-1">
-                <Input
-                    type="email"
-                    placeholder="Email address"
-                    value={data.email}
-                    onChange={(e) => setData('email', e.target.value)}
-                    required
-                />
+                <Input type="email" placeholder="Email address" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
                 {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
             </div>
             <Button type="submit" disabled={processing} size="sm">

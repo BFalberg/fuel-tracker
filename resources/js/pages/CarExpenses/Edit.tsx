@@ -3,8 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { useForm } from '@inertiajs/react';
+import { type FormEvent } from 'react';
 
-export default function Edit({ car, expense }) {
+interface Props {
+    car: {
+        id: number;
+        name: string;
+    };
+    expense: {
+        id: number;
+        expense_type: string;
+        amount: number | string;
+        description?: string | null;
+        vendor?: string | null;
+        invoice_date?: string | null;
+    };
+    expenseTypes: string[];
+}
+
+export default function Edit({ car, expense, expenseTypes }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         expense_type: expense.expense_type || '',
         amount: expense.amount || '',
@@ -13,7 +30,7 @@ export default function Edit({ car, expense }) {
         invoice_date: expense.invoice_date || '',
     });
 
-    function handleSubmit(e) {
+    function handleSubmit(e: FormEvent) {
         e.preventDefault();
         put(route('cars.expenses.update', { car: car.id, expense: expense.id }));
     }
@@ -32,11 +49,11 @@ export default function Edit({ car, expense }) {
                                 <NativeSelectOption value="" disabled>
                                     Vælg type
                                 </NativeSelectOption>
-                                <NativeSelectOption value="Værksted">Værksted</NativeSelectOption>
-                                <NativeSelectOption value="Forsikring">Forsikring</NativeSelectOption>
-                                <NativeSelectOption value="Afgift">Afgift</NativeSelectOption>
-                                <NativeSelectOption value="Tilkøb">Tilkøb</NativeSelectOption>
-                                <NativeSelectOption value="Abonnement">Abonnement</NativeSelectOption>
+                                {expenseTypes.map((expenseType) => (
+                                    <NativeSelectOption key={expenseType} value={expenseType}>
+                                        {expenseType}
+                                    </NativeSelectOption>
+                                ))}
                             </NativeSelect>
                             {errors.expense_type && <div className="text-xs text-red-500">{errors.expense_type}</div>}
                         </div>

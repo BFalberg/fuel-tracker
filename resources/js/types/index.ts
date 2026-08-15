@@ -25,6 +25,7 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    flash: { success?: string | null };
     [key: string]: unknown;
 }
 
@@ -37,4 +38,22 @@ export interface User {
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface Refuel {
+    id: number;
+    car_id: number;
+    gas_station_id?: number | null;
+    liters_refueled: number;
+    total_price: number;
+    mileage: number;
+    type?: 'fossil' | 'charge';
+    created_at: string;
+    car?: {
+        name: string;
+        is_electric?: boolean;
+    };
+    gas_station?: {
+        name: string;
+    } | null;
 }

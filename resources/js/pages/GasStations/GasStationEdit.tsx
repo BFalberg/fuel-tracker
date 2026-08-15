@@ -1,5 +1,6 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 import GasStationForm from './GasStationForm';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -8,6 +9,14 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/gas-stations/edit',
     },
 ];
+
+interface Props {
+    gasStation: {
+        id: number;
+        name: string;
+        address: string;
+    };
+}
 
 export default function GasStationEdit({ gasStation }: Props) {
     return (

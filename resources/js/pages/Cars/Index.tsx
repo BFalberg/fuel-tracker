@@ -1,3 +1,4 @@
+import DeleteConfirmation from '@/components/delete-confirmation';
 import Heading from '@/components/heading';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
@@ -5,7 +6,6 @@ import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import CarCard from './CarCard';
-import DeleteConfirmation from './DeleteConfirmation';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,6 +21,7 @@ interface Car {
     is_electric?: boolean;
     users?: { id: number; name: string }[];
     pivot?: { role: 'owner' | 'co_driver' };
+    can_delete?: boolean;
 }
 
 interface Props {

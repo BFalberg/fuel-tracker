@@ -104,8 +104,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 <NavigationMenu id="app-navbar" className="bg-accent flex w-full max-w-full items-center justify-center rounded-xl px-1 py-1">
                     <NavigationMenuList className="grid w-full grid-cols-4 items-center justify-center">
                         {mainNavItems.map((item, index) => {
-                            // If item.url is a function, call it with the current page URL
-                            const resolvedUrl = typeof item.url === 'function' ? item.url(page.url) : item.url;
+                            const resolvedUrl = item.url;
                             return (
                                 <NavigationMenuItem key={index} className="">
                                     <Link href={resolvedUrl} className={cn(menuItemStyles, page.url === resolvedUrl && activeItemStyles)}>

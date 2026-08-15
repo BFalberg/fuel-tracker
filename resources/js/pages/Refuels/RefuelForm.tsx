@@ -98,7 +98,12 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
                 <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                     <div className="grid gap-2">
                         <Label htmlFor="car_id">Car</Label>
-                        <NativeSelect id="car_id" value={data.car_id.toString()} onChange={(e) => setData('car_id', e.target.value)}>
+                        <NativeSelect
+                            id="car_id"
+                            value={data.car_id.toString()}
+                            onChange={(e) => setData('car_id', e.target.value)}
+                            disabled={isEditing}
+                        >
                             <NativeSelectOption value="">Select car</NativeSelectOption>
                             {cars.map((car) => (
                                 <NativeSelectOption key={car.id} value={car.id.toString()}>
@@ -106,6 +111,11 @@ export default function RefuelForm({ refuel, cars, gasStations, formType }: Refu
                                 </NativeSelectOption>
                             ))}
                         </NativeSelect>
+                        {isEditing && (
+                            <p className="text-muted-foreground text-xs">
+                                A refuel cannot be moved to another car. Delete it and log it again on the correct car.
+                            </p>
+                        )}
                         <InputError message={errors.car_id} />
                     </div>
                     <div className="grid gap-2">

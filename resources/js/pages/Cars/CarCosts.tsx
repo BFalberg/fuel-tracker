@@ -1,15 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { type Refuel } from '@/types';
 import { CircleDollarSign } from 'lucide-react';
-
-type RefuelType = {
-    id: number;
-    car_id: number;
-    gas_station_id: number;
-    liters_refueled: number;
-    total_price: number;
-    mileage: number;
-    created_at: string;
-};
 
 type ExpenseType = {
     id: number;
@@ -28,7 +19,7 @@ export default function CarCosts({
     salePrice = null,
 }: {
     expenses?: ExpenseType[];
-    refuels?: RefuelType[];
+    refuels?: Refuel[];
     startMilage: number | null;
     purchasePrice?: number | null;
     salePrice?: number | null;

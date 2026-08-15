@@ -1,26 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { type Refuel } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BanknoteIcon, Car, Fuel, Gauge, MapPin, MoreVertical, Pencil, Trash2 } from 'lucide-react';
-
-interface Refuel {
-    id: number;
-    car_id: number;
-    gas_station_id?: number | null;
-    liters_refueled: number;
-    total_price: number;
-    mileage: number;
-    type?: 'fossil' | 'charge';
-    created_at: string; // Add this for the date
-    car?: {
-        name: string;
-        is_electric?: boolean;
-    };
-    gas_station?: {
-        name: string;
-    } | null;
-}
 
 interface RefuelCardProps {
     refuel: Refuel;
@@ -52,6 +35,10 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
     };
 
     const isElectric = refuel.type ? refuel.type === 'charge' : (refuel.car?.is_electric ?? false);
+    const liters = Number(refuel.liters_refueled);
+    const totalPrice = Number(refuel.total_price);
+    // Guard against a zero-litre record producing Infinity or NaN.
+    const unitPrice = liters > 0 ? totalPrice / liters : null;
     const unitLabel = isElectric ? 'kWh' : 'L';
     const unitPriceLabel = isElectric ? 'kr./kWh' : 'kr./L';
 
@@ -94,16 +81,16 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                     <div className="flex items-center space-x-2">
                         <Fuel className="text-muted-foreground h-4 w-4" />
                         <span className="text-sm">
-                            {formatNumber(refuel.liters_refueled)} {unitLabel}
+                            {formatNumber(liters)} {unitLabel}
                         </span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <BanknoteIcon className="text-muted-foreground h-4 w-4" />
-                        <span className="text-sm">{formatCurrency(refuel.total_price)}</span>
+                        <span className="text-sm">{formatCurrency(totalPrice)}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <Gauge className="text-muted-foreground h-4 w-4" />
-                        <span className="text-sm">{formatCurrency(refuel.total_price / refuel.liters_refueled).replace('kr.', unitPriceLabel)}</span>
+                        <span className="text-sm">{unitPrice === null ? '—' : `${formatNumber(unitPrice)} ${unitPriceLabel}`}</span>
                     </div>
                 </div>
             </CardContent>

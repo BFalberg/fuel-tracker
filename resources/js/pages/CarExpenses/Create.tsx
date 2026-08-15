@@ -13,9 +13,10 @@ interface Car {
 
 interface CreateProps {
     car: Car;
+    expenseTypes: string[];
 }
 
-export default function Create({ car }: CreateProps) {
+export default function Create({ car, expenseTypes }: CreateProps) {
     const { data, setData, post, processing, errors } = useForm({
         expense_type: '',
         amount: '',
@@ -41,11 +42,11 @@ export default function Create({ car }: CreateProps) {
                                 <NativeSelectOption value="" disabled>
                                     Vælg type
                                 </NativeSelectOption>
-                                <NativeSelectOption value="Værksted">Værksted</NativeSelectOption>
-                                <NativeSelectOption value="Forsikring">Forsikring</NativeSelectOption>
-                                <NativeSelectOption value="Afgift">Afgift</NativeSelectOption>
-                                <NativeSelectOption value="Tilkøb">Tilkøb</NativeSelectOption>
-                                <NativeSelectOption value="Abonnement">Abonnement</NativeSelectOption>
+                                {expenseTypes.map((expenseType) => (
+                                    <NativeSelectOption key={expenseType} value={expenseType}>
+                                        {expenseType}
+                                    </NativeSelectOption>
+                                ))}
                             </NativeSelect>
                             {errors.expense_type && <div className="text-xs text-red-500">{errors.expense_type}</div>}
                         </div>
