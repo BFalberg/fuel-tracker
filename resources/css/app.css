@@ -203,9 +203,24 @@
 
     body {
         @apply bg-background text-foreground;
+        overscroll-behavior-y: contain;
     }
 
     #app-navbar > div {
         width: 100%;
+    }
+
+    /* Touch tuning: drop the 300ms double-tap delay and the grey flash on tap. */
+    a,
+    button,
+    label,
+    select,
+    input,
+    [role='button'] {
+        touch-action: manipulation;
+    }
+
+    * {
+        -webkit-tap-highlight-color: transparent;
     }
 }

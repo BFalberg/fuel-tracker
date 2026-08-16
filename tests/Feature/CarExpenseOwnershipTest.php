@@ -4,6 +4,7 @@ use App\Models\Car;
 use App\Models\CarExpense;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
@@ -76,4 +77,29 @@ test('editing an expense belonging to the correct car succeeds', function () {
     $this->actingAs($user)
         ->get(route('cars.expenses.edit', ['car' => $car->id, 'expense' => $expense->id]))
         ->assertOk();
+});
+
+/**
+ * The edit page previously rendered without the app layout, leaving no header
+ * and no navigation. Locks in that it renders as a normal Inertia page.
+ */
+test('the expense edit page renders inside the app', function () {
+    $user = User::factory()->create();
+    $car = Car::factory()->ownedBy($user)->create();
+
+    $expense = CarExpense::create([
+        'car_id' => $car->id,
+        'expense_type' => 'Værksted',
+        'amount' => 500,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('cars.expenses.edit', ['car' => $car->id, 'expense' => $expense->id]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('CarExpenses/Edit')
+            ->where('car.id', $car->id)
+            ->where('expense.id', $expense->id)
+            ->has('expenseTypes')
+        );
 });

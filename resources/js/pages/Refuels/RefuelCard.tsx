@@ -1,9 +1,7 @@
-import { Button } from '@/components/ui/button';
+import ActionSheet from '@/components/action-sheet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { type Refuel } from '@/types';
-import { Link } from '@inertiajs/react';
-import { BanknoteIcon, Car, Fuel, Gauge, MapPin, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { BanknoteIcon, Car, Fuel, Gauge, MapPin, Pencil, Trash2 } from 'lucide-react';
 
 interface RefuelCardProps {
     refuel: Refuel;
@@ -52,25 +50,13 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                         <span className="text-muted-foreground text-sm">{refuel.gas_station?.name ?? 'Unknown Station'}</span>
                     </div>
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                            <Link href={route('refuels.edit', { refuel: refuel.id })} className="flex items-center">
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onDelete?.(refuel)} className="text-red-600">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <ActionSheet
+                    title={`Refuel · ${formatDate(refuel.created_at)}`}
+                    items={[
+                        { label: 'Edit', icon: Pencil, href: route('refuels.edit', { refuel: refuel.id }) },
+                        { label: 'Delete', icon: Trash2, onSelect: () => onDelete?.(refuel), destructive: true },
+                    ]}
+                />
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-2 gap-2">

@@ -115,8 +115,8 @@ export default function RefuelForm({ refuel, cars, gasStations, mileageBounds, f
 
     return (
         <Card>
-            <div className="p-4 pt-0">
-                <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+            <div className="px-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid gap-2">
                         <Label htmlFor="car_id">Car</Label>
                         <NativeSelect

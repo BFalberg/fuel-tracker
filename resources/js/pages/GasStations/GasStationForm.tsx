@@ -92,7 +92,7 @@ export default function GasStationForm({ formType, gasStation }: GasStationFormP
 
     return (
         <Card>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6 px-6">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6 px-4">
                 <div className="grid gap-2">
                     <Label htmlFor="name">Name</Label>
                     <Input

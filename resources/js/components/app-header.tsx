@@ -19,6 +19,17 @@ const getCreateUrl = (currentUrl: string) => {
     return '/refuels/create';
 };
 
+/**
+ * Matches a nav item against the current location by path prefix, so detail,
+ * create and edit routes keep their section highlighted. The query string is
+ * dropped first — `/dashboard?car=2` is still the dashboard.
+ */
+const isNavItemActive = (currentUrl: string, itemUrl: string) => {
+    const path = currentUrl.split('?')[0];
+
+    return path === itemUrl || path.startsWith(`${itemUrl}/`);
+};
+
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -40,15 +51,11 @@ const mainNavItems: NavItem[] = [
         url: '/refuels',
         icon: Fuel,
     },
-    // {
-    //     title: 'Create',
-    //     url: getCreateUrl,
-    //     icon: Plus,
-    // },
 ];
 
 const activeItemStyles = 'bg-accent-foreground text-accent';
-const menuItemStyles = 'flex flex-col items-center justify-center gap-1 px-1 py-2 text-[0.7rem] rounded-md text-center text-accent-foreground';
+const menuItemStyles =
+    'flex min-h-14 flex-col items-center justify-center gap-1 px-1 py-2 text-[0.7rem] rounded-md text-center text-accent-foreground';
 
 interface AppHeaderProps {
     breadcrumbs?: BreadcrumbItem[];
@@ -60,8 +67,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const getInitials = useInitials();
     return (
         <>
-            <div className="mx-auto w-full max-w-11/12">
-                <div className="border-accent mx-auto flex h-16 items-center border-b">
+            <div className="w-full px-4">
+                <div className="border-accent flex h-16 items-center border-b">
                     <Link href="/dashboard" prefetch className="text-primary-foreground flex items-center space-x-2">
                         <AppLogo />
                     </Link>
@@ -69,8 +76,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     <div className="ml-auto flex items-center space-x-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="size-10 rounded-full p-1">
-                                    <Avatar className="size-8 overflow-hidden rounded-full">
+                                <Button variant="ghost" size="icon" className="rounded-full p-1">
+                                    <Avatar className="size-9 overflow-hidden rounded-full">
                                         <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
                                         <AvatarFallback className="bg-accent text-accent-foreground rounded-lg">
                                             {getInitials(auth.user.name)}
@@ -87,33 +94,33 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
             </div>
             {breadcrumbs.length > 1 && (
                 <div className="border-sidebar-border/70 flex w-full border-b">
-                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
+                    <div className="flex h-12 w-full items-center justify-start px-4 text-neutral-500">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>
             )}
 
-            <div className="fixed bottom-6 z-50 flex w-full flex-col gap-6 px-4">
+            <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col gap-3 px-4 pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                 {/* Create Button */}
-                <Button variant="default" size="icon" className="size-14 self-end rounded-full">
-                    <Link href={getCreateUrl(page.url)} className="">
+                <Button variant="default" size="icon-lg" className="self-end rounded-full shadow-lg" asChild>
+                    <Link href={getCreateUrl(page.url)} aria-label="Create">
                         <Plus className="size-6" />
                     </Link>
                 </Button>
                 {/* Navigation */}
-                <NavigationMenu id="app-navbar" className="bg-accent flex w-full max-w-full items-center justify-center rounded-xl px-1 py-1">
+                <NavigationMenu
+                    id="app-navbar"
+                    className="bg-accent/95 flex w-full max-w-full items-center justify-center rounded-xl px-1 py-1 shadow-lg backdrop-blur-md"
+                >
                     <NavigationMenuList className="grid w-full grid-cols-4 items-center justify-center">
-                        {mainNavItems.map((item, index) => {
-                            const resolvedUrl = item.url;
-                            return (
-                                <NavigationMenuItem key={index} className="">
-                                    <Link href={resolvedUrl} className={cn(menuItemStyles, page.url === resolvedUrl && activeItemStyles)}>
-                                        {item.icon && <Icon iconNode={item.icon} className="size-5" />}
-                                        {item.title}
-                                    </Link>
-                                </NavigationMenuItem>
-                            );
-                        })}
+                        {mainNavItems.map((item, index) => (
+                            <NavigationMenuItem key={index}>
+                                <Link href={item.url} className={cn(menuItemStyles, isNavItemActive(page.url, item.url) && activeItemStyles)}>
+                                    {item.icon && <Icon iconNode={item.icon} className="size-5" />}
+                                    {item.title}
+                                </Link>
+                            </NavigationMenuItem>
+                        ))}
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
