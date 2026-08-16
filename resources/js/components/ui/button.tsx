@@ -20,11 +20,15 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      // Sizes are tuned for touch: `default`, `icon` and `icon-lg` all meet the
+      // 44px minimum target. `sm` stays below it and is only for controls that
+      // sit inside an already-large tap area.
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9",
+        default: "h-11 px-5 py-2 has-[>svg]:px-4",
+        sm: "h-9 rounded-md px-3.5 has-[>svg]:px-3",
+        lg: "h-12 rounded-md px-6 has-[>svg]:px-4",
+        icon: "size-11",
+        "icon-lg": "size-14",
       },
     },
     defaultVariants: {

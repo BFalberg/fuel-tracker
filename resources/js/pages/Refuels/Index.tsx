@@ -142,7 +142,7 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
                             <div className="flex gap-2">
                                 <Button
                                     variant="outline"
-                                    size="sm"
+                                    size="icon"
                                     onClick={() => handlePageChange((refuels?.current_page ?? 1) - 1)}
                                     disabled={refuels?.current_page === 1}
                                 >
@@ -150,7 +150,7 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    size="sm"
+                                    size="icon"
                                     onClick={() => handlePageChange((refuels?.current_page ?? 1) + 1)}
                                     disabled={refuels?.current_page === refuels?.last_page}
                                 >

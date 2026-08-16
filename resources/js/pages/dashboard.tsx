@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartConfig, ChartContainer } from '@/components/ui/chart';
 import { MonthPicker } from '@/components/ui/month-picker';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -49,11 +50,19 @@ type ChartTab = 'cost' | 'efficiency' | 'distance' | 'refuel';
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
 const chartConfig = {
-    value: { label: 'Value', color: 'var(--chart-1)' },
+    value: { label: 'Value', color: 'var(--accent)' },
 } satisfies ChartConfig;
+
+const CHART_TABS: { tab: ChartTab; label: string }[] = [
+    { tab: 'refuel', label: 'Refuel' },
+    { tab: 'cost', label: 'Cost' },
+    { tab: 'efficiency', label: 'Efficiency' },
+    { tab: 'distance', label: 'Distance' },
+];
 
 export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedTo, stats, message }: Props) {
     const [activeTab, setActiveTab] = useState<ChartTab>('refuel');
+    const [selectedBar, setSelectedBar] = useState<number | null>(null);
     const [localFrom, setLocalFrom] = useState(selectedFrom);
     const [localTo, setLocalTo] = useState(selectedTo);
 
@@ -85,6 +94,32 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
         rawMonth: t.month,
     }));
 
+    const formatChartValue = (value: number) => {
+        switch (activeTab) {
+            case 'cost':
+                return formatCurrency(value);
+            case 'efficiency':
+                return `${value} ${efficiencyUnit}/100km`;
+            case 'refuel':
+                return `${formatNumber(value)} ${efficiencyUnit}`;
+            default:
+                return `${formatNumber(value)} km`;
+        }
+    };
+
+    /**
+     * Hover tooltips are a pointer affordance, so the chart is read by tapping a
+     * bar instead and the value is shown in the card header. Defaults to the
+     * most recent month so a value is always on screen.
+     */
+    const readoutIndex = selectedBar !== null && selectedBar < chartData.length ? selectedBar : chartData.length - 1;
+    const readout = chartData[readoutIndex];
+
+    const selectTab = (tab: ChartTab) => {
+        setActiveTab(tab);
+        setSelectedBar(null);
+    };
+
     if (message) {
         return (
             <AppLayout breadcrumbs={breadcrumbs}>
@@ -110,10 +145,10 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                             <button
                                 key={car.id}
                                 onClick={() => router.get('/dashboard', { car: car.id, from: selectedFrom, to: selectedTo })}
-                                className={[
-                                    'rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
+                                className={cn(
+                                    'min-h-11 rounded-full px-5 text-sm font-medium whitespace-nowrap transition-colors',
                                     car.id === selectedCarId ? 'bg-accent text-primary' : 'bg-primary text-primary-foreground',
-                                ].join(' ')}
+                                )}
                             >
                                 {car.name}
                             </button>
@@ -125,40 +160,38 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                     data="stats"
                     fallback={
                         <div className="flex flex-col gap-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                {[0, 1].map((i) => (
-                                    <Card key={i}>
-                                        <CardHeader className="pb-1">
-                                            <Skeleton className="h-3 w-20" />
-                                        </CardHeader>
-                                        <CardContent className="space-y-1">
-                                            <Skeleton className="h-7 w-28" />
-                                            <Skeleton className="h-3 w-24" />
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                {[0, 1].map((i) => (
-                                    <Card key={i}>
-                                        <CardContent className="space-y-1">
-                                            <Skeleton className="h-3 w-24" />
-                                            <Skeleton className="h-5 w-20" />
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                                <Card className="col-span-2">
-                                    <CardContent className="space-y-1">
-                                        <Skeleton className="h-3 w-24" />
-                                        <Skeleton className="h-5 w-20" />
-                                    </CardContent>
-                                </Card>
-                            </div>
+                            <Skeleton className="h-11 w-full" />
                             <Card>
+                                <CardHeader className="gap-3 pb-2">
+                                    <Skeleton className="h-12 w-full" />
+                                    <Skeleton className="h-6 w-32" />
+                                </CardHeader>
                                 <CardContent>
-                                    <Skeleton className="h-44 w-full" />
+                                    <Skeleton className="h-52 w-full" />
                                 </CardContent>
                             </Card>
+                            <Card>
+                                <CardHeader className="pb-1">
+                                    <Skeleton className="h-3 w-24" />
+                                </CardHeader>
+                                <CardContent className="space-y-1">
+                                    <Skeleton className="h-9 w-40" />
+                                    <Skeleton className="h-3 w-28" />
+                                </CardContent>
+                            </Card>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[0, 1, 2, 3].map((i) => (
+                                    <Card key={i}>
+                                        <CardHeader className="pb-1">
+                                            <Skeleton className="h-3 w-16" />
+                                        </CardHeader>
+                                        <CardContent className="space-y-1">
+                                            <Skeleton className="h-5 w-20" />
+                                            <Skeleton className="h-3 w-24" />
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
                         </div>
                     }
                 >
@@ -166,127 +199,125 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                         <div className="flex flex-col gap-4">
                             {/* Monthly trend chart */}
                             <div className="flex items-center gap-2">
-                                <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} />
+                                <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} label="From month" />
                                 <span className="text-muted-foreground text-xs">–</span>
-                                <MonthPicker value={localTo} min={localFrom} max={new Date().toISOString().slice(0, 7)} onChange={setLocalTo} />
-                                {isDirty && (
-                                    <Button size="sm" onClick={applyPeriod}>
-                                        Apply
-                                    </Button>
-                                )}
+                                <MonthPicker
+                                    value={localTo}
+                                    min={localFrom}
+                                    max={new Date().toISOString().slice(0, 7)}
+                                    onChange={setLocalTo}
+                                    label="To month"
+                                />
+                                {isDirty && <Button onClick={applyPeriod}>Apply</Button>}
                             </div>
                             <Card>
-                                <CardHeader className="gap-2 pb-2">
-                                    <div className="flex gap-1">
-                                        {(['refuel', 'cost', 'efficiency', 'distance'] as ChartTab[]).map((tab) => (
+                                <CardHeader className="gap-3 pb-2">
+                                    <div className="bg-input grid grid-cols-4 gap-1 rounded-lg p-1">
+                                        {CHART_TABS.map(({ tab, label }) => (
                                             <button
                                                 key={tab}
-                                                onClick={() => setActiveTab(tab)}
-                                                className={[
-                                                    'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                                                    activeTab === tab ? 'bg-accent text-primary' : 'text-muted-foreground hover:text-foreground',
-                                                ].join(' ')}
+                                                onClick={() => selectTab(tab)}
+                                                className={cn(
+                                                    'min-h-10 rounded-md px-1 text-xs font-medium transition-colors',
+                                                    activeTab === tab ? 'bg-accent text-primary' : 'text-muted-foreground',
+                                                )}
                                             >
-                                                {tab === 'cost'
-                                                    ? 'Cost'
-                                                    : tab === 'efficiency'
-                                                      ? 'Efficiency'
-                                                      : tab === 'refuel'
-                                                        ? 'Refuel'
-                                                        : 'Distance'}
+                                                {label}
                                             </button>
                                         ))}
                                     </div>
+                                    {readout && (
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-lg font-bold">{formatChartValue(readout.value)}</span>
+                                            <span className="text-muted-foreground text-xs">{readout.month}</span>
+                                        </div>
+                                    )}
                                 </CardHeader>
                                 <CardContent>
-                                    <ChartContainer config={chartConfig} className="h-44 w-full">
+                                    <ChartContainer config={chartConfig} className="h-52 w-full">
                                         <BarChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-                                            <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-                                            <ChartTooltip
-                                                cursor={false}
-                                                content={
-                                                    <ChartTooltipContent
-                                                        hideLabel
-                                                        formatter={(value) =>
-                                                            activeTab === 'cost'
-                                                                ? formatCurrency(value as number)
-                                                                : activeTab === 'efficiency'
-                                                                  ? `${value} ${efficiencyUnit}/100km`
-                                                                  : activeTab === 'refuel'
-                                                                    ? `${formatNumber(value as number)} ${efficiencyUnit}`
-                                                                    : `${formatNumber(value as number)} km`
-                                                        }
-                                                    />
-                                                }
+                                            <XAxis
+                                                dataKey="month"
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tick={{ fontSize: 11 }}
+                                                interval="preserveStartEnd"
+                                                minTickGap={12}
                                             />
-                                            <Bar dataKey="value" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
+                                            <Bar
+                                                dataKey="value"
+                                                fill="var(--color-value)"
+                                                radius={[4, 4, 0, 0]}
+                                                maxBarSize={40}
+                                                fillOpacity={0.55}
+                                                activeIndex={readoutIndex}
+                                                activeBar={{ fillOpacity: 1 }}
+                                                onClick={(_, index) => setSelectedBar(index)}
+                                            />
                                         </BarChart>
                                     </ChartContainer>
                                 </CardContent>
                             </Card>
-                            {/* Hero cards */}
-                            <div className="grid grid-cols-1 gap-3">
+
+                            {/* Hero card */}
+                            <Card>
+                                <CardHeader className="pb-1">
+                                    <CardTitle className="text-sm">Cost this month</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold">{formatCurrency(stats.stats.currentMonth.amount)}</div>
+                                    <p className="text-muted-foreground text-xs">avg. {formatCurrency(stats.stats.averages.monthlyAmount)}/month</p>
+                                </CardContent>
+                            </Card>
+
+                            {/* Stat tiles */}
+                            <div className="grid grid-cols-2 gap-3">
                                 <Card>
                                     <CardHeader className="pb-1">
-                                        <CardTitle className="text-sm">Cost this month</CardTitle>
+                                        <CardTitle className="text-xs">Efficiency</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-xl font-bold">{formatCurrency(stats.stats.currentMonth.amount)}</div>
-                                        <p className="text-muted-foreground text-xs">
-                                            avg. {formatCurrency(stats.stats.averages.monthlyAmount)}/month
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="pb-1">
-                                        <CardTitle className="text-sm">Efficiency</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-xl font-bold">
+                                        <p className="font-semibold">
                                             {stats.stats.efficiency.currentMonth !== null
                                                 ? `${stats.stats.efficiency.currentMonth} ${efficiencyUnit}/100km`
                                                 : '—'}
-                                        </div>
-                                        <p className="text-muted-foreground text-xs">
+                                        </p>
+                                        <p className="text-muted-foreground text-[0.7rem]">
                                             {stats.stats.efficiency.allTime !== null
                                                 ? `avg. ${stats.stats.efficiency.allTime} ${efficiencyUnit}/100km`
                                                 : ''}
                                         </p>
                                     </CardContent>
                                 </Card>
-                            </div>
-
-                            {/* Secondary 2×2 grid */}
-                            <div className="grid grid-cols-2 gap-3">
                                 <Card>
                                     <CardHeader className="pb-1">
-                                        <CardTitle className="text-sm">Distance</CardTitle>
+                                        <CardTitle className="text-xs">Distance</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="font-semibold">{formatNumber(stats.stats.currentMonth.kilometers)} km</p>
-                                        <p className="text-muted-foreground text-xs">
+                                        <p className="text-muted-foreground text-[0.7rem]">
                                             avg. {formatNumber(stats.stats.averages.monthlyKilometers)} km/month
                                         </p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardHeader className="pb-1">
-                                        <CardTitle className="text-sm">Price per km</CardTitle>
+                                        <CardTitle className="text-xs">Price per km</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="font-semibold">{formatCurrency(stats.stats.totals.pricePerKilometer)}</p>
-                                        <p className="text-muted-foreground text-xs">{formatNumber(stats.stats.totals.kilometers)} km total</p>
+                                        <p className="text-muted-foreground text-[0.7rem]">{formatNumber(stats.stats.totals.kilometers)} km total</p>
                                     </CardContent>
                                 </Card>
-                                <Card className="col-span-2">
+                                <Card>
                                     <CardHeader className="pb-1">
-                                        <CardTitle className="text-sm">Fuel</CardTitle>
+                                        <CardTitle className="text-xs">Fuel</CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="font-semibold">
                                             {formatNumber(stats.stats.currentMonth.litersThisMonth)} {efficiencyUnit}
                                         </p>
-                                        <p className="text-muted-foreground text-xs">
+                                        <p className="text-muted-foreground text-[0.7rem]">
                                             avg. {formatNumber(stats.stats.averages.monthlyLiters)} {efficiencyUnit}/month
                                         </p>
                                     </CardContent>

@@ -47,7 +47,7 @@ function AddCoDriverForm({ carId }: { carId: number }) {
                 <Input type="email" placeholder="Email address" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
                 {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
             </div>
-            <Button type="submit" disabled={processing} size="sm">
+            <Button type="submit" disabled={processing}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Add
             </Button>

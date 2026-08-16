@@ -1,17 +1,8 @@
-import { SidebarInset } from '@/components/ui/sidebar';
 import * as React from 'react';
 
-interface AppContentProps extends React.ComponentProps<'div'> {
-    variant?: 'header' | 'sidebar';
-}
-
-export function AppContent({ variant = 'header', children, ...props }: AppContentProps) {
-    if (variant === 'sidebar') {
-        return <SidebarInset {...props}>{children}</SidebarInset>;
-    }
-
+export function AppContent({ children, ...props }: React.ComponentProps<'div'>) {
     return (
-        <main className="mx-auto flex h-full w-full max-w-11/12 flex-1 flex-col gap-4 rounded-xl" {...props}>
+        <main className="flex h-full w-full flex-1 flex-col gap-4 px-4" {...props}>
             {children}
         </main>
     );

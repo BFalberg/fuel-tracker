@@ -1,9 +1,9 @@
+import ActionSheet from '@/components/action-sheet';
 import DeleteConfirmation from '@/components/delete-confirmation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link, router } from '@inertiajs/react';
-import { Banknote, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Banknote, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 type Expense = {
@@ -50,7 +50,7 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
                         <Banknote className="size-6" />
                         Expenses
                     </CardTitle>
-                    <Button asChild variant="default" size="sm">
+                    <Button asChild variant="default">
                         <Link href={route('cars.expenses.create', { car: carId })}>
                             <Plus /> Expense
                         </Link>
@@ -70,28 +70,22 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
                                             <div className="text-foreground text-base font-medium">
                                                 <span className="text-base font-semibold">{expense.expense_type}</span>
                                             </div>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" size="icon">
-                                                        <MoreVertical className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem asChild>
-                                                        <Link
-                                                            href={route('cars.expenses.edit', { car: carId, expense: expense.id })}
-                                                            className="flex items-center"
-                                                        >
-                                                            <Pencil className="mr-2 h-4 w-4" />
-                                                            Edit
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleDelete(expense)} className="text-red-600">
-                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <ActionSheet
+                                                title={`${expense.expense_type} expense`}
+                                                items={[
+                                                    {
+                                                        label: 'Edit',
+                                                        icon: Pencil,
+                                                        href: route('cars.expenses.edit', { car: carId, expense: expense.id }),
+                                                    },
+                                                    {
+                                                        label: 'Delete',
+                                                        icon: Trash2,
+                                                        onSelect: () => handleDelete(expense),
+                                                        destructive: true,
+                                                    },
+                                                ]}
+                                            />
                                         </div>
                                         <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                                             <span className="col-span-2">
