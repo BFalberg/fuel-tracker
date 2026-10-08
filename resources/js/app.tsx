@@ -2,17 +2,22 @@ import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { ComponentType } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import PwaUpdateToast from '@/components/pwa-update-toast';
-import { initializeTheme } from './hooks/use-appearance';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { initializeTheme } from '@/hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) => resolvePageComponent<ComponentType>(`./pages/${name}.tsx`, import.meta.glob<ComponentType>('./pages/**/*.tsx')),
+    resolve: (name) =>
+        resolvePageComponent<ComponentType>(
+            `./pages/${name}.tsx`,
+            import.meta.glob<ComponentType>('./pages/**/*.tsx'),
+        ),
     setup({ el, App, props }) {
         const root = createRoot(el);
 
@@ -40,14 +45,22 @@ void createInertiaApp({
             };
 
             return (
-                <>
+                <TooltipProvider delayDuration={0}>
                     <App {...props} />
-                    <PwaUpdateToast open={updateAvailable} onDismiss={() => setUpdateAvailable(false)} onReload={handleReload} />
-                </>
+                    <PwaUpdateToast
+                        open={updateAvailable}
+                        onDismiss={() => setUpdateAvailable(false)}
+                        onReload={handleReload}
+                    />
+                </TooltipProvider>
             );
         }
 
-        root.render(<Root />);
+        root.render(
+            <StrictMode>
+                <Root />
+            </StrictMode>,
+        );
     },
     progress: {
         color: '#4B5563',

@@ -30,9 +30,21 @@ interface CarStats {
     name: string;
     isElectric: boolean;
     stats: {
-        currentMonth: { amount: number; kilometers: number; litersThisMonth: number };
-        averages: { monthlyAmount: number; monthlyKilometers: number; monthlyLiters: number };
-        totals: { amount: number; kilometers: number; pricePerKilometer: number };
+        currentMonth: {
+            amount: number;
+            kilometers: number;
+            litersThisMonth: number;
+        };
+        averages: {
+            monthlyAmount: number;
+            monthlyKilometers: number;
+            monthlyLiters: number;
+        };
+        totals: {
+            amount: number;
+            kilometers: number;
+            pricePerKilometer: number;
+        };
         efficiency: { currentMonth: number | null; allTime: number | null };
         monthlyTrends: MonthlyTrend[];
     };
@@ -49,7 +61,9 @@ interface Props {
 
 type ChartTab = 'cost' | 'efficiency' | 'distance' | 'refuel';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: dashboard.url() }];
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: dashboard.url() },
+];
 
 const chartConfig = {
     value: { label: 'Value', color: 'var(--accent)' },
@@ -62,12 +76,22 @@ const CHART_TABS: { tab: ChartTab; label: string }[] = [
     { tab: 'distance', label: 'Distance' },
 ];
 
-export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedTo, stats, message }: Props) {
+export default function Dashboard({
+    cars,
+    selectedCarId,
+    selectedFrom,
+    selectedTo,
+    stats,
+    message,
+}: Props) {
     const [activeTab, setActiveTab] = useState<ChartTab>('refuel');
     const [selectedBar, setSelectedBar] = useState<number | null>(null);
     const [localFrom, setLocalFrom] = useState(selectedFrom);
     const [localTo, setLocalTo] = useState(selectedTo);
-    const [syncedPeriod, setSyncedPeriod] = useState({ from: selectedFrom, to: selectedTo });
+    const [syncedPeriod, setSyncedPeriod] = useState({
+        from: selectedFrom,
+        to: selectedTo,
+    });
     const [currentMonth] = useState(() => new Date().toISOString().slice(0, 7));
 
     // Reset the local month pickers when the server sends a new period (state adjusted during render, not in an effect).
@@ -77,17 +101,33 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
         setLocalTo(selectedTo);
     }
 
-    const formatCurrency = (amount: number) => new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(amount);
+    const formatCurrency = (amount: number) =>
+        new Intl.NumberFormat('da-DK', {
+            style: 'currency',
+            currency: 'DKK',
+        }).format(amount);
 
-    const formatNumber = (n: number) => new Intl.NumberFormat('da-DK').format(n);
+    const formatNumber = (n: number) =>
+        new Intl.NumberFormat('da-DK').format(n);
 
     const formatMonthLabel = (month: string) => {
         const [year, m] = month.split('-');
-        return new Date(parseInt(year), parseInt(m) - 1).toLocaleDateString('da-DK', { month: 'short' });
+        return new Date(parseInt(year), parseInt(m) - 1).toLocaleDateString(
+            'da-DK',
+            { month: 'short' },
+        );
     };
 
     const applyPeriod = () => {
-        router.get(dashboard.url({ query: { car: selectedCarId ?? undefined, from: localFrom, to: localTo } }));
+        router.get(
+            dashboard.url({
+                query: {
+                    car: selectedCarId ?? undefined,
+                    from: localFrom,
+                    to: localTo,
+                },
+            }),
+        );
     };
 
     const isDirty = localFrom !== selectedFrom || localTo !== selectedTo;
@@ -96,7 +136,14 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
 
     const chartData = (stats?.stats.monthlyTrends ?? []).map((t) => ({
         month: formatMonthLabel(t.month),
-        value: activeTab === 'cost' ? t.cost : activeTab === 'efficiency' ? (t.efficiency ?? 0) : activeTab === 'refuel' ? t.liters : t.distance,
+        value:
+            activeTab === 'cost'
+                ? t.cost
+                : activeTab === 'efficiency'
+                  ? (t.efficiency ?? 0)
+                  : activeTab === 'refuel'
+                    ? t.liters
+                    : t.distance,
         rawMonth: t.month,
     }));
 
@@ -118,7 +165,10 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
      * bar instead and the value is shown in the card header. Defaults to the
      * most recent month so a value is always on screen.
      */
-    const readoutIndex = selectedBar !== null && selectedBar < chartData.length ? selectedBar : chartData.length - 1;
+    const readoutIndex =
+        selectedBar !== null && selectedBar < chartData.length
+            ? selectedBar
+            : chartData.length - 1;
     const readout = chartData[readoutIndex];
 
     const selectTab = (tab: ChartTab) => {
@@ -150,10 +200,22 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                         {cars.map((car) => (
                             <button
                                 key={car.id}
-                                onClick={() => router.get(dashboard.url({ query: { car: car.id, from: selectedFrom, to: selectedTo } }))}
+                                onClick={() =>
+                                    router.get(
+                                        dashboard.url({
+                                            query: {
+                                                car: car.id,
+                                                from: selectedFrom,
+                                                to: selectedTo,
+                                            },
+                                        }),
+                                    )
+                                }
                                 className={cn(
                                     'min-h-11 rounded-full px-5 text-sm font-medium whitespace-nowrap transition-colors',
-                                    car.id === selectedCarId ? 'bg-accent text-primary' : 'bg-primary text-primary-foreground',
+                                    car.id === selectedCarId
+                                        ? 'bg-accent text-primary'
+                                        : 'bg-primary text-primary-foreground',
                                 )}
                             >
                                 {car.name}
@@ -205,10 +267,25 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                         <div className="flex flex-col gap-4">
                             {/* Monthly trend chart */}
                             <div className="flex items-center gap-2">
-                                <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} label="From month" />
-                                <span className="text-xs text-muted-foreground">–</span>
-                                <MonthPicker value={localTo} min={localFrom} max={currentMonth} onChange={setLocalTo} label="To month" />
-                                {isDirty && <Button onClick={applyPeriod}>Apply</Button>}
+                                <MonthPicker
+                                    value={localFrom}
+                                    max={localTo}
+                                    onChange={setLocalFrom}
+                                    label="From month"
+                                />
+                                <span className="text-xs text-muted-foreground">
+                                    –
+                                </span>
+                                <MonthPicker
+                                    value={localTo}
+                                    min={localFrom}
+                                    max={currentMonth}
+                                    onChange={setLocalTo}
+                                    label="To month"
+                                />
+                                {isDirty && (
+                                    <Button onClick={applyPeriod}>Apply</Button>
+                                )}
                             </div>
                             <Card>
                                 <CardHeader className="gap-3 pb-2">
@@ -219,7 +296,9 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                                 onClick={() => selectTab(tab)}
                                                 className={cn(
                                                     'min-h-10 rounded-md px-1 text-xs font-medium transition-colors',
-                                                    activeTab === tab ? 'bg-accent text-primary' : 'text-muted-foreground',
+                                                    activeTab === tab
+                                                        ? 'bg-accent text-primary'
+                                                        : 'text-muted-foreground',
                                                 )}
                                             >
                                                 {label}
@@ -228,14 +307,31 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                     </div>
                                     {readout && (
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-lg font-bold">{formatChartValue(readout.value)}</span>
-                                            <span className="text-xs text-muted-foreground">{readout.month}</span>
+                                            <span className="text-lg font-bold">
+                                                {formatChartValue(
+                                                    readout.value,
+                                                )}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {readout.month}
+                                            </span>
                                         </div>
                                     )}
                                 </CardHeader>
                                 <CardContent>
-                                    <ChartContainer config={chartConfig} className="h-52 w-full">
-                                        <BarChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                                    <ChartContainer
+                                        config={chartConfig}
+                                        className="h-52 w-full"
+                                    >
+                                        <BarChart
+                                            data={chartData}
+                                            margin={{
+                                                top: 4,
+                                                right: 4,
+                                                left: 4,
+                                                bottom: 0,
+                                            }}
+                                        >
                                             <XAxis
                                                 dataKey="month"
                                                 tickLine={false}
@@ -249,11 +345,23 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                                 fill="var(--color-value)"
                                                 radius={[4, 4, 0, 0]}
                                                 maxBarSize={40}
-                                                onClick={(_, index) => setSelectedBar(index)}
+                                                onClick={(_, index) =>
+                                                    setSelectedBar(index)
+                                                }
                                             >
-                                                {chartData.map((entry, index) => (
-                                                    <Cell key={`${entry.month}-${index}`} fillOpacity={index === readoutIndex ? 1 : 0.55} />
-                                                ))}
+                                                {chartData.map(
+                                                    (entry, index) => (
+                                                        <Cell
+                                                            key={`${entry.month}-${index}`}
+                                                            fillOpacity={
+                                                                index ===
+                                                                readoutIndex
+                                                                    ? 1
+                                                                    : 0.55
+                                                            }
+                                                        />
+                                                    ),
+                                                )}
                                             </Bar>
                                         </BarChart>
                                     </ChartContainer>
@@ -263,11 +371,23 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                             {/* Hero card */}
                             <Card>
                                 <CardHeader className="pb-1">
-                                    <CardTitle className="text-sm">Cost this month</CardTitle>
+                                    <CardTitle className="text-sm">
+                                        Cost this month
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-3xl font-bold">{formatCurrency(stats.stats.currentMonth.amount)}</div>
-                                    <p className="text-xs text-muted-foreground">avg. {formatCurrency(stats.stats.averages.monthlyAmount)}/month</p>
+                                    <div className="text-3xl font-bold">
+                                        {formatCurrency(
+                                            stats.stats.currentMonth.amount,
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        avg.{' '}
+                                        {formatCurrency(
+                                            stats.stats.averages.monthlyAmount,
+                                        )}
+                                        /month
+                                    </p>
                                 </CardContent>
                             </Card>
 
@@ -275,16 +395,20 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                             <div className="grid grid-cols-2 gap-3">
                                 <Card>
                                     <CardHeader className="pb-1">
-                                        <CardTitle className="text-xs">Efficiency</CardTitle>
+                                        <CardTitle className="text-xs">
+                                            Efficiency
+                                        </CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="font-semibold">
-                                            {stats.stats.efficiency.currentMonth !== null
+                                            {stats.stats.efficiency
+                                                .currentMonth !== null
                                                 ? `${stats.stats.efficiency.currentMonth} ${efficiencyUnit}/100km`
                                                 : '—'}
                                         </p>
                                         <p className="text-[0.7rem] text-muted-foreground">
-                                            {stats.stats.efficiency.allTime !== null
+                                            {stats.stats.efficiency.allTime !==
+                                            null
                                                 ? `avg. ${stats.stats.efficiency.allTime} ${efficiencyUnit}/100km`
                                                 : ''}
                                         </p>
@@ -292,34 +416,70 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                 </Card>
                                 <Card>
                                     <CardHeader className="pb-1">
-                                        <CardTitle className="text-xs">Distance</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="font-semibold">{formatNumber(stats.stats.currentMonth.kilometers)} km</p>
-                                        <p className="text-[0.7rem] text-muted-foreground">
-                                            avg. {formatNumber(stats.stats.averages.monthlyKilometers)} km/month
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="pb-1">
-                                        <CardTitle className="text-xs">Price per km</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="font-semibold">{formatCurrency(stats.stats.totals.pricePerKilometer)}</p>
-                                        <p className="text-[0.7rem] text-muted-foreground">{formatNumber(stats.stats.totals.kilometers)} km total</p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="pb-1">
-                                        <CardTitle className="text-xs">Fuel</CardTitle>
+                                        <CardTitle className="text-xs">
+                                            Distance
+                                        </CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="font-semibold">
-                                            {formatNumber(stats.stats.currentMonth.litersThisMonth)} {efficiencyUnit}
+                                            {formatNumber(
+                                                stats.stats.currentMonth
+                                                    .kilometers,
+                                            )}{' '}
+                                            km
                                         </p>
                                         <p className="text-[0.7rem] text-muted-foreground">
-                                            avg. {formatNumber(stats.stats.averages.monthlyLiters)} {efficiencyUnit}/month
+                                            avg.{' '}
+                                            {formatNumber(
+                                                stats.stats.averages
+                                                    .monthlyKilometers,
+                                            )}{' '}
+                                            km/month
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="pb-1">
+                                        <CardTitle className="text-xs">
+                                            Price per km
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="font-semibold">
+                                            {formatCurrency(
+                                                stats.stats.totals
+                                                    .pricePerKilometer,
+                                            )}
+                                        </p>
+                                        <p className="text-[0.7rem] text-muted-foreground">
+                                            {formatNumber(
+                                                stats.stats.totals.kilometers,
+                                            )}{' '}
+                                            km total
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="pb-1">
+                                        <CardTitle className="text-xs">
+                                            Fuel
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="font-semibold">
+                                            {formatNumber(
+                                                stats.stats.currentMonth
+                                                    .litersThisMonth,
+                                            )}{' '}
+                                            {efficiencyUnit}
+                                        </p>
+                                        <p className="text-[0.7rem] text-muted-foreground">
+                                            avg.{' '}
+                                            {formatNumber(
+                                                stats.stats.averages
+                                                    .monthlyLiters,
+                                            )}{' '}
+                                            {efficiencyUnit}/month
                                         </p>
                                     </CardContent>
                                 </Card>

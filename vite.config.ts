@@ -3,6 +3,7 @@ import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
+import { bunny } from 'laravel-vite-plugin/fonts';
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite-plus';
 
@@ -16,7 +17,7 @@ export default defineConfig({
         ignorePatterns: ['vite.config.ts', 'tmp/**'],
     },
     fmt: {
-        printWidth: 150,
+        printWidth: 80,
         tabWidth: 4,
         useTabs: false,
         semi: true,
@@ -34,21 +35,39 @@ export default defineConfig({
             stylesheet: 'resources/css/app.css',
         },
         sortImports: {
-            groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+            groups: [
+                'builtin',
+                'external',
+                'internal',
+                'parent',
+                'sibling',
+                'index',
+            ],
             newlinesBetween: false,
         },
         ignorePatterns: [
             'resources/js/components/ui/*',
+            'resources/views/mail/*',
             'resources/js/actions/*',
             'resources/js/routes/*',
             'resources/js/wayfinder/*',
             'tmp/**',
         ],
     },
+    server: {
+        watch: {
+            ignored: ['**/storage/framework/views/**'],
+        },
+    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
+            fonts: [
+                bunny('Instrument Sans', {
+                    weights: [400, 500, 600],
+                }),
+            ],
         }),
         react(),
         babel({

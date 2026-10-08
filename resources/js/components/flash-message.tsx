@@ -2,13 +2,12 @@ import { usePage } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { type SharedData } from '@/types';
 
 /**
  * Renders the `success` flash message that controllers set on redirect.
  */
 export default function FlashMessage() {
-    const { flash } = usePage<SharedData>().props;
+    const { flash } = usePage().props;
     const success = flash?.success;
     const [shownSuccess, setShownSuccess] = useState(success);
     const [visible, setVisible] = useState(Boolean(success));

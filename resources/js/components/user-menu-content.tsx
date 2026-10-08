@@ -1,10 +1,15 @@
 import { Link } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
-import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
-import { edit as editProfile } from '@/routes/profile';
+import { edit as editProfile } from '@/routes/user-profile';
 import { type User } from '@/types';
 
 interface UserMenuContentProps {
@@ -24,7 +29,13 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                    <Link className="block w-full" href={editProfile()} as="button" prefetch onClick={cleanup}>
+                    <Link
+                        className="block w-full"
+                        href={editProfile()}
+                        as="button"
+                        prefetch
+                        onClick={cleanup}
+                    >
                         <Settings className="mr-2" />
                         Settings
                     </Link>
@@ -32,7 +43,12 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                <Link className="block w-full" href={logout()} as="button" onClick={cleanup}>
+                <Link
+                    className="block w-full"
+                    href={logout()}
+                    as="button"
+                    onClick={cleanup}
+                >
                     <LogOut className="mr-2" />
                     Log out
                 </Link>

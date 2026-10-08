@@ -18,11 +18,16 @@ type NominatimReverseResponse = {
  * Look up a human-readable address for a coordinate with OpenStreetMap Nominatim.
  * Returns null when the lookup fails or finds nothing, so callers can ignore it.
  */
-export async function reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
+export async function reverseGeocode(
+    latitude: number,
+    longitude: number,
+): Promise<string | null> {
     let data: NominatimReverseResponse;
 
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+        );
 
         if (!response.ok) {
             return null;
@@ -34,8 +39,15 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
     }
 
     const address = data.address ?? {};
-    const street = [address.road, address.house_number].filter(Boolean).join(' ');
-    const locality = address.city || address.town || address.village || address.suburb || address.city_district;
+    const street = [address.road, address.house_number]
+        .filter(Boolean)
+        .join(' ');
+    const locality =
+        address.city ||
+        address.town ||
+        address.village ||
+        address.suburb ||
+        address.city_district;
     const cityLine = [address.postcode, locality].filter(Boolean).join(' ');
     const formatted = [street, cityLine].filter(Boolean).join(', ');
 
