@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Drawer,
+    DrawerClose,
     DrawerContent,
     DrawerHeader,
     DrawerTitle,
@@ -114,23 +115,26 @@ export default function ActionSheet({
                             );
                         }
 
+                        // DrawerClose closes through vaul's own state, which is
+                        // the only path that fires onAnimationEnd; a direct
+                        // setOpen(false) skips it and the action never runs.
                         return (
-                            <button
-                                key={item.label}
-                                type="button"
-                                disabled={item.disabled}
-                                className={cn(
-                                    className,
-                                    'disabled:pointer-events-none',
-                                )}
-                                onClick={() => {
-                                    pendingAction.current =
-                                        item.onSelect ?? null;
-                                    setOpen(false);
-                                }}
-                            >
-                                {content}
-                            </button>
+                            <DrawerClose asChild key={item.label}>
+                                <button
+                                    type="button"
+                                    disabled={item.disabled}
+                                    className={cn(
+                                        className,
+                                        'disabled:pointer-events-none',
+                                    )}
+                                    onClick={() => {
+                                        pendingAction.current =
+                                            item.onSelect ?? null;
+                                    }}
+                                >
+                                    {content}
+                                </button>
+                            </DrawerClose>
                         );
                     })}
                 </div>
