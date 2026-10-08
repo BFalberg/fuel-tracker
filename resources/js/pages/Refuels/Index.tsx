@@ -1,3 +1,6 @@
+import { Deferred, Head, router } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import DeleteConfirmation from '@/components/delete-confirmation';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -6,9 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { destroy as destroyRefuel, index as refuelsIndex } from '@/routes/refuels';
 import { type BreadcrumbItem, type Refuel } from '@/types';
-import { Deferred, Head, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
 import RefuelCard from './RefuelCard';
 
 interface Props {
@@ -92,7 +92,7 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
                     fallback={
                         <>
                             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                                <div className="text-muted-foreground text-sm">Filter by car</div>
+                                <div className="text-sm text-muted-foreground">Filter by car</div>
                                 <div className="w-full md:w-64">
                                     <Skeleton className="h-10 w-full" />
                                 </div>
@@ -117,7 +117,7 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
                     }
                 >
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                        <div className="text-muted-foreground text-sm">Filter by car</div>
+                        <div className="text-sm text-muted-foreground">Filter by car</div>
                         <div className="w-full md:w-64">
                             <NativeSelect value={selectedCarId ?? ''} onChange={(e) => handleCarFilterChange(e.target.value)}>
                                 <NativeSelectOption value="">All cars</NativeSelectOption>
@@ -137,7 +137,7 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
 
                     {(refuels?.last_page ?? 0) > 1 && (
                         <div className="flex items-center justify-between border-t pt-4">
-                            <div className="text-muted-foreground text-sm">
+                            <div className="text-sm text-muted-foreground">
                                 Showing page {refuels?.current_page} of {refuels?.last_page}
                             </div>
                             <div className="flex gap-2">

@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { MoreVertical, type LucideIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { cn } from '@/lib/utils';
 
 export interface ActionSheetItem {
     label: string;
@@ -55,7 +55,7 @@ export default function ActionSheet({ title, items, triggerLabel = 'Actions' }: 
             </Button>
             <DrawerContent>
                 <DrawerHeader className="pb-2">
-                    <DrawerTitle className="text-muted-foreground text-sm font-normal">{title}</DrawerTitle>
+                    <DrawerTitle className="text-sm font-normal text-muted-foreground">{title}</DrawerTitle>
                 </DrawerHeader>
                 <div className="flex flex-col gap-1 px-2 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                     {items.map((item) => {
@@ -65,7 +65,7 @@ export default function ActionSheet({ title, items, triggerLabel = 'Actions' }: 
                                 <Icon className="size-5 shrink-0" />
                                 <span className="flex flex-col">
                                     {item.label}
-                                    {item.hint && <span className="text-muted-foreground text-xs">{item.hint}</span>}
+                                    {item.hint && <span className="text-xs text-muted-foreground">{item.hint}</span>}
                                 </span>
                             </>
                         );

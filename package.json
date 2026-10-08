@@ -2,26 +2,18 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite",
-        "format": "prettier --write resources/",
-        "format:check": "prettier --check resources/",
-        "lint": "eslint . --fix",
-        "lint:check": "eslint .",
-        "typecheck": "tsc --noEmit"
+        "build": "vp build",
+        "dev": "vp dev",
+        "lint": "NODE_OPTIONS='--experimental-strip-types' vp fmt resources/ && NODE_OPTIONS='--experimental-strip-types' vp lint --fix",
+        "test:lint": "NODE_OPTIONS='--experimental-strip-types' vp fmt --check resources/ && NODE_OPTIONS='--experimental-strip-types' vp lint",
+        "test:types": "tsc --noEmit"
     },
     "devDependencies": {
-        "@eslint/js": "^9.19.0",
         "@laravel/vite-plugin-wayfinder": "^0.1.10",
-        "eslint": "^9.17.0",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-react": "^7.37.5",
-        "eslint-plugin-react-hooks": "^5.1.0",
-        "prettier": "^3.9.9",
-        "prettier-plugin-organize-imports": "^4.3.0",
-        "prettier-plugin-tailwindcss": "^0.8.1",
-        "typescript-eslint": "^8.71.1",
-        "vite-plugin-pwa": "^2.0.0"
+        "@rolldown/plugin-babel": "^0.2.4",
+        "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0",
+        "vite-plugin-pwa": "^2.0.0",
+        "vite-plus": "1.1.0"
     },
     "dependencies": {
         "@headlessui/react": "^2.2.10",
@@ -44,10 +36,10 @@
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@vitejs/plugin-react": "^6.1.2",
+        "babel-plugin-react-compiler": "^1.0.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "concurrently": "^10.0.5",
-        "globals": "^15.14.0",
         "laravel-vite-plugin": "^3.2",
         "lucide-react": "^1.53.0",
         "react": "^19.3.0",
@@ -56,13 +48,15 @@
         "tailwind-merge": "^3.7.0",
         "tailwindcss": "^4.3.3",
         "tailwindcss-animate": "^1.0.7",
-        "typescript": "~6.0.0",
-        "vaul": "^1.1.2",
-        "vite": "^8.3"
+        "typescript": "^7.0.2",
+        "vaul": "^1.1.2"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.64.2",
         "@tailwindcss/oxide-linux-x64-gnu": "^4.3.3",
         "lightningcss-linux-x64-gnu": "^1.33.0"
+    },
+    "overrides": {
+        "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0"
     }
 }

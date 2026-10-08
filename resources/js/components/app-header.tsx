@@ -1,3 +1,5 @@
+import { Link, usePage } from '@inertiajs/react';
+import { Car, ChartNoAxesColumnDecreasing, Fuel, MapPin, Plus } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,8 +14,6 @@ import { index as carsIndex, create as createCar } from '@/routes/cars';
 import { create as createGasStation, index as gasStationsIndex } from '@/routes/gas-stations';
 import { create as createRefuel, index as refuelsIndex } from '@/routes/refuels';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { Car, ChartNoAxesColumnDecreasing, Fuel, MapPin, Plus } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const getCreateUrl = (currentUrl: string) => {
@@ -72,8 +72,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     return (
         <>
             <div className="w-full px-4">
-                <div className="border-accent flex h-16 items-center border-b">
-                    <Link href={dashboard()} prefetch className="text-primary-foreground flex items-center space-x-2">
+                <div className="flex h-16 items-center border-b border-accent">
+                    <Link href={dashboard()} prefetch className="flex items-center space-x-2 text-primary-foreground">
                         <AppLogo />
                     </Link>
 
@@ -83,7 +83,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 <Button variant="ghost" size="icon" className="rounded-full p-1">
                                     <Avatar className="size-9 overflow-hidden rounded-full">
                                         <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
-                                        <AvatarFallback className="bg-accent text-accent-foreground rounded-lg">
+                                        <AvatarFallback className="rounded-lg bg-accent text-accent-foreground">
                                             {getInitials(auth.user.name)}
                                         </AvatarFallback>
                                     </Avatar>
@@ -97,7 +97,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 </div>
             </div>
             {breadcrumbs.length > 1 && (
-                <div className="border-sidebar-border/70 flex w-full border-b">
+                <div className="flex w-full border-b border-sidebar-border/70">
                     <div className="flex h-12 w-full items-center justify-start px-4 text-neutral-500">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
@@ -114,7 +114,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 {/* Navigation */}
                 <NavigationMenu
                     id="app-navbar"
-                    className="bg-accent/95 flex w-full max-w-full items-center justify-center rounded-xl px-1 py-1 shadow-lg backdrop-blur-md"
+                    className="flex w-full max-w-full items-center justify-center rounded-xl bg-accent/95 px-1 py-1 shadow-lg backdrop-blur-md"
                 >
                     <NavigationMenuList className="grid w-full grid-cols-4 items-center justify-center">
                         {mainNavItems.map((item, index) => (

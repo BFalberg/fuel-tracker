@@ -7,7 +7,7 @@ export default function Heading({ level = 1, title, description }: { level?: 1 |
         <>
             <div className="space-y-0.5">
                 <Tag className="text-2xl font-semibold tracking-tight">{title}</Tag>
-                {description && <p className="text-muted-foreground text-sm">{description}</p>}
+                {description && <p className="text-sm text-muted-foreground">{description}</p>}
             </div>
         </>
     );

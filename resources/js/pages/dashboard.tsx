@@ -1,3 +1,6 @@
+import { Deferred, Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
+import { Bar, BarChart, Cell, XAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer } from '@/components/ui/chart';
@@ -8,9 +11,6 @@ import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { create as createCar } from '@/routes/cars';
 import { type BreadcrumbItem } from '@/types';
-import { Deferred, Head, Link, router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import { Bar, BarChart, Cell, XAxis } from 'recharts';
 
 interface CarItem {
     id: number;
@@ -67,11 +67,15 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
     const [selectedBar, setSelectedBar] = useState<number | null>(null);
     const [localFrom, setLocalFrom] = useState(selectedFrom);
     const [localTo, setLocalTo] = useState(selectedTo);
+    const [syncedPeriod, setSyncedPeriod] = useState({ from: selectedFrom, to: selectedTo });
+    const [currentMonth] = useState(() => new Date().toISOString().slice(0, 7));
 
-    useEffect(() => {
+    // Reset the local month pickers when the server sends a new period (state adjusted during render, not in an effect).
+    if (syncedPeriod.from !== selectedFrom || syncedPeriod.to !== selectedTo) {
+        setSyncedPeriod({ from: selectedFrom, to: selectedTo });
         setLocalFrom(selectedFrom);
         setLocalTo(selectedTo);
-    }, [selectedFrom, selectedTo]);
+    }
 
     const formatCurrency = (amount: number) => new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(amount);
 
@@ -202,19 +206,13 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                             {/* Monthly trend chart */}
                             <div className="flex items-center gap-2">
                                 <MonthPicker value={localFrom} max={localTo} onChange={setLocalFrom} label="From month" />
-                                <span className="text-muted-foreground text-xs">–</span>
-                                <MonthPicker
-                                    value={localTo}
-                                    min={localFrom}
-                                    max={new Date().toISOString().slice(0, 7)}
-                                    onChange={setLocalTo}
-                                    label="To month"
-                                />
+                                <span className="text-xs text-muted-foreground">–</span>
+                                <MonthPicker value={localTo} min={localFrom} max={currentMonth} onChange={setLocalTo} label="To month" />
                                 {isDirty && <Button onClick={applyPeriod}>Apply</Button>}
                             </div>
                             <Card>
                                 <CardHeader className="gap-3 pb-2">
-                                    <div className="bg-input grid grid-cols-4 gap-1 rounded-lg p-1">
+                                    <div className="grid grid-cols-4 gap-1 rounded-lg bg-input p-1">
                                         {CHART_TABS.map(({ tab, label }) => (
                                             <button
                                                 key={tab}
@@ -231,7 +229,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                     {readout && (
                                         <div className="flex items-baseline gap-2">
                                             <span className="text-lg font-bold">{formatChartValue(readout.value)}</span>
-                                            <span className="text-muted-foreground text-xs">{readout.month}</span>
+                                            <span className="text-xs text-muted-foreground">{readout.month}</span>
                                         </div>
                                     )}
                                 </CardHeader>
@@ -269,7 +267,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-3xl font-bold">{formatCurrency(stats.stats.currentMonth.amount)}</div>
-                                    <p className="text-muted-foreground text-xs">avg. {formatCurrency(stats.stats.averages.monthlyAmount)}/month</p>
+                                    <p className="text-xs text-muted-foreground">avg. {formatCurrency(stats.stats.averages.monthlyAmount)}/month</p>
                                 </CardContent>
                             </Card>
 
@@ -285,7 +283,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                                 ? `${stats.stats.efficiency.currentMonth} ${efficiencyUnit}/100km`
                                                 : '—'}
                                         </p>
-                                        <p className="text-muted-foreground text-[0.7rem]">
+                                        <p className="text-[0.7rem] text-muted-foreground">
                                             {stats.stats.efficiency.allTime !== null
                                                 ? `avg. ${stats.stats.efficiency.allTime} ${efficiencyUnit}/100km`
                                                 : ''}
@@ -298,7 +296,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                     </CardHeader>
                                     <CardContent>
                                         <p className="font-semibold">{formatNumber(stats.stats.currentMonth.kilometers)} km</p>
-                                        <p className="text-muted-foreground text-[0.7rem]">
+                                        <p className="text-[0.7rem] text-muted-foreground">
                                             avg. {formatNumber(stats.stats.averages.monthlyKilometers)} km/month
                                         </p>
                                     </CardContent>
@@ -309,7 +307,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                     </CardHeader>
                                     <CardContent>
                                         <p className="font-semibold">{formatCurrency(stats.stats.totals.pricePerKilometer)}</p>
-                                        <p className="text-muted-foreground text-[0.7rem]">{formatNumber(stats.stats.totals.kilometers)} km total</p>
+                                        <p className="text-[0.7rem] text-muted-foreground">{formatNumber(stats.stats.totals.kilometers)} km total</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
@@ -320,7 +318,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                         <p className="font-semibold">
                                             {formatNumber(stats.stats.currentMonth.litersThisMonth)} {efficiencyUnit}
                                         </p>
-                                        <p className="text-muted-foreground text-[0.7rem]">
+                                        <p className="text-[0.7rem] text-muted-foreground">
                                             avg. {formatNumber(stats.stats.averages.monthlyLiters)} {efficiencyUnit}/month
                                         </p>
                                     </CardContent>

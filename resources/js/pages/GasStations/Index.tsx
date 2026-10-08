@@ -1,11 +1,11 @@
+import { Deferred, Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 import DeleteConfirmation from '@/components/delete-confirmation';
 import Heading from '@/components/heading';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { destroy as destroyGasStation, index as gasStationsIndex } from '@/routes/gas-stations';
 import { type BreadcrumbItem } from '@/types';
-import { Deferred, Head, router } from '@inertiajs/react';
-import { useState } from 'react';
 import GasStationCard from './GasStationCard';
 
 const breadcrumbs: BreadcrumbItem[] = [

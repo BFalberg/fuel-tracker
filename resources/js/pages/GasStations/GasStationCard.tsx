@@ -1,7 +1,7 @@
+import { MapPin, Pencil, Trash2 } from 'lucide-react';
 import ActionSheet from '@/components/action-sheet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { edit as editGasStation } from '@/routes/gas-stations';
-import { MapPin, Pencil, Trash2 } from 'lucide-react';
 
 interface GasStationCardProps {
     gasStation: {
@@ -26,7 +26,7 @@ export default function GasStationCard({ gasStation, onDelete }: GasStationCardP
                 />
             </CardHeader>
             <CardContent>
-                <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="size-5" />
                     {gasStation.address}
                 </div>

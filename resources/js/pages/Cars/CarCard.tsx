@@ -1,9 +1,9 @@
+import { Link } from '@inertiajs/react';
+import { Car, Pencil, Trash2, User } from 'lucide-react';
 import ActionSheet from '@/components/action-sheet';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { edit as editCar, show as showCar } from '@/routes/cars';
-import { Link } from '@inertiajs/react';
-import { Car, Pencil, Trash2, User } from 'lucide-react';
 
 interface CarCardProps {
     car: {
@@ -54,11 +54,11 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-5 gap-4">
-                    <p className="text-muted-foreground col-span-2 flex items-center gap-2 text-sm">
+                    <p className="col-span-2 flex items-center gap-2 text-sm text-muted-foreground">
                         <Car className="size-5" />
                         {car.registration_number}
                     </p>
-                    <p className="text-muted-foreground col-span-3 flex items-center gap-2 text-sm">
+                    <p className="col-span-3 flex items-center gap-2 text-sm text-muted-foreground">
                         <User className="size-5" />
                         {ownerName}
                     </p>

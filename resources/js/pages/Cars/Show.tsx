@@ -1,10 +1,10 @@
+import { Deferred, Head } from '@inertiajs/react';
+import { Car, User } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Refuel } from '@/types';
-import { Deferred, Head } from '@inertiajs/react';
-import { Car, User } from 'lucide-react';
 import CarExpensesList from '../CarExpenses/CarExpensesList';
 import CarCosts from './CarCosts';
 
@@ -58,21 +58,21 @@ export default function Show({ car, expenses, refuels, start_milage }: ShowProps
                     <CardContent>
                         <div className="mb-4 grid grid-cols-2 gap-4">
                             <div>
-                                <div className="text-muted-foreground text-xs">Registration Number</div>
+                                <div className="text-xs text-muted-foreground">Registration Number</div>
                                 <div className="flex items-center gap-2 font-medium">
                                     <Car className="size-4" />
                                     {car.registration_number}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-muted-foreground text-xs">Owner</div>
+                                <div className="text-xs text-muted-foreground">Owner</div>
                                 <div className="flex items-center gap-2 font-medium">
                                     <User className="size-4" />
                                     {car.users?.[0]?.name ?? '-'}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-muted-foreground text-xs">Purchase Price</div>
+                                <div className="text-xs text-muted-foreground">Purchase Price</div>
                                 <div className="font-medium">
                                     {car.purchase_price != null
                                         ? new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(car.purchase_price)
@@ -80,7 +80,7 @@ export default function Show({ car, expenses, refuels, start_milage }: ShowProps
                                 </div>
                             </div>
                             <div>
-                                <div className="text-muted-foreground text-xs">Sale Price</div>
+                                <div className="text-xs text-muted-foreground">Sale Price</div>
                                 <div className="font-medium">
                                     {car.sale_price != null
                                         ? new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(car.sale_price)
@@ -88,11 +88,11 @@ export default function Show({ car, expenses, refuels, start_milage }: ShowProps
                                 </div>
                             </div>
                             <div>
-                                <div className="text-muted-foreground text-xs">Start Milage</div>
+                                <div className="text-xs text-muted-foreground">Start Milage</div>
                                 <div className="font-medium">{car.start_milage != null ? car.start_milage.toLocaleString('da-DK') : '-'} km</div>
                             </div>
                             <div>
-                                <div className="text-muted-foreground text-xs">Type</div>
+                                <div className="text-xs text-muted-foreground">Type</div>
                                 <div className="font-medium">{car.is_electric ? 'EV' : 'Fossil'}</div>
                             </div>
                         </div>

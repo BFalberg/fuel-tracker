@@ -1,8 +1,8 @@
+import { BanknoteIcon, Car, Fuel, Gauge, MapPin, Pencil, Trash2 } from 'lucide-react';
 import ActionSheet from '@/components/action-sheet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { edit as editRefuel } from '@/routes/refuels';
 import { type Refuel } from '@/types';
-import { BanknoteIcon, Car, Fuel, Gauge, MapPin, Pencil, Trash2 } from 'lucide-react';
 
 interface RefuelCardProps {
     refuel: Refuel;
@@ -47,8 +47,8 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                 <div className="flex flex-col gap-2">
                     <CardTitle className="text-base">{formatDate(refuel.created_at)}</CardTitle>
                     <div className="flex items-center space-x-2">
-                        <MapPin className="text-muted-foreground h-4 w-4" />
-                        <span className="text-muted-foreground text-sm">{refuel.gas_station?.name ?? 'Unknown Station'}</span>
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{refuel.gas_station?.name ?? 'Unknown Station'}</span>
                     </div>
                 </div>
                 <ActionSheet
@@ -62,21 +62,21 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
             <CardContent>
                 <div className="grid grid-cols-2 gap-2">
                     <div className="flex items-center space-x-2">
-                        <Car className="text-muted-foreground h-4 w-4" />
+                        <Car className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">{refuel.mileage.toLocaleString('da-DK')} km</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <Fuel className="text-muted-foreground h-4 w-4" />
+                        <Fuel className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">
                             {formatNumber(liters)} {unitLabel}
                         </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <BanknoteIcon className="text-muted-foreground h-4 w-4" />
+                        <BanknoteIcon className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">{formatCurrency(totalPrice)}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <Gauge className="text-muted-foreground h-4 w-4" />
+                        <Gauge className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">{unitPrice === null ? '—' : `${formatNumber(unitPrice)} ${unitPriceLabel}`}</span>
                     </div>
                 </div>

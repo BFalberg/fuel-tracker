@@ -1,11 +1,11 @@
+import { useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { store as storeGasStation, update as updateGasStation } from '@/routes/gas-stations';
-import { useForm } from '@inertiajs/react';
-import { useEffect } from 'react';
 
 interface GasStation {
     id?: number;

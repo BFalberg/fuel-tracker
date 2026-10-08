@@ -1,17 +1,16 @@
 import '../css/app.css';
-
-import PwaUpdateToast from '@/components/pwa-update-toast';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { ComponentType } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
+import PwaUpdateToast from '@/components/pwa-update-toast';
 import { initializeTheme } from './hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-createInertiaApp({
+void createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent<ComponentType>(`./pages/${name}.tsx`, import.meta.glob<ComponentType>('./pages/**/*.tsx')),
     setup({ el, App, props }) {
@@ -19,7 +18,7 @@ createInertiaApp({
 
         function Root() {
             const [updateAvailable, setUpdateAvailable] = useState(false);
-            const [updateServiceWorker, setUpdateServiceWorker] = useState<(() => void) | null>(null);
+            const updateServiceWorker = useRef<(() => void) | null>(null);
 
             useEffect(() => {
                 const updateSw = registerSW({
@@ -28,16 +27,16 @@ createInertiaApp({
                     },
                 });
 
-                setUpdateServiceWorker(() => () => updateSw(true));
+                updateServiceWorker.current = () => void updateSw(true);
             }, []);
 
             const handleReload = () => {
-                if (!updateServiceWorker) {
+                if (!updateServiceWorker.current) {
                     window.location.reload();
                     return;
                 }
 
-                updateServiceWorker();
+                updateServiceWorker.current();
             };
 
             return (

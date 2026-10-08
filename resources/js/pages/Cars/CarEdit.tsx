@@ -1,3 +1,5 @@
+import { router, useForm } from '@inertiajs/react';
+import { Trash2, UserPlus, Users } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,8 +8,6 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { index as carsIndex, edit as editCar } from '@/routes/cars';
 import { destroy as destroyCarUser, store as storeCarUser } from '@/routes/cars/users';
-import { router, useForm } from '@inertiajs/react';
-import { Trash2, UserPlus, Users } from 'lucide-react';
 import CarForm from './CarForm';
 
 interface Car {
@@ -86,7 +86,7 @@ export default function CarEdit({ car, carUsers, isOwner }: CarEditProps) {
                                 <div key={user.id} className="flex items-center justify-between py-3">
                                     <div>
                                         <p className="text-sm font-medium">{user.name}</p>
-                                        <p className="text-muted-foreground text-xs">{user.email}</p>
+                                        <p className="text-xs text-muted-foreground">{user.email}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Badge variant={user.role === 'owner' ? 'default' : 'secondary'}>

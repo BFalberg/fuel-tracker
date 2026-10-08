@@ -66,9 +66,8 @@
         ],
         "lint": [
             "vendor/bin/pint --test",
-            "npm run format:check",
-            "npm run lint:check",
-            "npm run typecheck"
+            "npm run test:lint",
+            "npm run test:types"
         ],
         "test": [
             "@php artisan config:clear --ansi",
@@ -80,7 +79,6 @@
         ],
         "fix": [
             "vendor/bin/pint",
-            "npm run format",
             "npm run lint"
         ]
     },

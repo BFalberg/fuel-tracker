@@ -1,11 +1,11 @@
+import { Link, router } from '@inertiajs/react';
+import { Banknote, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import ActionSheet from '@/components/action-sheet';
 import DeleteConfirmation from '@/components/delete-confirmation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { create as createExpense, destroy as destroyExpense, edit as editExpense } from '@/routes/cars/expenses';
-import { Link, router } from '@inertiajs/react';
-import { Banknote, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 
 type Expense = {
     id: number;
@@ -63,12 +63,12 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
                     {expenses.length === 0 ? (
                         <div className="text-muted-foreground">No expenses found.</div>
                     ) : (
-                        <ul className="divide-border flex flex-col">
+                        <ul className="flex flex-col divide-border">
                             {expenses.map((expense: Expense) => (
                                 <li key={expense.id} className="relative mt-4 flex flex-col gap-1 border-t pt-4">
                                     <div className="flex flex-col justify-between rounded-md">
                                         <div className="flex items-center justify-between gap-2">
-                                            <div className="text-foreground text-base font-medium">
+                                            <div className="text-base font-medium text-foreground">
                                                 <span className="text-base font-semibold">{expense.expense_type}</span>
                                             </div>
                                             <ActionSheet
@@ -95,7 +95,7 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
                                             {expense.vendor && <span className="text-muted-foreground">{expense.vendor}</span>}
                                             <div className="text-muted-foreground">{expense.invoice_date}</div>
                                             {expense.description && (
-                                                <div className="text-muted-foreground col-span-2 mt-1">{expense.description}</div>
+                                                <div className="col-span-2 mt-1 text-muted-foreground">{expense.description}</div>
                                             )}
                                         </div>
                                     </div>

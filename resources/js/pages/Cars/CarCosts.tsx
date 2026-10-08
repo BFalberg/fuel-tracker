@@ -1,6 +1,6 @@
+import { CircleDollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Refuel } from '@/types';
-import { CircleDollarSign } from 'lucide-react';
 
 type ExpenseType = {
     id: number;
@@ -51,19 +51,19 @@ export default function CarCosts({
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-2">
                         <div className="flex flex-col gap-2">
-                            <div className="text-muted-foreground text-xs tracking-wide">Total Expense</div>
+                            <div className="text-xs tracking-wide text-muted-foreground">Total Expense</div>
                             <div className="font-semibold">{totalExpenseCost.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}</div>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <div className="text-muted-foreground text-xs tracking-wide">Total Refuel</div>
+                            <div className="text-xs tracking-wide text-muted-foreground">Total Refuel</div>
                             <div className="font-semibold">{totalRefuelCost.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}</div>
                         </div>
                         <div className="flex flex-col gap-1">
-                            <div className="text-muted-foreground text-xs tracking-wide">Expense per km</div>
+                            <div className="text-xs tracking-wide text-muted-foreground">Expense per km</div>
                             <div className="text-lg font-medium">{expensePerKm.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}</div>
                         </div>
                         <div className="flex flex-col gap-1">
-                            <div className="text-muted-foreground text-xs tracking-wide">Refuel per km</div>
+                            <div className="text-xs tracking-wide text-muted-foreground">Refuel per km</div>
                             <div className="text-lg font-medium">{refuelPerKm.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}</div>
                         </div>
                         <div className="col-span-2 mt-2 flex flex-col gap-2 border-t pt-4">

@@ -1,3 +1,5 @@
+import { useForm } from '@inertiajs/react';
+import React, { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -5,8 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { store as storeRefuel, update as updateRefuel } from '@/routes/refuels';
-import { useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
 
 interface Refuel {
     id?: number;
@@ -134,7 +134,7 @@ export default function RefuelForm({ refuel, cars, gasStations, mileageBounds, f
                             ))}
                         </NativeSelect>
                         {isEditing && (
-                            <p className="text-muted-foreground text-xs">
+                            <p className="text-xs text-muted-foreground">
                                 A refuel cannot be moved to another car. Delete it and log it again on the correct car.
                             </p>
                         )}
@@ -187,7 +187,7 @@ export default function RefuelForm({ refuel, cars, gasStations, mileageBounds, f
                             onChange={(e) => setData('mileage', e.target.value)}
                             placeholder="Mileage"
                         />
-                        {mileageHint && <p className="text-muted-foreground text-xs">{mileageHint}</p>}
+                        {mileageHint && <p className="text-xs text-muted-foreground">{mileageHint}</p>}
                         <InputError message={errors.mileage} />
                     </div>
                     <div className="grid gap-2">
@@ -207,14 +207,14 @@ export default function RefuelForm({ refuel, cars, gasStations, mileageBounds, f
                         <InputError message={errors.gas_station_id} />
                     </div>
                     <div className="flex items-center justify-between">
-                        <div className="text-muted-foreground text-sm">Need a new station?</div>
+                        <div className="text-sm text-muted-foreground">Need a new station?</div>
                         <Button type="button" variant="outline" onClick={() => setShowNewStation((current) => !current)}>
                             {shouldShowNewStation ? 'Hide new station' : 'Add new station'}
                         </Button>
                     </div>
                     {shouldShowNewStation && (
                         <div className="rounded-md border p-3">
-                            <div className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">New station</div>
+                            <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">New station</div>
                             <div className="mt-3 grid gap-3">
                                 <div className="grid gap-2">
                                     <Label htmlFor="new_gas_station_name">Station name</Label>
