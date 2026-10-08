@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { Bar, BarChart, XAxis } from 'recharts';
+import { Bar, BarChart, Cell, XAxis } from 'recharts';
 
 interface CarItem {
     id: number;
@@ -249,11 +249,12 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                                                 fill="var(--color-value)"
                                                 radius={[4, 4, 0, 0]}
                                                 maxBarSize={40}
-                                                fillOpacity={0.55}
-                                                activeIndex={readoutIndex}
-                                                activeBar={{ fillOpacity: 1 }}
                                                 onClick={(_, index) => setSelectedBar(index)}
-                                            />
+                                            >
+                                                {chartData.map((entry, index) => (
+                                                    <Cell key={`${entry.month}-${index}`} fillOpacity={index === readoutIndex ? 1 : 0.55} />
+                                                ))}
+                                            </Bar>
                                         </BarChart>
                                     </ChartContainer>
                                 </CardContent>
