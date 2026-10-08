@@ -24,13 +24,15 @@
         "laravel/pail": "^1.2.7",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.68",
+        "laravel/vet": "^0.2.1",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.9.5",
         "pestphp/pest": "^5.3",
         "pestphp/pest-plugin-drift": "^5.0",
         "pestphp/pest-plugin-laravel": "^5.0",
         "pestphp/pest-plugin-type-coverage": "^5.0.3",
-        "rector/rector": "^2.7"
+        "rector/rector": "^2.7",
+        "roave/security-advisories": "dev-latest"
     },
     "autoload": {
         "psr-4": {
@@ -65,28 +67,47 @@
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
         ],
         "lint": [
-            "vendor/bin/pint --test",
-            "npm run test:lint",
+            "rector",
+            "pint --parallel",
+            "npm run lint"
+        ],
+        "test:lint": [
+            "pint --parallel --test",
+            "rector --dry-run",
+            "@wayfinder",
+            "npm run test:lint"
+        ],
+        "test:types": [
+            "phpstan analyse --memory-limit=1G",
+            "@wayfinder",
             "npm run test:types"
         ],
-        "test": [
+        "test:type-coverage": "@php -d memory_limit=1G vendor/bin/pest --type-coverage --min=100",
+        "test:unit": [
             "@php artisan config:clear --ansi",
-            "@php artisan test --compact"
+            "pest --parallel"
         ],
-        "check": [
-            "@lint",
-            "@test"
+        "test:coverage": [
+            "@php artisan config:clear --ansi",
+            "@php -d memory_limit=1G vendor/bin/pest --parallel --coverage --min=80"
         ],
-        "fix": [
-            "vendor/bin/pint",
-            "npm run lint"
-        ]
+        "test": [
+            "@test:lint",
+            "@test:types",
+            "@test:type-coverage",
+            "@test:unit"
+        ],
+        "wayfinder": "@php artisan wayfinder:generate --with-form --ansi"
     },
     "scripts-descriptions": {
-        "lint": "Static analysis only, report mode: Pint, Prettier, ESLint and tsc. Mirrors the linter workflow.",
-        "test": "Run the Pest suite. Mirrors the tests workflow.",
-        "check": "Everything CI runs: lint then test.",
-        "fix": "Auto-fix what can be fixed: Pint, Prettier and ESLint."
+        "lint": "Fix what can be fixed: Rector, Pint, then the frontend formatter and linter.",
+        "wayfinder": "Generate the Wayfinder TypeScript routes and actions (gitignored).",
+        "test:lint": "Check mode only: Pint, Rector, then the frontend formatter and linter.",
+        "test:types": "Static analysis: PHPStan (Larastan, level max), then the TypeScript type check.",
+        "test:type-coverage": "Pest type coverage. Fails below 100%.",
+        "test:unit": "Clear the config cache, then run the Pest suite in parallel.",
+        "test:coverage": "Pest code coverage. Fails below 80%. Needs a coverage driver (pcov in CI).",
+        "test": "Everything CI runs except code coverage: test:lint, test:types, test:type-coverage, test:unit."
     },
     "extra": {
         "laravel": {
@@ -99,7 +120,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "laravel/vet": true
         }
     },
     "minimum-stability": "stable",

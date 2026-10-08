@@ -6,7 +6,6 @@ use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodingStyle\Rector\ClassMethod\MakeInheritedMethodVisibilitySameAsParentRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPublicMethodParameterRector;
-use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\Php85\Rector\Property\AddOverrideAttributeToOverriddenPropertiesRector;
 use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
 use RectorLaravel\Set\LaravelSetList;
@@ -42,7 +41,6 @@ return RectorConfig::configure()
         __DIR__.'/tests',
     ])
     ->withSkip([
-        AddOverrideAttributeToOverriddenMethodsRector::class,
         MakeInheritedMethodVisibilitySameAsParentRector::class,
         AddOverrideAttributeToOverriddenPropertiesRector::class,
         // Policy methods keep the (User $user, Model $model) signature the Gate passes in,
