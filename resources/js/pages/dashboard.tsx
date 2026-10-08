@@ -5,6 +5,8 @@ import { MonthPicker } from '@/components/ui/month-picker';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
+import { dashboard } from '@/routes';
+import { create as createCar } from '@/routes/cars';
 import { type BreadcrumbItem } from '@/types';
 import { Deferred, Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -47,7 +49,7 @@ interface Props {
 
 type ChartTab = 'cost' | 'efficiency' | 'distance' | 'refuel';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: dashboard.url() }];
 
 const chartConfig = {
     value: { label: 'Value', color: 'var(--accent)' },
@@ -81,7 +83,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
     };
 
     const applyPeriod = () => {
-        router.get('/dashboard', { car: selectedCarId ?? undefined, from: localFrom, to: localTo });
+        router.get(dashboard.url({ query: { car: selectedCarId ?? undefined, from: localFrom, to: localTo } }));
     };
 
     const isDirty = localFrom !== selectedFrom || localTo !== selectedTo;
@@ -127,7 +129,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                 <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
                     <p className="text-muted-foreground">{message}</p>
                     <Button asChild>
-                        <Link href={route('cars.create')}>Add a car</Link>
+                        <Link href={createCar()}>Add a car</Link>
                     </Button>
                 </div>
             </AppLayout>
@@ -144,7 +146,7 @@ export default function Dashboard({ cars, selectedCarId, selectedFrom, selectedT
                         {cars.map((car) => (
                             <button
                                 key={car.id}
-                                onClick={() => router.get('/dashboard', { car: car.id, from: selectedFrom, to: selectedTo })}
+                                onClick={() => router.get(dashboard.url({ query: { car: car.id, from: selectedFrom, to: selectedTo } }))}
                                 className={cn(
                                     'min-h-11 rounded-full px-5 text-sm font-medium whitespace-nowrap transition-colors',
                                     car.id === selectedCarId ? 'bg-accent text-primary' : 'bg-primary text-primary-foreground',

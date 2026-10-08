@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { store as storeGasStation, update as updateGasStation } from '@/routes/gas-stations';
 import { useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
 
@@ -76,13 +77,13 @@ export default function GasStationForm({ formType, gasStation }: GasStationFormP
         e.preventDefault();
 
         if (formType === 'edit' && gasStation?.id) {
-            put(`/gas-stations/${gasStation.id}`, {
+            put(updateGasStation.url(gasStation.id), {
                 onSuccess: () => {
                     reset();
                 },
             });
         } else {
-            post('/gas-stations', {
+            post(storeGasStation.url(), {
                 onSuccess: () => {
                     reset();
                 },

@@ -7,12 +7,7 @@ import type { ComponentType } from 'react';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
-import { route as routeFn } from 'ziggy-js';
 import { initializeTheme } from './hooks/use-appearance';
-
-declare global {
-    const route: typeof routeFn;
-}
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

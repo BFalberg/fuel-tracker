@@ -2,6 +2,7 @@ import ActionSheet from '@/components/action-sheet';
 import DeleteConfirmation from '@/components/delete-confirmation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { create as createExpense, destroy as destroyExpense, edit as editExpense } from '@/routes/cars/expenses';
 import { Link, router } from '@inertiajs/react';
 import { Banknote, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -34,7 +35,7 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
             return;
         }
 
-        router.delete(route('cars.expenses.destroy', { car: carId, expense: selectedExpense.id }), {
+        router.delete(destroyExpense.url({ car: carId, expense: selectedExpense.id }), {
             onSuccess: () => {
                 setIsDeleteOpen(false);
                 setSelectedExpense(null);
@@ -51,7 +52,7 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
                         Expenses
                     </CardTitle>
                     <Button asChild variant="default">
-                        <Link href={route('cars.expenses.create', { car: carId })}>
+                        <Link href={createExpense(carId)}>
                             <Plus /> Expense
                         </Link>
                     </Button>
@@ -76,7 +77,7 @@ export default function CarExpensesList({ expenses, carId }: CarExpensesListProp
                                                     {
                                                         label: 'Edit',
                                                         icon: Pencil,
-                                                        href: route('cars.expenses.edit', { car: carId, expense: expense.id }),
+                                                        href: editExpense.url({ car: carId, expense: expense.id }),
                                                     },
                                                     {
                                                         label: 'Delete',

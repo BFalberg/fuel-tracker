@@ -1,6 +1,7 @@
 import ActionSheet from '@/components/action-sheet';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { edit as editCar, show as showCar } from '@/routes/cars';
 import { Link } from '@inertiajs/react';
 import { Car, Pencil, Trash2, User } from 'lucide-react';
 
@@ -28,7 +29,7 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
             <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex items-center gap-3">
                     <CardTitle>
-                        <Link href={route('cars.show', { car: car.id })} className="hover:underline">
+                        <Link href={showCar(car.id)} className="hover:underline">
                             {car.name}
                         </Link>
                     </CardTitle>
@@ -38,7 +39,7 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
                     <ActionSheet
                         title={car.name}
                         items={[
-                            { label: 'Edit', icon: Pencil, href: route('cars.edit', { car: car.id }) },
+                            { label: 'Edit', icon: Pencil, href: editCar.url(car.id) },
                             {
                                 label: 'Delete',
                                 icon: Trash2,

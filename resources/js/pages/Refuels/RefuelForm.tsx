@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { store as storeRefuel, update as updateRefuel } from '@/routes/refuels';
 import { useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
 
@@ -106,10 +107,10 @@ export default function RefuelForm({ refuel, cars, gasStations, mileageBounds, f
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (isEditing) {
-            put(`/refuels/${refuel?.id}`);
+        if (isEditing && refuel?.id) {
+            put(updateRefuel.url(refuel.id));
         } else {
-            post('/refuels');
+            post(storeRefuel.url());
         }
     };
 

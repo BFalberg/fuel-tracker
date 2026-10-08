@@ -1,5 +1,6 @@
 import ActionSheet from '@/components/action-sheet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { edit as editRefuel } from '@/routes/refuels';
 import { type Refuel } from '@/types';
 import { BanknoteIcon, Car, Fuel, Gauge, MapPin, Pencil, Trash2 } from 'lucide-react';
 
@@ -53,7 +54,7 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                 <ActionSheet
                     title={`Refuel · ${formatDate(refuel.created_at)}`}
                     items={[
-                        { label: 'Edit', icon: Pencil, href: route('refuels.edit', { refuel: refuel.id }) },
+                        { label: 'Edit', icon: Pencil, href: editRefuel.url(refuel.id) },
                         { label: 'Delete', icon: Trash2, onSelect: () => onDelete?.(refuel), destructive: true },
                     ]}
                 />

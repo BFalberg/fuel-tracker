@@ -1,3 +1,4 @@
+import { appearance } from '@/routes';
 import { Head } from '@inertiajs/react';
 
 import AppearanceTabs from '@/components/appearance-tabs';
@@ -10,7 +11,7 @@ import SettingsLayout from '@/layouts/settings/layout';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Appearance settings',
-        href: '/settings/appearance',
+        href: appearance.url(),
     },
 ];
 

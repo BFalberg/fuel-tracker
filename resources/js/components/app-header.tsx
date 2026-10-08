@@ -7,16 +7,20 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from '@/compon
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
+import { dashboard } from '@/routes';
+import { index as carsIndex, create as createCar } from '@/routes/cars';
+import { create as createGasStation, index as gasStationsIndex } from '@/routes/gas-stations';
+import { create as createRefuel, index as refuelsIndex } from '@/routes/refuels';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Car, ChartNoAxesColumnDecreasing, Fuel, MapPin, Plus } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const getCreateUrl = (currentUrl: string) => {
-    if (currentUrl.startsWith('/cars')) return '/cars/create';
-    if (currentUrl.startsWith('/refuels')) return '/refuels/create';
-    if (currentUrl.startsWith('/gas-stations')) return '/gas-stations/create';
-    return '/refuels/create';
+    if (isNavItemActive(currentUrl, carsIndex.url())) return createCar.url();
+    if (isNavItemActive(currentUrl, refuelsIndex.url())) return createRefuel.url();
+    if (isNavItemActive(currentUrl, gasStationsIndex.url())) return createGasStation.url();
+    return createRefuel.url();
 };
 
 /**
@@ -33,22 +37,22 @@ const isNavItemActive = (currentUrl: string, itemUrl: string) => {
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        url: '/dashboard',
+        url: dashboard.url(),
         icon: ChartNoAxesColumnDecreasing,
     },
     {
         title: 'Cars',
-        url: '/cars',
+        url: carsIndex.url(),
         icon: Car,
     },
     {
         title: 'Gas Stations',
-        url: '/gas-stations',
+        url: gasStationsIndex.url(),
         icon: MapPin,
     },
     {
         title: 'Refuels',
-        url: '/refuels',
+        url: refuelsIndex.url(),
         icon: Fuel,
     },
 ];
@@ -69,7 +73,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
         <>
             <div className="w-full px-4">
                 <div className="border-accent flex h-16 items-center border-b">
-                    <Link href="/dashboard" prefetch className="text-primary-foreground flex items-center space-x-2">
+                    <Link href={dashboard()} prefetch className="text-primary-foreground flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 

@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
+import { index as carsIndex, edit as editCar } from '@/routes/cars';
+import { destroy as destroyCarUser, store as storeCarUser } from '@/routes/cars/users';
 import { router, useForm } from '@inertiajs/react';
 import { Trash2, UserPlus, Users } from 'lucide-react';
 import CarForm from './CarForm';
@@ -36,7 +38,7 @@ function AddCoDriverForm({ carId }: { carId: number }) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        post(route('cars.users.store', { car: carId }), {
+        post(storeCarUser.url(carId), {
             onSuccess: () => reset(),
         });
     }
@@ -57,12 +59,12 @@ function AddCoDriverForm({ carId }: { carId: number }) {
 
 export default function CarEdit({ car, carUsers, isOwner }: CarEditProps) {
     const breadcrumbs = [
-        { title: 'Cars', href: '/cars' },
-        { title: 'Edit Car', href: `/cars/${car.id}/edit` },
+        { title: 'Cars', href: carsIndex.url() },
+        { title: 'Edit Car', href: editCar.url(car.id) },
     ];
 
     function handleRemoveUser(userId: number) {
-        router.delete(route('cars.users.destroy', { car: car.id, user: userId }));
+        router.delete(destroyCarUser.url({ car: car.id, user: userId }));
     }
 
     return (

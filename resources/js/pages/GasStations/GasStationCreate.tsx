@@ -1,12 +1,13 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
+import { create as createGasStation } from '@/routes/gas-stations';
 import { type BreadcrumbItem } from '@/types';
 import GasStationForm from './GasStationForm';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Create Gas Station',
-        href: '/gas-stations/create',
+        href: createGasStation.url(),
     },
 ];
 

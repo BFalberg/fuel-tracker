@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { store as storeExpense, update as updateExpense } from '@/routes/cars/expenses';
 import { useForm } from '@inertiajs/react';
 
 interface Car {
@@ -40,9 +41,9 @@ export default function ExpenseForm({ formType, car, expenseTypes, expense }: Ex
         e.preventDefault();
 
         if (formType === 'edit' && expense) {
-            put(route('cars.expenses.update', { car: car.id, expense: expense.id }));
+            put(updateExpense.url({ car: car.id, expense: expense.id }));
         } else {
-            post(route('cars.expenses.store', { car: car.id }));
+            post(storeExpense.url(car.id));
         }
     };
 

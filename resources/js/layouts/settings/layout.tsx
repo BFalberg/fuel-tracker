@@ -2,23 +2,26 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { appearance } from '@/routes';
+import { edit as editPassword } from '@/routes/password';
+import { edit as editProfile } from '@/routes/profile';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Profile',
-        url: '/settings/profile',
+        url: editProfile.url(),
         icon: null,
     },
     {
         title: 'Password',
-        url: '/settings/password',
+        url: editPassword.url(),
         icon: null,
     },
     {
         title: 'Appearance',
-        url: '/settings/appearance',
+        url: appearance.url(),
         icon: null,
     },
 ];

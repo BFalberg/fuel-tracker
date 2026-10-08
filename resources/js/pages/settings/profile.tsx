@@ -1,3 +1,4 @@
+import { edit as editProfile, update as updateProfile } from '@/routes/profile';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, useForm, usePage } from '@inertiajs/react';
@@ -15,7 +16,7 @@ import SettingsLayout from '@/layouts/settings/layout';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Profile settings',
-        href: '/settings/profile',
+        href: editProfile.url(),
     },
 ];
 
@@ -30,7 +31,7 @@ export default function Profile() {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'), {
+        patch(updateProfile.url(), {
             preserveScroll: true,
         });
     };

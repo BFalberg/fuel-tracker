@@ -1,3 +1,5 @@
+import RegisteredUserController from '@/actions/App/Http/Controllers/Auth/RegisteredUserController';
+import { login } from '@/routes';
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -26,7 +28,7 @@ export default function Register() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('register'), {
+        post(RegisteredUserController.store.url(), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
@@ -109,7 +111,7 @@ export default function Register() {
 
                 <div className="text-muted-foreground text-center text-sm">
                     Already have an account?{' '}
-                    <TextLink href={route('login')} tabIndex={6}>
+                    <TextLink href={login()} tabIndex={6}>
                         Log in
                     </TextLink>
                 </div>

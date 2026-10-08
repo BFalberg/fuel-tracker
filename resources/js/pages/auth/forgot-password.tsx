@@ -1,3 +1,5 @@
+import { login } from '@/routes';
+import { email as sendPasswordResetLink } from '@/routes/password';
 // Components
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
@@ -18,7 +20,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        post(route('password.email'));
+        post(sendPasswordResetLink.url());
     };
 
     return (
@@ -55,7 +57,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
                 <div className="text-muted-foreground space-x-1 text-center text-sm">
                     <span>Or, return to</span>
-                    <TextLink href={route('login')}>log in</TextLink>
+                    <TextLink href={login()}>log in</TextLink>
                 </div>
             </div>
         </AuthLayout>

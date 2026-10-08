@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { store as storeCar, update as updateCar } from '@/routes/cars';
 import { useForm } from '@inertiajs/react';
 
 interface Car {
@@ -35,9 +36,9 @@ export default function CarForm({ formType, car }: CarFormProps) {
         e.preventDefault();
 
         if (formType === 'edit' && car?.id) {
-            put(`/cars/${car.id}`);
+            put(updateCar.url(car.id));
         } else {
-            post('/cars');
+            post(storeCar.url());
         }
     };
 

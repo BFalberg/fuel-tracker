@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
+import { destroy as destroyRefuel, index as refuelsIndex } from '@/routes/refuels';
 import { type BreadcrumbItem, type Refuel } from '@/types';
 import { Deferred, Head, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -25,7 +26,7 @@ interface Props {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Refuels',
-        href: '/refuels',
+        href: refuelsIndex.url(),
     },
 ];
 
@@ -35,8 +36,8 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
 
     const handleCarFilterChange = (value: string) => {
         router.get(
-            '/refuels',
-            { car_id: value || undefined },
+            refuelsIndex.url({ query: { car_id: value || undefined } }),
+            {},
             {
                 preserveState: true,
                 preserveScroll: false,
@@ -58,7 +59,7 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
 
     const confirmDelete = () => {
         if (selectedRefuel) {
-            router.delete(`/refuels/${selectedRefuel.id}`, {
+            router.delete(destroyRefuel.url(selectedRefuel.id), {
                 onSuccess: () => {
                     setIsDeleteOpen(false);
                     setSelectedRefuel(null);
@@ -69,8 +70,8 @@ export default function Refuels({ refuels, cars, selectedCarId }: Props) {
 
     const handlePageChange = (page: number) => {
         router.get(
-            '/refuels',
-            { page, car_id: selectedCarId || undefined },
+            refuelsIndex.url({ query: { page, car_id: selectedCarId || undefined } }),
+            {},
             {
                 preserveState: true,
                 preserveScroll: false,

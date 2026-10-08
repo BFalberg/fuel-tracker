@@ -1,12 +1,13 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
+import { create as createCar } from '@/routes/cars';
 import { type BreadcrumbItem } from '@/types';
 import CarForm from './CarForm';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Create Car',
-        href: '/cars/create',
+        href: createCar.url(),
     },
 ];
 

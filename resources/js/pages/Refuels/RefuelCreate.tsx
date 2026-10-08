@@ -1,5 +1,6 @@
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
+import { create as createRefuel } from '@/routes/refuels';
 import RefuelForm from './RefuelForm';
 
 interface RefuelCreateProps {
@@ -7,7 +8,7 @@ interface RefuelCreateProps {
     gasStations: Array<{ id: number; name: string }>;
 }
 
-const breadcrumbs = [{ title: 'Create Refuel', href: '/refuels/create' }];
+const breadcrumbs = [{ title: 'Create Refuel', href: createRefuel.url() }];
 
 export default function RefuelCreate({ cars, gasStations }: RefuelCreateProps) {
     return (
