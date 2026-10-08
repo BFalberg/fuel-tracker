@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Rules;
 
-use App\Actions\Refuel\GetMileageBounds;
+use App\Actions\GetMileageBounds;
 use App\Models\Car;
 use App\Models\Refuel;
 use Closure;

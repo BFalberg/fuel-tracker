@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Refuel;
+namespace App\Actions;
 
 use App\Models\Refuel;
 
-final class GetMileageBounds
+final readonly class GetMileageBounds
 {
     /**
      * The refuel's neighbours in its car's odometer series, anchored on the

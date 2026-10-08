@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Refuel;
+namespace App\Actions;
 
 use App\Models\Refuel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-final class ListRefuels
+final readonly class ListRefuels
 {
     /**
      * @return LengthAwarePaginator<int, Refuel>

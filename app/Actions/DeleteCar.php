@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Cars;
+namespace App\Actions;
 
 use App\Models\Car;
 
-final class DeleteCar
+final readonly class DeleteCar
 {
     public function handle(Car $car): void
     {

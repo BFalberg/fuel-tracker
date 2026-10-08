@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Cars;
+namespace App\Actions;
 
 use App\Models\Car;
 use App\Models\CarExpense;
@@ -11,7 +11,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-final class ShowCar
+final readonly class ShowCar
 {
     /**
      * @return array{car: Car, expenses: Closure(): Collection<int, CarExpense>, refuels: Closure(): Collection<int, Refuel>, start_milage: int|null}

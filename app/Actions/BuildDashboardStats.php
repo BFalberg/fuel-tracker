@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Dashboard;
+namespace App\Actions;
 
 use App\Enums\ExpenseType;
 use App\Models\Car;
@@ -28,7 +28,7 @@ use Illuminate\Support\Collection;
  *     },
  * }
  */
-final class BuildDashboardStats
+final readonly class BuildDashboardStats
 {
     /**
      * @return Closure(): DashboardStats

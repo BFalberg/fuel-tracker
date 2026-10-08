@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\GasStations;
+namespace App\Actions;
 
 use App\Models\GasStation;
 
-final class DeleteGasStation
+final readonly class DeleteGasStation
 {
     public function handle(GasStation $gasStation): void
     {

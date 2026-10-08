@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Cars;
+namespace App\Actions;
 
 use App\Models\Car;
 use App\Models\CarUser;
@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 
-final class ListCars
+final readonly class ListCars
 {
     /**
      * @return Collection<int, array{id: int, name: string, registration_number: string, is_electric: bool, users: Collection<int, array{id: int, name: string}>, pivot: array{role: 'owner'|'co_driver'}, can_delete: bool}>

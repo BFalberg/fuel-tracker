@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\GasStations;
+namespace App\Actions;
 
 use App\Models\GasStation;
 use Illuminate\Database\Eloquent\Collection;
 
-final class ListGasStations
+final readonly class ListGasStations
 {
     /**
      * The refuel count is exposed so the delete confirmation can state how many

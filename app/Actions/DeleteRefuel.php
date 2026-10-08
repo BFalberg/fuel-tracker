@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Refuel;
+namespace App\Actions;
 
 use App\Models\Refuel;
 
-final class DeleteRefuel
+final readonly class DeleteRefuel
 {
     public function handle(Refuel $refuel): void
     {
