@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('refuels', function (Blueprint $table) {
+        Schema::create('refuels', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('car_id')->constrained()->onDelete('cascade');
             $table->foreignId('gas_station_id')->constrained()->onDelete('cascade');

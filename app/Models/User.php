@@ -1,47 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+/**
+ * @property-read int $id
+ * @property-read string $name
+ * @property-read string $email
+ * @property-read CarbonInterface|null $email_verified_at
+ * @property-read string $password
+ * @property-read string|null $remember_token
+ * @property-read CarbonInterface $created_at
+ * @property-read CarbonInterface $updated_at
+ */
+#[Hidden([
+    'password',
+    'remember_token',
+])]
+final class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    use Notifiable;
 
     /**
      * Every car the user can access, as either owner or co-driver.
+     *
+     * @return BelongsToMany<Car, $this, CarUser>
      */
     public function cars(): BelongsToMany
     {
-        return $this->belongsToMany(Car::class)->withPivot('role')->withTimestamps();
+        return $this->belongsToMany(Car::class)->using(CarUser::class)->withPivot('role')->withTimestamps();
     }
 
+    /**
+     * @return BelongsToMany<Car, $this, CarUser>
+     */
     public function ownedCars(): BelongsToMany
     {
-        return $this->belongsToMany(Car::class)->withPivot('role')->withTimestamps()->wherePivot('role', 'owner');
+        return $this->belongsToMany(Car::class)->using(CarUser::class)->withPivot('role')->withTimestamps()->wherePivot('role', 'owner');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function casts(): array
+    {
+        return [
+            'id' => 'integer',
+            'name' => 'string',
+            'email' => 'string',
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'remember_token' => 'string',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 }

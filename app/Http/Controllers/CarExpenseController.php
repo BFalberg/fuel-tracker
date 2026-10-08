@@ -1,86 +1,58 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Actions\CarExpenses\CreateCarExpense;
-use App\Actions\CarExpenses\DeleteCarExpense;
-use App\Actions\CarExpenses\UpdateCarExpense;
+use App\Actions\CreateCarExpense;
+use App\Actions\DeleteCarExpense;
+use App\Actions\UpdateCarExpense;
 use App\Enums\ExpenseType;
+use App\Http\Requests\CreateCarExpenseRequest;
+use App\Http\Requests\UpdateCarExpenseRequest;
 use App\Models\Car;
 use App\Models\CarExpense;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class CarExpenseController extends Controller
+final readonly class CarExpenseController
 {
-    use AuthorizesRequests;
-
     public function create(Car $car): Response
     {
-        $this->authorize('view', $car);
-
-        return Inertia::render('CarExpenses/Create', [
+        return Inertia::render('car-expense/create', [
             'car' => $car,
             'expenseTypes' => ExpenseType::values(),
         ]);
     }
 
-    public function store(Request $request, Car $car, CreateCarExpense $createCarExpense): RedirectResponse
+    public function store(CreateCarExpenseRequest $request, Car $car, CreateCarExpense $action): RedirectResponse
     {
-        $this->authorize('view', $car);
+        $action->handle($car, $request->validated());
 
-        $data = $request->validate([
-            'expense_type' => ['required', Rule::enum(ExpenseType::class)],
-            'amount' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'vendor' => 'nullable|string',
-            'invoice_date' => 'nullable|date',
-        ]);
-        $createCarExpense->handle($car, $data);
-
-        return redirect()->route('cars.show', $car);
+        return to_route('cars.show', $car);
     }
 
-    public function edit(Car $car, CarExpense $expense): Response
+    public function edit(Car $car, CarExpense $carExpense): Response
     {
-        abort_if($expense->car_id !== $car->id, 404);
-        $this->authorize('update', $expense);
-
-        return Inertia::render('CarExpenses/Edit', [
+        return Inertia::render('car-expense/edit', [
             'car' => $car,
-            'expense' => $expense,
+            'expense' => $carExpense,
             'expenseTypes' => ExpenseType::values(),
         ]);
     }
 
-    public function update(Request $request, Car $car, CarExpense $expense, UpdateCarExpense $updateCarExpense): RedirectResponse
+    public function update(UpdateCarExpenseRequest $request, Car $car, CarExpense $carExpense, UpdateCarExpense $action): RedirectResponse
     {
-        abort_if($expense->car_id !== $car->id, 404);
-        $this->authorize('update', $expense);
+        $action->handle($carExpense, $request->validated());
 
-        $data = $request->validate([
-            'expense_type' => ['required', Rule::enum(ExpenseType::class)],
-            'amount' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'vendor' => 'nullable|string',
-            'invoice_date' => 'nullable|date',
-        ]);
-        $updateCarExpense->handle($expense, $data);
-
-        return redirect()->route('cars.show', $car);
+        return to_route('cars.show', $car);
     }
 
-    public function destroy(Car $car, CarExpense $expense, DeleteCarExpense $deleteCarExpense): RedirectResponse
+    public function destroy(Car $car, CarExpense $carExpense, DeleteCarExpense $action): RedirectResponse
     {
-        abort_if($expense->car_id !== $car->id, 404);
-        $this->authorize('delete', $expense);
+        $action->handle($carExpense);
 
-        $deleteCarExpense->handle($expense);
-
-        return redirect()->route('cars.show', $car);
+        return to_route('cars.show', $car);
     }
 }

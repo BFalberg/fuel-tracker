@@ -1,22 +1,48 @@
+import { Link, usePage } from '@inertiajs/react';
+import {
+    Car,
+    ChartNoAxesColumnDecreasing,
+    Fuel,
+    MapPin,
+    Plus,
+} from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from '@/components/ui/navigation-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    NavigationMenu,
+    NavigationMenuItem,
+    NavigationMenuList,
+} from '@/components/ui/navigation-menu';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { Car, ChartNoAxesColumnDecreasing, Fuel, MapPin, Plus } from 'lucide-react';
+import { dashboard } from '@/routes';
+import { index as carsIndex, create as createCar } from '@/routes/cars';
+import {
+    create as createGasStation,
+    index as gasStationsIndex,
+} from '@/routes/gas-stations';
+import {
+    create as createRefuel,
+    index as refuelsIndex,
+} from '@/routes/refuels';
+import { type BreadcrumbItem, type NavItem } from '@/types';
 import AppLogo from './app-logo';
 
 const getCreateUrl = (currentUrl: string) => {
-    if (currentUrl.startsWith('/cars')) return '/cars/create';
-    if (currentUrl.startsWith('/refuels')) return '/refuels/create';
-    if (currentUrl.startsWith('/gas-stations')) return '/gas-stations/create';
-    return '/refuels/create';
+    if (isNavItemActive(currentUrl, carsIndex.url())) return createCar.url();
+    if (isNavItemActive(currentUrl, refuelsIndex.url()))
+        return createRefuel.url();
+    if (isNavItemActive(currentUrl, gasStationsIndex.url()))
+        return createGasStation.url();
+    return createRefuel.url();
 };
 
 /**
@@ -33,22 +59,22 @@ const isNavItemActive = (currentUrl: string, itemUrl: string) => {
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        url: '/dashboard',
+        url: dashboard.url(),
         icon: ChartNoAxesColumnDecreasing,
     },
     {
         title: 'Cars',
-        url: '/cars',
+        url: carsIndex.url(),
         icon: Car,
     },
     {
         title: 'Gas Stations',
-        url: '/gas-stations',
+        url: gasStationsIndex.url(),
         icon: MapPin,
     },
     {
         title: 'Refuels',
-        url: '/refuels',
+        url: refuelsIndex.url(),
         icon: Fuel,
     },
 ];
@@ -62,24 +88,35 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
-    const page = usePage<SharedData>();
+    const page = usePage();
     const { auth } = page.props;
     const getInitials = useInitials();
     return (
         <>
             <div className="w-full px-4">
-                <div className="border-accent flex h-16 items-center border-b">
-                    <Link href="/dashboard" prefetch className="text-primary-foreground flex items-center space-x-2">
+                <div className="flex h-16 items-center border-b border-accent">
+                    <Link
+                        href={dashboard()}
+                        prefetch
+                        className="flex items-center space-x-2 text-primary-foreground"
+                    >
                         <AppLogo />
                     </Link>
 
                     <div className="ml-auto flex items-center space-x-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="rounded-full p-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="rounded-full p-1"
+                                >
                                     <Avatar className="size-9 overflow-hidden rounded-full">
-                                        <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
-                                        <AvatarFallback className="bg-accent text-accent-foreground rounded-lg">
+                                        <AvatarImage
+                                            src={auth.user.avatar}
+                                            alt={auth.user.name}
+                                        />
+                                        <AvatarFallback className="rounded-lg bg-accent text-accent-foreground">
                                             {getInitials(auth.user.name)}
                                         </AvatarFallback>
                                     </Avatar>
@@ -93,7 +130,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 </div>
             </div>
             {breadcrumbs.length > 1 && (
-                <div className="border-sidebar-border/70 flex w-full border-b">
+                <div className="flex w-full border-b border-sidebar-border/70">
                     <div className="flex h-12 w-full items-center justify-start px-4 text-neutral-500">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
@@ -102,7 +139,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
             <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col gap-3 px-4 pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                 {/* Create Button */}
-                <Button variant="default" size="icon-lg" className="self-end rounded-full shadow-lg" asChild>
+                <Button
+                    variant="default"
+                    size="icon-lg"
+                    className="self-end rounded-full shadow-lg"
+                    asChild
+                >
                     <Link href={getCreateUrl(page.url)} aria-label="Create">
                         <Plus className="size-6" />
                     </Link>
@@ -110,13 +152,25 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 {/* Navigation */}
                 <NavigationMenu
                     id="app-navbar"
-                    className="bg-accent/95 flex w-full max-w-full items-center justify-center rounded-xl px-1 py-1 shadow-lg backdrop-blur-md"
+                    className="flex w-full max-w-full items-center justify-center rounded-xl bg-accent/95 px-1 py-1 shadow-lg backdrop-blur-md"
                 >
                     <NavigationMenuList className="grid w-full grid-cols-4 items-center justify-center">
                         {mainNavItems.map((item, index) => (
                             <NavigationMenuItem key={index}>
-                                <Link href={item.url} className={cn(menuItemStyles, isNavItemActive(page.url, item.url) && activeItemStyles)}>
-                                    {item.icon && <Icon iconNode={item.icon} className="size-5" />}
+                                <Link
+                                    href={item.url}
+                                    className={cn(
+                                        menuItemStyles,
+                                        isNavItemActive(page.url, item.url) &&
+                                            activeItemStyles,
+                                    )}
+                                >
+                                    {item.icon && (
+                                        <Icon
+                                            iconNode={item.icon}
+                                            className="size-5"
+                                        />
+                                    )}
                                     {item.title}
                                 </Link>
                             </NavigationMenuItem>

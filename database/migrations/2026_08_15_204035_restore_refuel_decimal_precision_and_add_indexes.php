@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +16,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('refuels', function (Blueprint $table) {
+        Schema::table('refuels', function (Blueprint $table): void {
             $table->decimal('total_price', 10, 2)->change();
             $table->decimal('liters_refueled', 8, 2)->change();
 
@@ -22,19 +24,19 @@ return new class extends Migration
             $table->index(['car_id', 'mileage']);
         });
 
-        Schema::table('car_expenses', function (Blueprint $table) {
+        Schema::table('car_expenses', function (Blueprint $table): void {
             $table->index(['car_id', 'invoice_date']);
         });
     }
 
     public function down(): void
     {
-        Schema::table('refuels', function (Blueprint $table) {
+        Schema::table('refuels', function (Blueprint $table): void {
             $table->dropIndex(['car_id', 'created_at']);
             $table->dropIndex(['car_id', 'mileage']);
         });
 
-        Schema::table('car_expenses', function (Blueprint $table) {
+        Schema::table('car_expenses', function (Blueprint $table): void {
             $table->dropIndex(['car_id', 'invoice_date']);
         });
     }

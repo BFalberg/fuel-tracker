@@ -1,34 +1,44 @@
+import { Link } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editPassword } from '@/routes/password';
+import { edit as editProfile } from '@/routes/user-profile';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Profile',
-        url: '/settings/profile',
+        url: editProfile.url(),
         icon: null,
     },
     {
         title: 'Password',
-        url: '/settings/password',
+        url: editPassword.url(),
         icon: null,
     },
     {
         title: 'Appearance',
-        url: '/settings/appearance',
+        url: editAppearance.url(),
         icon: null,
     },
 ];
 
-export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+export default function SettingsLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     const currentPath = window.location.pathname;
 
     return (
         <div className="py-6">
-            <Heading title="Settings" description="Manage your profile and account settings" />
+            <Heading
+                title="Settings"
+                description="Manage your profile and account settings"
+            />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
@@ -53,7 +63,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 <Separator className="my-6 md:hidden" />
 
                 <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">{children}</section>
+                    <section className="max-w-xl space-y-12">
+                        {children}
+                    </section>
                 </div>
             </div>
         </div>

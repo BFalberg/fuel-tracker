@@ -1,29 +1,29 @@
 import '../css/app.css';
-
-import PwaUpdateToast from '@/components/pwa-update-toast';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { useEffect, useState } from 'react';
+import type { ComponentType } from 'react';
+import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
-import { route as routeFn } from 'ziggy-js';
-import { initializeTheme } from './hooks/use-appearance';
-
-declare global {
-    const route: typeof routeFn;
-}
+import PwaUpdateToast from '@/components/pwa-update-toast';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { initializeTheme } from '@/hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
-    resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
+void createInertiaApp({
+    title: (title) => (title ? `${title} - ${appName}` : appName),
+    resolve: (name) =>
+        resolvePageComponent<ComponentType>(
+            `./pages/${name}.tsx`,
+            import.meta.glob<ComponentType>('./pages/**/*.tsx'),
+        ),
     setup({ el, App, props }) {
         const root = createRoot(el);
 
         function Root() {
             const [updateAvailable, setUpdateAvailable] = useState(false);
-            const [updateServiceWorker, setUpdateServiceWorker] = useState<(() => void) | null>(null);
+            const updateServiceWorker = useRef<(() => void) | null>(null);
 
             useEffect(() => {
                 const updateSw = registerSW({
@@ -32,27 +32,35 @@ createInertiaApp({
                     },
                 });
 
-                setUpdateServiceWorker(() => () => updateSw(true));
+                updateServiceWorker.current = () => void updateSw(true);
             }, []);
 
             const handleReload = () => {
-                if (!updateServiceWorker) {
+                if (!updateServiceWorker.current) {
                     window.location.reload();
                     return;
                 }
 
-                updateServiceWorker();
+                updateServiceWorker.current();
             };
 
             return (
-                <>
+                <TooltipProvider delayDuration={0}>
                     <App {...props} />
-                    <PwaUpdateToast open={updateAvailable} onDismiss={() => setUpdateAvailable(false)} onReload={handleReload} />
-                </>
+                    <PwaUpdateToast
+                        open={updateAvailable}
+                        onDismiss={() => setUpdateAvailable(false)}
+                        onReload={handleReload}
+                    />
+                </TooltipProvider>
             );
         }
 
-        root.render(<Root />);
+        root.render(
+            <StrictMode>
+                <Root />
+            </StrictMode>,
+        );
     },
     progress: {
         color: '#4B5563',

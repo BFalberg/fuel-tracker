@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Rules;
 
-use App\Actions\Refuel\GetMileageBounds;
+use App\Actions\GetMileageBounds;
 use App\Models\Car;
 use App\Models\Refuel;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-class MileageFitsCarSeries implements ValidationRule
+final readonly class MileageFitsCarSeries implements ValidationRule
 {
     private function __construct(
         private int $carId,
@@ -21,7 +23,7 @@ class MileageFitsCarSeries implements ValidationRule
      */
     public static function whenCreating(Car $car): self
     {
-        return new self($car->id, null, app(GetMileageBounds::class));
+        return new self($car->id, null, resolve(GetMileageBounds::class));
     }
 
     /**
@@ -32,27 +34,33 @@ class MileageFitsCarSeries implements ValidationRule
      */
     public static function whenUpdating(Refuel $refuel): self
     {
-        return new self($refuel->car_id, $refuel, app(GetMileageBounds::class));
+        return new self($refuel->car_id, $refuel, resolve(GetMileageBounds::class));
     }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $value = (int) $value;
+        $value = is_scalar($value) ? (int) $value : 0;
 
-        if ($this->refuel === null) {
+        if (! $this->refuel instanceof Refuel) {
             $this->validateNewReading($value, $fail);
 
             return;
         }
 
-        $this->validateEditedReading($value, $fail);
+        $this->validateEditedReading($this->refuel, $value, $fail);
     }
 
     private function validateNewReading(int $value, Closure $fail): void
     {
-        $highest = Refuel::where('car_id', $this->carId)->max('mileage');
+        $highest = Refuel::query()->where('car_id', $this->carId)->max('mileage');
 
-        if ($highest !== null && $value <= (int) $highest) {
+        if (! is_numeric($highest)) {
+            return;
+        }
+
+        $highest = (int) $highest;
+
+        if ($value <= $highest) {
             $fail("The mileage must be greater than the last refuel's mileage ({$highest}).");
         }
     }
@@ -68,13 +76,13 @@ class MileageFitsCarSeries implements ValidationRule
      * neighbour can only come from data that bypassed validation, and is fixed
      * by deleting the rows above it.
      */
-    private function validateEditedReading(int $value, Closure $fail): void
+    private function validateEditedReading(Refuel $refuel, int $value, Closure $fail): void
     {
-        if ($value === $this->refuel->mileage) {
+        if ($value === $refuel->mileage) {
             return;
         }
 
-        ['min' => $previous, 'max' => $next] = $this->getMileageBounds->handle($this->refuel);
+        ['min' => $previous, 'max' => $next] = $this->getMileageBounds->handle($refuel);
 
         if ($previous !== null && $value <= $previous) {
             $fail("The mileage must be greater than the previous refuel's mileage ({$previous}).");

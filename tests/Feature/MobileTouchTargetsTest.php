@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Guards the mobile sizing decisions baked into the shadcn primitives.
  *
@@ -19,7 +21,7 @@ function uiComponent(string $name): string
     return file_get_contents($path);
 }
 
-test('button sizes meet the minimum touch target', function () {
+test('button sizes meet the minimum touch target', function (): void {
     $button = uiComponent('button');
 
     expect($button)
@@ -29,7 +31,7 @@ test('button sizes meet the minimum touch target', function () {
         ->toContain('"icon-lg": "size-14"');
 });
 
-test('text inputs are touch sized and do not trigger ios zoom', function (string $component) {
+test('text inputs are touch sized and do not trigger ios zoom', function (string $component): void {
     $source = uiComponent($component);
 
     expect($source)->toContain('h-11');
@@ -40,7 +42,7 @@ test('text inputs are touch sized and do not trigger ios zoom', function (string
     'native-select',
 ]);
 
-test('the layout reserves space for the fixed bottom nav and the device safe area', function () {
+test('the layout reserves space for the fixed bottom nav and the device safe area', function (): void {
     $shell = file_get_contents(resource_path('js/components/app-shell.tsx'));
     $header = file_get_contents(resource_path('js/components/app-header.tsx'));
 
@@ -48,7 +50,7 @@ test('the layout reserves space for the fixed bottom nav and the device safe are
     expect($header)->toContain('env(safe-area-inset-bottom)');
 });
 
-test('the viewport opts into the display cutout so safe area insets resolve', function () {
+test('the viewport opts into the display cutout so safe area insets resolve', function (): void {
     $blade = file_get_contents(resource_path('views/app.blade.php'));
 
     expect($blade)->toContain('viewport-fit=cover');

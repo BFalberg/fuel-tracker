@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\GasStation;
@@ -8,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<GasStation>
  */
-class GasStationFactory extends Factory
+final class GasStationFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,8 +20,8 @@ class GasStationFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->company,
-            'address' => fake()->streetAddress,
+            'name' => fake()->company(),
+            'address' => fake()->streetAddress(),
         ];
     }
 }

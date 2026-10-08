@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('refuels', function (Blueprint $table) {
+        Schema::table('refuels', function (Blueprint $table): void {
             $table->string('type')->default('fossil')->after('gas_station_id');
             $table->dropForeign(['gas_station_id']);
             $table->foreignId('gas_station_id')->nullable()->change();
@@ -24,7 +26,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('refuels', function (Blueprint $table) {
+        Schema::table('refuels', function (Blueprint $table): void {
             $table->dropColumn('type');
             $table->dropForeign(['gas_station_id']);
             $table->foreignId('gas_station_id')->nullable(false)->change();

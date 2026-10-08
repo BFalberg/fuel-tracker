@@ -1,25 +1,28 @@
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 /**
  * Renders the `success` flash message that controllers set on redirect.
  */
 export default function FlashMessage() {
-    const { flash } = usePage<SharedData>().props;
+    const { flash } = usePage().props;
     const success = flash?.success;
-    const [visible, setVisible] = useState(false);
+    const [shownSuccess, setShownSuccess] = useState(success);
+    const [visible, setVisible] = useState(Boolean(success));
+
+    // Show the message again whenever a new flash value arrives (state adjusted during render, not in an effect).
+    if (success !== shownSuccess) {
+        setShownSuccess(success);
+        setVisible(Boolean(success));
+    }
 
     useEffect(() => {
         if (!success) {
-            setVisible(false);
-
             return;
         }
 
-        setVisible(true);
         const timeout = setTimeout(() => setVisible(false), 4000);
 
         return () => clearTimeout(timeout);

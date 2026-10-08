@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\Car;
@@ -9,13 +11,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Car>
  */
-class CarFactory extends Factory
+final class CarFactory extends Factory
 {
     public function definition(): array
     {
         return [
-            'name' => fake()->company,
-            'registration_number' => strtoupper(fake()->bothify('??###')),
+            'name' => fake()->company(),
+            'registration_number' => mb_strtoupper(fake()->bothify('??###')),
             'start_milage' => fake()->numberBetween(0, 250000),
             'purchase_price' => fake()->numberBetween(50000, 600000),
             'sale_price' => null,
@@ -25,7 +27,7 @@ class CarFactory extends Factory
 
     public function ownedBy(User $user): static
     {
-        return $this->afterCreating(function (Car $car) use ($user) {
+        return $this->afterCreating(function (Car $car) use ($user): void {
             $car->users()->attach($user->id, ['role' => 'owner']);
         });
     }
