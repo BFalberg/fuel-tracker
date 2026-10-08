@@ -1,3 +1,4 @@
+import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { create as createGasStation } from '@/routes/gas-stations';
@@ -14,6 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function GasStationCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={breadcrumbs[0].title} />
             <Heading level={1} title={breadcrumbs[0].title} />
             <GasStationForm formType="create" />
         </AppLayout>

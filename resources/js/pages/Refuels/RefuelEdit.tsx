@@ -1,5 +1,7 @@
+import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
+import { edit as editRefuel, index as refuelsIndex } from '@/routes/refuels';
 import RefuelForm, { type MileageBounds } from './RefuelForm';
 
 interface Refuel {
@@ -19,12 +21,16 @@ interface RefuelEditProps {
     mileageBounds: MileageBounds;
 }
 
-const breadcrumbs = [{ title: 'Edit Refuel', href: '/refuels/edit' }];
-
 export default function RefuelEdit({ refuel, cars, gasStations, mileageBounds }: RefuelEditProps) {
+    const breadcrumbs = [
+        { title: 'Refuels', href: refuelsIndex.url() },
+        { title: 'Edit Refuel', href: editRefuel.url(refuel.id) },
+    ];
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Heading level={1} title={breadcrumbs[0].title} />
+            <Head title="Edit Refuel" />
+            <Heading level={1} title="Edit Refuel" />
             <RefuelForm refuel={refuel} cars={cars} gasStations={gasStations} mileageBounds={mileageBounds} formType="edit" />
         </AppLayout>
     );

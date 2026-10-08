@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Trash2, UserPlus, Users } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
@@ -69,6 +69,7 @@ export default function CarEdit({ car, carUsers, isOwner }: CarEditProps) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Edit Car" />
             <Heading level={1} title="Edit Car" />
             <CarForm formType="edit" car={car} />
 

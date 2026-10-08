@@ -1,3 +1,4 @@
+import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { create as createCar } from '@/routes/cars';
@@ -14,6 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CarCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={breadcrumbs[0].title} />
             <Heading level={1} title={breadcrumbs[0].title} />
             <CarForm formType="create" />
         </AppLayout>

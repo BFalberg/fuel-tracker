@@ -4,6 +4,7 @@ import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
+import { show as showCar } from '@/routes/cars';
 import { type BreadcrumbItem, type Refuel } from '@/types';
 import CarExpensesList from '../CarExpenses/CarExpensesList';
 import CarCosts from './CarCosts';
@@ -38,13 +39,13 @@ interface ShowProps {
 export default function Show({ car, expenses, refuels, start_milage }: ShowProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
-            title: `${car.name}`,
-            href: `/car/${car.id}`,
+            title: car.name,
+            href: showCar.url(car.id),
         },
     ];
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Cars" />
+            <Head title={car.name} />
             <Heading level={1} title={breadcrumbs[0].title} />
 
             <div className="mx-auto flex max-w-3xl flex-col gap-6">
