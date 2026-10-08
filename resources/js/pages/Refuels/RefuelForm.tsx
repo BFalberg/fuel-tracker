@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { reverseGeocode } from '@/lib/reverse-geocode';
 import { store as storeRefuel, update as updateRefuel } from '@/routes/refuels';
 
 interface Refuel {
@@ -73,29 +74,10 @@ export default function RefuelForm({ refuel, cars, gasStations, mileageBounds, f
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                try {
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`,
-                    );
+                const address = await reverseGeocode(position.coords.latitude, position.coords.longitude);
 
-                    if (!response.ok) {
-                        return;
-                    }
-
-                    const data = await response.json();
-                    const address = data?.address ?? {};
-                    const street = [address.road, address.house_number].filter(Boolean).join(' ');
-                    const locality = address.city || address.town || address.village || address.suburb || address.city_district;
-                    const cityLine = [address.postcode, locality].filter(Boolean).join(' ');
-                    const formatted = [street, cityLine].filter(Boolean).join(', ');
-
-                    if (formatted) {
-                        setData('new_gas_station_address', formatted);
-                    } else if (data?.display_name) {
-                        setData('new_gas_station_address', data.display_name);
-                    }
-                } catch {
-                    // no-op
+                if (address) {
+                    setData('new_gas_station_address', address);
                 }
             },
             () => {
