@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Car;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 
-test('a malformed from parameter is rejected rather than crashing', function () {
+test('a malformed from parameter is rejected rather than crashing', function (): void {
     $user = User::factory()->create();
     Car::factory()->ownedBy($user)->create();
 
@@ -14,7 +16,7 @@ test('a malformed from parameter is rejected rather than crashing', function () 
         ->assertSessionHasErrors('from');
 });
 
-test('an array injected as a date parameter is rejected', function () {
+test('an array injected as a date parameter is rejected', function (): void {
     $user = User::factory()->create();
     Car::factory()->ownedBy($user)->create();
 
@@ -23,19 +25,19 @@ test('an array injected as a date parameter is rejected', function () {
         ->assertSessionHasErrors('from');
 });
 
-test('a from parameter is honoured and starts at the first of the month', function () {
+test('a from parameter is honoured and starts at the first of the month', function (): void {
     $user = User::factory()->create();
     Car::factory()->ownedBy($user)->create();
 
     $this->actingAs($user)
         ->get('/dashboard?from=2026-02&to=2026-04')
-        ->assertInertia(fn (AssertableInertia $page) => $page
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->where('selectedFrom', '2026-02')
             ->where('selectedTo', '2026-04')
         );
 });
 
-test('an absurdly wide period is clamped instead of fanning out queries', function () {
+test('an absurdly wide period is clamped instead of fanning out queries', function (): void {
     $user = User::factory()->create();
     Car::factory()->ownedBy($user)->create();
 
@@ -43,8 +45,8 @@ test('an absurdly wide period is clamped instead of fanning out queries', functi
 
     $this->actingAs($user)
         ->get('/dashboard?from=1900-01&to=2026-08')
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
                 ->has('stats.stats.monthlyTrends', 60)
             )
         );

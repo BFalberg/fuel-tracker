@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Car;
 use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-class CarUserController extends Controller
+final class CarUserController extends Controller
 {
     use AuthorizesRequests;
 
@@ -16,11 +19,11 @@ class CarUserController extends Controller
     {
         $this->authorize('manageUsers', $car);
 
-        $validated = $request->validate([
-            'email' => 'required|email',
+        $request->validate([
+            'email' => ['required', 'email'],
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $user = User::query()->where('email', $request->string('email')->value())->first();
 
         /** One message for both cases, so this cannot be used to probe which emails are registered. */
         if (! $user || $car->users()->where('users.id', $user->id)->exists()) {
@@ -32,11 +35,11 @@ class CarUserController extends Controller
         return back()->with('success', 'Co-driver added successfully.');
     }
 
-    public function destroy(Car $car, User $user): RedirectResponse
+    public function destroy(Car $car, User $user, #[CurrentUser] User $currentUser): RedirectResponse
     {
         $this->authorize('manageUsers', $car);
 
-        if ($user->id === auth()->id()) {
+        if ($user->is($currentUser)) {
             return back()->withErrors(['user' => 'You cannot remove yourself from the car.']);
         }
 

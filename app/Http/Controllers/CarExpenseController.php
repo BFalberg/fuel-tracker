@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Actions\CarExpenses\CreateCarExpense;
@@ -15,7 +17,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class CarExpenseController extends Controller
+final class CarExpenseController extends Controller
 {
     use AuthorizesRequests;
 
@@ -33,16 +35,16 @@ class CarExpenseController extends Controller
     {
         $this->authorize('view', $car);
 
-        $data = $request->validate([
+        $request->validate([
             'expense_type' => ['required', Rule::enum(ExpenseType::class)],
-            'amount' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'vendor' => 'nullable|string',
-            'invoice_date' => 'nullable|date',
+            'amount' => ['required', 'numeric', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'vendor' => ['nullable', 'string'],
+            'invoice_date' => ['nullable', 'date'],
         ]);
-        $createCarExpense->handle($car, $data);
+        $createCarExpense->handle($car, $this->expenseAttributes($request));
 
-        return redirect()->route('cars.show', $car);
+        return to_route('cars.show', $car);
     }
 
     public function edit(Car $car, CarExpense $expense): Response
@@ -62,16 +64,16 @@ class CarExpenseController extends Controller
         abort_if($expense->car_id !== $car->id, 404);
         $this->authorize('update', $expense);
 
-        $data = $request->validate([
+        $request->validate([
             'expense_type' => ['required', Rule::enum(ExpenseType::class)],
-            'amount' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'vendor' => 'nullable|string',
-            'invoice_date' => 'nullable|date',
+            'amount' => ['required', 'numeric', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'vendor' => ['nullable', 'string'],
+            'invoice_date' => ['nullable', 'date'],
         ]);
-        $updateCarExpense->handle($expense, $data);
+        $updateCarExpense->handle($expense, $this->expenseAttributes($request));
 
-        return redirect()->route('cars.show', $car);
+        return to_route('cars.show', $car);
     }
 
     public function destroy(Car $car, CarExpense $expense, DeleteCarExpense $deleteCarExpense): RedirectResponse
@@ -81,6 +83,28 @@ class CarExpenseController extends Controller
 
         $deleteCarExpense->handle($expense);
 
-        return redirect()->route('cars.show', $car);
+        return to_route('cars.show', $car);
+    }
+
+    /**
+     * The validated expense attributes. An optional field is only present when the request sent it,
+     * so an update leaves an omitted field unchanged.
+     *
+     * @return array{expense_type: string, amount: float, description?: string|null, vendor?: string|null, invoice_date?: string|null}
+     */
+    private function expenseAttributes(Request $request): array
+    {
+        $attributes = [
+            'expense_type' => $request->string('expense_type')->value(),
+            'amount' => $request->float('amount'),
+        ];
+
+        foreach (['description', 'vendor', 'invoice_date'] as $optionalField) {
+            if ($request->has($optionalField)) {
+                $attributes[$optionalField] = $request->filled($optionalField) ? $request->string($optionalField)->value() : null;
+            }
+        }
+
+        return $attributes;
     }
 }

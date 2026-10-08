@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\Refuel;
@@ -9,10 +11,10 @@ use App\Models\User;
  * A refuel belongs to a car, as a single shared ledger. Every member of that
  * car — owner or co-driver — may view, edit and delete any refuel on it.
  */
-class RefuelPolicy
+final class RefuelPolicy
 {
     /**
-     * The listing is filtered by Refuel::scopeAccessibleBy(); a policy cannot
+     * The listing is filtered by the Refuel accessibleBy() scope; a policy cannot
      * scope a collection, so this only gates access to the page itself.
      */
     public function viewAny(User $user): bool

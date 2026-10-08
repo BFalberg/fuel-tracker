@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\GasStations;
 
 use App\Models\GasStation;
 
-class UpdateGasStation
+final class UpdateGasStation
 {
     /**
      * @param  array{name: string, address: string}  $data

@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Refuel;
 
 use App\Models\Refuel;
 
-class GetMileageBounds
+final class GetMileageBounds
 {
     /**
      * The refuel's neighbours in its car's odometer series, anchored on the
@@ -18,19 +20,19 @@ class GetMileageBounds
      */
     public function handle(Refuel $refuel): array
     {
-        $previous = Refuel::where('car_id', $refuel->car_id)
+        $previous = Refuel::query()->where('car_id', $refuel->car_id)
             ->whereKeyNot($refuel->getKey())
             ->where('mileage', '<', $refuel->mileage)
             ->max('mileage');
 
-        $next = Refuel::where('car_id', $refuel->car_id)
+        $next = Refuel::query()->where('car_id', $refuel->car_id)
             ->whereKeyNot($refuel->getKey())
             ->where('mileage', '>', $refuel->mileage)
             ->min('mileage');
 
         return [
-            'min' => $previous !== null ? (int) $previous : null,
-            'max' => $next !== null ? (int) $next : null,
+            'min' => is_numeric($previous) ? (int) $previous : null,
+            'max' => is_numeric($next) ? (int) $next : null,
         ];
     }
 }

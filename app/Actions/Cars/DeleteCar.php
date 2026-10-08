@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Cars;
 
 use App\Models\Car;
 
-class DeleteCar
+final class DeleteCar
 {
     public function handle(Car $car): void
     {

@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Car;
 use App\Models\CarExpense;
 use App\Models\User;
 
-test('a stranger cannot create an expense on someone elses car', function () {
+test('a stranger cannot create an expense on someone elses car', function (): void {
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -16,10 +18,10 @@ test('a stranger cannot create an expense on someone elses car', function () {
         ])
         ->assertForbidden();
 
-    expect(CarExpense::where('car_id', $car->id)->count())->toBe(0);
+    expect(CarExpense::query()->where('car_id', $car->id)->count())->toBe(0);
 });
 
-test('a stranger cannot open the create form for someone elses car', function () {
+test('a stranger cannot open the create form for someone elses car', function (): void {
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -29,7 +31,7 @@ test('a stranger cannot open the create form for someone elses car', function ()
         ->assertForbidden();
 });
 
-test('a stranger cannot edit an expense on someone elses car', function () {
+test('a stranger cannot edit an expense on someone elses car', function (): void {
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -40,7 +42,7 @@ test('a stranger cannot edit an expense on someone elses car', function () {
         ->assertForbidden();
 });
 
-test('a stranger cannot update an expense on someone elses car', function () {
+test('a stranger cannot update an expense on someone elses car', function (): void {
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -56,7 +58,7 @@ test('a stranger cannot update an expense on someone elses car', function () {
     expect((float) $expense->fresh()->amount)->toBe(500.0);
 });
 
-test('a stranger cannot delete an expense on someone elses car', function () {
+test('a stranger cannot delete an expense on someone elses car', function (): void {
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -66,10 +68,10 @@ test('a stranger cannot delete an expense on someone elses car', function () {
         ->delete(route('cars.expenses.destroy', ['car' => $car, 'expense' => $expense]))
         ->assertForbidden();
 
-    expect(CarExpense::find($expense->id))->not->toBeNull();
+    expect(CarExpense::query()->find($expense->id))->not->toBeNull();
 });
 
-test('a co-driver can manage expenses on a shared car', function () {
+test('a co-driver can manage expenses on a shared car', function (): void {
     $owner = User::factory()->create();
     $coDriver = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -82,10 +84,10 @@ test('a co-driver can manage expenses on a shared car', function () {
         ])
         ->assertRedirect(route('cars.show', $car));
 
-    expect(CarExpense::where('car_id', $car->id)->count())->toBe(1);
+    expect(CarExpense::query()->where('car_id', $car->id)->count())->toBe(1);
 });
 
-test('an expense belonging to a different car still returns 404', function () {
+test('an expense belonging to a different car still returns 404', function (): void {
     $user = User::factory()->create();
     $carA = Car::factory()->ownedBy($user)->create();
     $carB = Car::factory()->ownedBy($user)->create();

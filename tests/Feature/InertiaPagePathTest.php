@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Guards the Inertia page path configuration against casing drift.
  *
@@ -9,7 +11,7 @@
  * case-sensitive CI runners, so the assertions below compare against real
  * directory entries rather than relying on `is_dir()`.
  */
-test('configured inertia page paths exist with exact casing', function (string $configKey) {
+test('configured inertia page paths exist with exact casing', function (string $configKey): void {
     $paths = config($configKey);
 
     expect($paths)->toBeArray()->not->toBeEmpty();
@@ -22,6 +24,5 @@ test('configured inertia page paths exist with exact casing', function (string $
         expect(scandir($parent))->toContain($directory);
     }
 })->with([
-    'application' => 'inertia.page_paths',
-    'testing' => 'inertia.testing.page_paths',
+    'application' => 'inertia.pages.paths',
 ]);

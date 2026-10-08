@@ -1,53 +1,57 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Actions\Dashboard\BuildDashboardStats;
-use Carbon\Carbon;
+use App\Models\Car;
+use App\Models\User;
+use Carbon\CarbonImmutable;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class DashboardController extends Controller
+final class DashboardController extends Controller
 {
     /**
      * The widest chart period we will render. Without a bound, a crafted
      * `?from=` drives an unbounded month-by-month loop.
      */
-    private const MAX_CHART_MONTHS = 60;
+    private const int MAX_CHART_MONTHS = 60;
 
-    public function index(Request $request, BuildDashboardStats $buildDashboardStats): Response
+    public function index(Request $request, #[CurrentUser] User $user, BuildDashboardStats $buildDashboardStats): Response
     {
-        $validated = $request->validate([
-            'car' => 'nullable|integer',
-            'from' => 'nullable|date_format:Y-m',
-            'to' => 'nullable|date_format:Y-m',
+        $request->validate([
+            'car' => ['nullable', 'integer'],
+            'from' => ['nullable', 'date_format:Y-m'],
+            'to' => ['nullable', 'date_format:Y-m'],
         ]);
 
-        $user = auth()->user();
-        $cars = $user->cars()->orderBy('cars.created_at', 'desc')->get();
+        $cars = $user->cars()->latest('cars.created_at')->get();
 
         /** The leading `!` resets the day to the 1st; without it Carbon fills in today's day-of-month and can roll into the next month. */
-        $chartStart = isset($validated['from'])
-            ? Carbon::createFromFormat('!Y-m', $validated['from'])->startOfMonth()
-            : Carbon::now()->subMonths(5)->startOfMonth();
+        $requestedFrom = $request->filled('from') ? CarbonImmutable::createFromFormat('!Y-m', $request->string('from')->value()) : null;
+        $requestedTo = $request->filled('to') ? CarbonImmutable::createFromFormat('!Y-m', $request->string('to')->value()) : null;
 
-        $chartEnd = isset($validated['to'])
-            ? Carbon::createFromFormat('!Y-m', $validated['to'])->endOfMonth()
-            : Carbon::now()->endOfMonth();
+        $chartStart = $requestedFrom?->startOfMonth() ?? CarbonImmutable::now()->subMonths(5)->startOfMonth();
+        $chartEnd = $requestedTo?->endOfMonth() ?? CarbonImmutable::now()->endOfMonth();
 
         if ($chartStart->gt($chartEnd)) {
-            $chartEnd = $chartStart->copy()->endOfMonth();
+            $chartEnd = $chartStart->endOfMonth();
         }
 
         /** startOfMonth before subMonths: subtracting from a 31st rolls into the next month for shorter months. */
-        $earliestAllowedStart = $chartEnd->copy()->startOfMonth()->subMonths(self::MAX_CHART_MONTHS - 1);
+        $earliestAllowedStart = $chartEnd->startOfMonth()->subMonths(self::MAX_CHART_MONTHS - 1);
 
         if ($chartStart->lt($earliestAllowedStart)) {
             $chartStart = $earliestAllowedStart;
         }
 
-        if ($cars->isEmpty()) {
+        $selectedCar = $cars->firstWhere('id', $request->integer('car')) ?? $cars->first();
+
+        if ($selectedCar === null) {
             return Inertia::render('dashboard', [
                 'cars' => [],
                 'selectedCarId' => null,
@@ -57,10 +61,8 @@ class DashboardController extends Controller
             ]);
         }
 
-        $selectedCar = $cars->firstWhere('id', (int) ($validated['car'] ?? 0)) ?? $cars->first();
-
         return Inertia::render('dashboard', [
-            'cars' => $cars->map(fn ($car) => ['id' => $car->id, 'name' => $car->name])->values(),
+            'cars' => $cars->map(fn (Car $car): array => ['id' => $car->id, 'name' => $car->name])->values(),
             'selectedCarId' => $selectedCar->id,
             'selectedFrom' => $chartStart->format('Y-m'),
             'selectedTo' => $chartEnd->format('Y-m'),

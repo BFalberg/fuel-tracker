@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\GasStations;
 
 use App\Models\GasStation;
 
-class CreateGasStation
+final class CreateGasStation
 {
     /**
      * @param  array{name: string, address: string}  $data
      */
     public function handle(array $data): GasStation
     {
-        return GasStation::create($data);
+        return GasStation::query()->create($data);
     }
 }

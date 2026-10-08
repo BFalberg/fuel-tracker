@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\CarExpenseController;
 use App\Http\Controllers\CarUserController;
@@ -9,11 +11,9 @@ use App\Http\Controllers\RefuelController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function (): void {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('cars', CarController::class);
@@ -21,7 +21,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('gas-stations', GasStationController::class)->except(['show']);
 
     // Car Expenses routes
-    Route::prefix('cars/{car}')->group(function () {
+    Route::prefix('cars/{car}')->group(function (): void {
         Route::get('expenses/create', [CarExpenseController::class, 'create'])->name('cars.expenses.create');
         Route::post('expenses', [CarExpenseController::class, 'store'])->name('cars.expenses.store');
         Route::get('expenses/{expense}/edit', [CarExpenseController::class, 'edit'])->name('cars.expenses.edit');

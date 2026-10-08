@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Cars;
 
 use App\Models\Car;
 
-class UpdateCar
+final class UpdateCar
 {
     /**
      * @param  array{name: string, registration_number: string, is_electric: bool, start_milage?: int|null, purchase_price?: float|int|null, sale_price?: float|int|null}  $data

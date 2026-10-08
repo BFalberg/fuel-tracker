@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\Car;
@@ -10,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Refuel>
  */
-class RefuelFactory extends Factory
+final class RefuelFactory extends Factory
 {
     /**
      * @return array<string, mixed>

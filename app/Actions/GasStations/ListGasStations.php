@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\GasStations;
 
 use App\Models\GasStation;
 use Illuminate\Database\Eloquent\Collection;
 
-class ListGasStations
+final class ListGasStations
 {
     /**
      * The refuel count is exposed so the delete confirmation can state how many
@@ -15,6 +17,6 @@ class ListGasStations
      */
     public function handle(): Collection
     {
-        return GasStation::withCount('refuels')->latest()->get();
+        return GasStation::query()->withCount('refuels')->latest()->get();
     }
 }

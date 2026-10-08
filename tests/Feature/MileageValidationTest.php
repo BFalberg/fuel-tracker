@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\Refuel;
@@ -15,7 +17,7 @@ uses(RefreshDatabase::class);
  */
 function seedRefuel(Car $car, GasStation $station, int $mileage, array $attributes = []): Refuel
 {
-    return Refuel::create(array_merge([
+    return Refuel::query()->forceCreate(array_merge([
         'car_id' => $car->id,
         'gas_station_id' => $station->id,
         'liters_refueled' => 10,
@@ -59,7 +61,7 @@ function putRefuel(User $user, Refuel $refuel, array $overrides = []): TestRespo
         ], $overrides));
 }
 
-test('mileage must exceed the highest existing mileage, not just the most recent by date', function () {
+test('mileage must exceed the highest existing mileage, not just the most recent by date', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
     $station = GasStation::factory()->create();
@@ -84,7 +86,7 @@ test('mileage must exceed the highest existing mileage, not just the most recent
         ->assertSessionHasErrors('mileage');
 });
 
-test('new refuel above highest existing mileage passes', function () {
+test('new refuel above highest existing mileage passes', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
     $station = GasStation::factory()->create();
@@ -104,7 +106,7 @@ test('new refuel above highest existing mileage passes', function () {
         ->assertRedirect('/refuels');
 });
 
-test('an older refuel can be edited without touching its mileage', function () {
+test('an older refuel can be edited without touching its mileage', function (): void {
     [$user, , , , $middle] = seedRefuelSeries();
 
     putRefuel($user, $middle, ['liters_refueled' => 42.5, 'total_price' => 777])
@@ -117,7 +119,7 @@ test('an older refuel can be edited without touching its mileage', function () {
         ->and((float) $middle->total_price)->toBe(777.0);
 });
 
-test('a refuel can be moved within the gap left by its neighbours', function () {
+test('a refuel can be moved within the gap left by its neighbours', function (): void {
     [$user, , , , $middle] = seedRefuelSeries();
 
     putRefuel($user, $middle, ['mileage' => 1500])->assertRedirect('/refuels');
@@ -125,7 +127,7 @@ test('a refuel can be moved within the gap left by its neighbours', function () 
     expect($middle->fresh()->mileage)->toBe(1500);
 });
 
-test('a refuel cannot be moved onto or past a neighbour', function (int $mileage) {
+test('a refuel cannot be moved onto or past a neighbour', function (int $mileage): void {
     [$user, , , , $middle] = seedRefuelSeries();
 
     putRefuel($user, $middle, ['mileage' => $mileage])->assertSessionHasErrors('mileage');
@@ -138,7 +140,7 @@ test('a refuel cannot be moved onto or past a neighbour', function (int $mileage
     'above the next refuel' => 4000,
 ]);
 
-test('the oldest refuel is only bounded from above', function () {
+test('the oldest refuel is only bounded from above', function (): void {
     [$user, , , $oldest] = seedRefuelSeries();
 
     putRefuel($user, $oldest, ['mileage' => 1])->assertRedirect('/refuels');
@@ -146,7 +148,7 @@ test('the oldest refuel is only bounded from above', function () {
     expect($oldest->fresh()->mileage)->toBe(1);
 });
 
-test('the oldest refuel cannot be moved onto the refuel after it', function () {
+test('the oldest refuel cannot be moved onto the refuel after it', function (): void {
     [$user, , , $oldest] = seedRefuelSeries();
 
     putRefuel($user, $oldest, ['mileage' => 2000])->assertSessionHasErrors('mileage');
@@ -154,7 +156,7 @@ test('the oldest refuel cannot be moved onto the refuel after it', function () {
     expect($oldest->fresh()->mileage)->toBe(1000);
 });
 
-test('the newest refuel is only bounded from below', function () {
+test('the newest refuel is only bounded from below', function (): void {
     [$user, , , , , $newest] = seedRefuelSeries();
 
     putRefuel($user, $newest, ['mileage' => 99999])->assertRedirect('/refuels');
@@ -162,7 +164,7 @@ test('the newest refuel is only bounded from below', function () {
     expect($newest->fresh()->mileage)->toBe(99999);
 });
 
-test('the newest refuel cannot be moved onto the refuel before it', function () {
+test('the newest refuel cannot be moved onto the refuel before it', function (): void {
     [$user, , , , , $newest] = seedRefuelSeries();
 
     putRefuel($user, $newest, ['mileage' => 2000])->assertSessionHasErrors('mileage');
@@ -170,7 +172,7 @@ test('the newest refuel cannot be moved onto the refuel before it', function () 
     expect($newest->fresh()->mileage)->toBe(3000);
 });
 
-test('a car with a single refuel has no mileage bounds', function () {
+test('a car with a single refuel has no mileage bounds', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
     $station = GasStation::factory()->create();
@@ -182,7 +184,7 @@ test('a car with a single refuel has no mileage bounds', function () {
     expect($only->fresh()->mileage)->toBe(10);
 });
 
-test('a refuel tied with a sibling stays editable', function () {
+test('a refuel tied with a sibling stays editable', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
     $station = GasStation::factory()->create();
@@ -195,7 +197,7 @@ test('a refuel tied with a sibling stays editable', function () {
     expect((float) $tied->fresh()->total_price)->toBe(350.0);
 });
 
-test('mileage bounds are scoped to the refuels own car', function () {
+test('mileage bounds are scoped to the refuels own car', function (): void {
     [$user, , , , $middle] = seedRefuelSeries();
 
     $otherCar = Car::factory()->ownedBy($user)->create(['is_electric' => false]);

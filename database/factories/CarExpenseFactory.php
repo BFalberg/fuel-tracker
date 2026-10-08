@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\Car;
@@ -9,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<CarExpense>
  */
-class CarExpenseFactory extends Factory
+final class CarExpenseFactory extends Factory
 {
     /**
      * @return array<string, mixed>

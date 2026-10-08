@@ -1,13 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Refuel;
 
 use App\Models\Refuel;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class ListRefuels
+final class ListRefuels
 {
+    /**
+     * @return LengthAwarePaginator<int, Refuel>
+     */
     public function handle(User $user, ?int $selectedCarId = null): LengthAwarePaginator
     {
         return Refuel::with(['car', 'gasStation'])

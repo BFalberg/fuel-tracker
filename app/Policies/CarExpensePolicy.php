@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\CarExpense;
@@ -9,7 +11,7 @@ use App\Models\User;
  * Car expenses follow the same rule as refuels: they belong to the car, and
  * every member of that car — owner or co-driver — may manage them.
  */
-class CarExpensePolicy
+final class CarExpensePolicy
 {
     public function view(User $user, CarExpense $expense): bool
     {

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Refuel;
 
 use App\Models\GasStation;
 use App\Models\Refuel;
 
-class UpdateRefuel
+final class UpdateRefuel
 {
     /**
      * The refuel's car is never taken from the payload — a refuel cannot move
@@ -16,7 +18,7 @@ class UpdateRefuel
     public function handle(Refuel $refuel, array $data): Refuel
     {
         if (! empty($data['new_gas_station_name'])) {
-            $station = GasStation::create([
+            $station = GasStation::query()->create([
                 'name' => $data['new_gas_station_name'],
                 'address' => $data['new_gas_station_address'] ?? 'Unknown',
             ]);
@@ -26,7 +28,7 @@ class UpdateRefuel
 
         $data['type'] = $refuel->car->is_electric ? 'charge' : 'fossil';
 
-        unset($data['new_gas_station_name'], $data['new_gas_station_address'], $data['car_id']);
+        unset($data['new_gas_station_name'], $data['new_gas_station_address']);
 
         $refuel->update($data);
 

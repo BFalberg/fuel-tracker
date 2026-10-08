@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -14,7 +16,7 @@ uses(RefreshDatabase::class);
  * Inertia's BundleDetector to consider SSR live, and the failed dispatch is
  * swallowed into a silent SPA fallback rather than an error.
  */
-test('rendering a page never dispatches to the ssr server', function () {
+test('rendering a page never dispatches to the ssr server', function (): void {
     Http::fake();
 
     $this->actingAs(User::factory()->create());
@@ -24,7 +26,7 @@ test('rendering a page never dispatches to the ssr server', function () {
     Http::assertNothingSent();
 });
 
-test('enabling ssr requires a build script that produces the bundle', function () {
+test('enabling ssr requires a build script that produces the bundle', function (): void {
     $scripts = json_decode(file_get_contents(base_path('package.json')), true)['scripts'] ?? [];
 
     expect($scripts)->toHaveKey('build:ssr');

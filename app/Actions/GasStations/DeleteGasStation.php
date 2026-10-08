@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\GasStations;
 
 use App\Models\GasStation;
 
-class DeleteGasStation
+final class DeleteGasStation
 {
     public function handle(GasStation $gasStation): void
     {

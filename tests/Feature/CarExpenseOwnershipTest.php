@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Car;
 use App\Models\CarExpense;
 use App\Models\User;
@@ -8,12 +10,12 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-test('editing an expense from a different car returns 404', function () {
+test('editing an expense from a different car returns 404', function (): void {
     $user = User::factory()->create();
     $carA = Car::factory()->ownedBy($user)->create();
     $carB = Car::factory()->ownedBy($user)->create();
 
-    $expense = CarExpense::create([
+    $expense = CarExpense::query()->create([
         'car_id' => $carB->id,
         'expense_type' => 'Værksted',
         'amount' => 500,
@@ -24,12 +26,12 @@ test('editing an expense from a different car returns 404', function () {
         ->assertNotFound();
 });
 
-test('updating an expense from a different car returns 404', function () {
+test('updating an expense from a different car returns 404', function (): void {
     $user = User::factory()->create();
     $carA = Car::factory()->ownedBy($user)->create();
     $carB = Car::factory()->ownedBy($user)->create();
 
-    $expense = CarExpense::create([
+    $expense = CarExpense::query()->create([
         'car_id' => $carB->id,
         'expense_type' => 'Værksted',
         'amount' => 500,
@@ -45,12 +47,12 @@ test('updating an expense from a different car returns 404', function () {
         ->assertNotFound();
 });
 
-test('deleting an expense from a different car returns 404', function () {
+test('deleting an expense from a different car returns 404', function (): void {
     $user = User::factory()->create();
     $carA = Car::factory()->ownedBy($user)->create();
     $carB = Car::factory()->ownedBy($user)->create();
 
-    $expense = CarExpense::create([
+    $expense = CarExpense::query()->create([
         'car_id' => $carB->id,
         'expense_type' => 'Afgift',
         'amount' => 1000,
@@ -64,11 +66,11 @@ test('deleting an expense from a different car returns 404', function () {
         ->assertNotFound();
 });
 
-test('editing an expense belonging to the correct car succeeds', function () {
+test('editing an expense belonging to the correct car succeeds', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create();
 
-    $expense = CarExpense::create([
+    $expense = CarExpense::query()->create([
         'car_id' => $car->id,
         'expense_type' => 'Værksted',
         'amount' => 500,
@@ -83,11 +85,11 @@ test('editing an expense belonging to the correct car succeeds', function () {
  * The edit page previously rendered without the app layout, leaving no header
  * and no navigation. Locks in that it renders as a normal Inertia page.
  */
-test('the expense edit page renders inside the app', function () {
+test('the expense edit page renders inside the app', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create();
 
-    $expense = CarExpense::create([
+    $expense = CarExpense::query()->create([
         'car_id' => $car->id,
         'expense_type' => 'Værksted',
         'amount' => 500,
@@ -96,7 +98,7 @@ test('the expense edit page renders inside the app', function () {
     $this->actingAs($user)
         ->get(route('cars.expenses.edit', ['car' => $car->id, 'expense' => $expense->id]))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
+        ->assertInertia(fn (Assert $page): Assert => $page
             ->component('CarExpenses/Edit')
             ->where('car.id', $car->id)
             ->where('expense.id', $expense->id)

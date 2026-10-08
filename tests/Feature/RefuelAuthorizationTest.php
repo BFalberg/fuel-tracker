@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Car;
 use App\Models\Refuel;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia;
 
-test('the refuel list only shows refuels for cars the user can access', function () {
+test('the refuel list only shows refuels for cars the user can access', function (): void {
     $user = User::factory()->create();
     $stranger = User::factory()->create();
 
@@ -17,15 +19,15 @@ test('the refuel list only shows refuels for cars the user can access', function
 
     $this->actingAs($user)
         ->get(route('refuels.index'))
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
                 ->has('refuels.data', 1)
                 ->where('refuels.data.0.car_id', $ownCar->id)
             )
         );
 });
 
-test('filtering by another users car returns nothing rather than their data', function () {
+test('filtering by another users car returns nothing rather than their data', function (): void {
     $user = User::factory()->create();
     $stranger = User::factory()->create();
 
@@ -35,14 +37,14 @@ test('filtering by another users car returns nothing rather than their data', fu
 
     $this->actingAs($user)
         ->get(route('refuels.index', ['car_id' => $strangerCar->id]))
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
                 ->has('refuels.data', 0)
             )
         );
 });
 
-test('a stranger cannot open the edit form for someone elses refuel', function () {
+test('a stranger cannot open the edit form for someone elses refuel', function (): void {
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -53,7 +55,7 @@ test('a stranger cannot open the edit form for someone elses refuel', function (
         ->assertForbidden();
 });
 
-test('a stranger cannot update someone elses refuel', function () {
+test('a stranger cannot update someone elses refuel', function (): void {
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -71,7 +73,7 @@ test('a stranger cannot update someone elses refuel', function () {
     expect($refuel->fresh()->mileage)->toBe(1000);
 });
 
-test('a stranger cannot delete someone elses refuel', function () {
+test('a stranger cannot delete someone elses refuel', function (): void {
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -81,10 +83,10 @@ test('a stranger cannot delete someone elses refuel', function () {
         ->delete(route('refuels.destroy', $refuel))
         ->assertForbidden();
 
-    expect(Refuel::find($refuel->id))->not->toBeNull();
+    expect(Refuel::query()->find($refuel->id))->not->toBeNull();
 });
 
-test('a co-driver can edit a refuel on a shared car', function () {
+test('a co-driver can edit a refuel on a shared car', function (): void {
     $owner = User::factory()->create();
     $coDriver = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -108,7 +110,7 @@ test('a co-driver can edit a refuel on a shared car', function () {
     expect($refuel->fresh()->mileage)->toBe(5000);
 });
 
-test('a co-driver can delete a refuel on a shared car', function () {
+test('a co-driver can delete a refuel on a shared car', function (): void {
     $owner = User::factory()->create();
     $coDriver = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -120,10 +122,10 @@ test('a co-driver can delete a refuel on a shared car', function () {
         ->delete(route('refuels.destroy', $refuel))
         ->assertRedirect();
 
-    expect(Refuel::find($refuel->id))->toBeNull();
+    expect(Refuel::query()->find($refuel->id))->toBeNull();
 });
 
-test('a refuel cannot be moved to another car', function () {
+test('a refuel cannot be moved to another car', function (): void {
     $user = User::factory()->create();
     $carA = Car::factory()->ownedBy($user)->create();
     $carB = Car::factory()->ownedBy($user)->create();

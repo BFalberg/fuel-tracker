@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Car;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('guests are redirected to the login page', function () {
+test('guests are redirected to the login page', function (): void {
     $this->get('/dashboard')->assertRedirect('/login');
 });
 
-test('authenticated users can visit the dashboard', function () {
+test('authenticated users can visit the dashboard', function (): void {
     $this->actingAs(User::factory()->create());
 
     $this->get('/dashboard')->assertOk();
 });
 
-test('dashboard shows message when user has no cars', function () {
+test('dashboard shows message when user has no cars', function (): void {
     $this->actingAs(User::factory()->create());
 
     $this->get('/dashboard')->assertInertia(fn ($page) => $page
@@ -25,7 +27,7 @@ test('dashboard shows message when user has no cars', function () {
     );
 });
 
-test('dashboard selects newest car by default', function () {
+test('dashboard selects newest car by default', function (): void {
     $user = User::factory()->create();
     Car::factory()->ownedBy($user)->create(['created_at' => now()->subDays(10)]);
     $newCar = Car::factory()->ownedBy($user)->create(['created_at' => now()]);
@@ -38,7 +40,7 @@ test('dashboard selects newest car by default', function () {
     );
 });
 
-test('dashboard respects car query parameter', function () {
+test('dashboard respects car query parameter', function (): void {
     $user = User::factory()->create();
     $car1 = Car::factory()->ownedBy($user)->create(['created_at' => now()->subDays(10)]);
     Car::factory()->ownedBy($user)->create(['created_at' => now()]);
@@ -51,7 +53,7 @@ test('dashboard respects car query parameter', function () {
     );
 });
 
-test('dashboard falls back to newest car for invalid car param', function () {
+test('dashboard falls back to newest car for invalid car param', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create();
 
@@ -63,7 +65,7 @@ test('dashboard falls back to newest car for invalid car param', function () {
     );
 });
 
-test('dashboard does not expose other users cars via query param', function () {
+test('dashboard does not expose other users cars via query param', function (): void {
     $user = User::factory()->create();
     $otherUser = User::factory()->create();
     $myCar = Car::factory()->ownedBy($user)->create();

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Car;
 use App\Models\CarExpense;
 use App\Models\Refuel;
 use App\Models\User;
 
-test('a car with no history can be deleted', function () {
+test('a car with no history can be deleted', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create();
 
@@ -13,10 +15,10 @@ test('a car with no history can be deleted', function () {
         ->delete(route('cars.destroy', $car))
         ->assertRedirect();
 
-    expect(Car::find($car->id))->toBeNull();
+    expect(Car::query()->find($car->id))->toBeNull();
 });
 
-test('a car with refuels cannot be deleted', function () {
+test('a car with refuels cannot be deleted', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create();
     Refuel::factory()->forCar($car)->create();
@@ -25,10 +27,10 @@ test('a car with refuels cannot be deleted', function () {
         ->delete(route('cars.destroy', $car))
         ->assertSessionHasErrors('car');
 
-    expect(Car::find($car->id))->not->toBeNull();
+    expect(Car::query()->find($car->id))->not->toBeNull();
 });
 
-test('a car with expenses cannot be deleted', function () {
+test('a car with expenses cannot be deleted', function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create();
     CarExpense::factory()->forCar($car)->create();
@@ -37,10 +39,10 @@ test('a car with expenses cannot be deleted', function () {
         ->delete(route('cars.destroy', $car))
         ->assertSessionHasErrors('car');
 
-    expect(Car::find($car->id))->not->toBeNull();
+    expect(Car::query()->find($car->id))->not->toBeNull();
 });
 
-test('a co-driver still cannot delete a car', function () {
+test('a co-driver still cannot delete a car', function (): void {
     $owner = User::factory()->create();
     $coDriver = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -50,5 +52,5 @@ test('a co-driver still cannot delete a car', function () {
         ->delete(route('cars.destroy', $car))
         ->assertForbidden();
 
-    expect(Car::find($car->id))->not->toBeNull();
+    expect(Car::query()->find($car->id))->not->toBeNull();
 });

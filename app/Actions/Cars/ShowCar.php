@@ -1,15 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Cars;
 
 use App\Models\Car;
+use App\Models\CarExpense;
+use App\Models\Refuel;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
 
-class ShowCar
+final class ShowCar
 {
     /**
-     * @return array{car: Car, expenses: Closure, refuels: Closure, start_milage: mixed}
+     * @return array{car: Car, expenses: Closure(): Collection<int, CarExpense>, refuels: Closure(): Collection<int, Refuel>, start_milage: int|null}
      */
     public function handle(Car $car): array
     {

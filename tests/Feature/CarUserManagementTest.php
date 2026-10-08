@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Car;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('owner can add a co-driver by email', function () {
+test('owner can add a co-driver by email', function (): void {
     $owner = User::factory()->create();
     $coDriver = User::factory()->create(['email' => 'codriver@example.com']);
     $car = Car::factory()->ownedBy($owner)->create();
@@ -18,7 +20,7 @@ test('owner can add a co-driver by email', function () {
     expect($car->users()->where('users.id', $coDriver->id)->wherePivot('role', 'co_driver')->exists())->toBeTrue();
 });
 
-test('adding co-driver with unknown email returns validation error', function () {
+test('adding co-driver with unknown email returns validation error', function (): void {
     $owner = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
 
@@ -27,7 +29,7 @@ test('adding co-driver with unknown email returns validation error', function ()
         ->assertSessionHasErrors('email');
 });
 
-test('co-driver cannot add other users', function () {
+test('co-driver cannot add other users', function (): void {
     $owner = User::factory()->create();
     $coDriver = User::factory()->create();
     $stranger = User::factory()->create(['email' => 'stranger@example.com']);
@@ -39,7 +41,7 @@ test('co-driver cannot add other users', function () {
         ->assertForbidden();
 });
 
-test('owner can remove a co-driver', function () {
+test('owner can remove a co-driver', function (): void {
     $owner = User::factory()->create();
     $coDriver = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
@@ -52,7 +54,7 @@ test('owner can remove a co-driver', function () {
     expect($car->users()->where('users.id', $coDriver->id)->exists())->toBeFalse();
 });
 
-test('owner cannot remove themselves', function () {
+test('owner cannot remove themselves', function (): void {
     $owner = User::factory()->create();
     $car = Car::factory()->ownedBy($owner)->create();
 

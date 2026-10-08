@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,12 +16,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('refuels', function (Blueprint $table) {
+        Schema::table('refuels', function (Blueprint $table): void {
             $table->dropForeign(['car_id']);
             $table->foreign('car_id')->references('id')->on('cars')->restrictOnDelete();
         });
 
-        Schema::table('car_expenses', function (Blueprint $table) {
+        Schema::table('car_expenses', function (Blueprint $table): void {
             $table->dropForeign(['car_id']);
             $table->foreign('car_id')->references('id')->on('cars')->restrictOnDelete();
         });
@@ -27,12 +29,12 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('refuels', function (Blueprint $table) {
+        Schema::table('refuels', function (Blueprint $table): void {
             $table->dropForeign(['car_id']);
             $table->foreign('car_id')->references('id')->on('cars')->cascadeOnDelete();
         });
 
-        Schema::table('car_expenses', function (Blueprint $table) {
+        Schema::table('car_expenses', function (Blueprint $table): void {
             $table->dropForeign(['car_id']);
             $table->foreign('car_id')->references('id')->on('cars')->cascadeOnDelete();
         });

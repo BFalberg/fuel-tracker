@@ -1,18 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Cars;
 
 use App\Models\Car;
+use App\Models\CarUser;
+use App\Models\User;
 use Illuminate\Support\Collection;
 
-class ListCars
+final class ListCars
 {
     /**
-     * @return Collection<int, array{id: int, name: string, registration_number: string, is_electric: bool, users: Collection<int, array{id: int, name: string}>, pivot: array{role: string}, can_delete: bool}>
+     * @return Collection<int, array{id: int, name: string, registration_number: string, is_electric: bool, users: Collection<int, array{id: int, name: string}>, pivot: array{role: 'owner'|'co_driver'}, can_delete: bool}>
      */
-    public function handle(): Collection
+    public function handle(User $user): Collection
     {
-        return auth()->user()->cars()
+        return $user->cars()
             ->withCount(['refuels', 'carExpenses'])
             ->with(['users' => fn ($q) => $q->wherePivot('role', 'owner')->select('users.id', 'users.name')])
             ->latest('cars.created_at')
@@ -26,7 +30,7 @@ class ListCars
                     'id' => $user->id,
                     'name' => $user->name,
                 ])->values(),
-                'pivot' => ['role' => $car->pivot->role],
+                'pivot' => ['role' => CarUser::of($car)->role],
                 'can_delete' => $car->refuels_count === 0 && $car->car_expenses_count === 0,
             ]);
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Actions\GasStations\CreateGasStation;
@@ -7,25 +9,28 @@ use App\Actions\GasStations\DeleteGasStation;
 use App\Actions\GasStations\ListGasStations;
 use App\Actions\GasStations\UpdateGasStation;
 use App\Models\GasStation;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
-class GasStationController extends Controller
+final class GasStationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(ListGasStations $listGasStations)
+    public function index(ListGasStations $listGasStations): Response
     {
         return Inertia::render('GasStations/Index', [
-            'gasStations' => Inertia::defer(fn () => $listGasStations->handle()),
+            'gasStations' => Inertia::defer(fn (): Collection => $listGasStations->handle()),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('GasStations/GasStationCreate');
     }
@@ -33,22 +38,22 @@ class GasStationController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, CreateGasStation $createGasStation)
+    public function store(Request $request, CreateGasStation $createGasStation): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:255'],
         ]);
 
-        $createGasStation->handle($validated);
+        $createGasStation->handle($this->gasStationAttributes($request));
 
-        return redirect()->route('gas-stations.index')->with('success', 'Gas station created successfully');
+        return to_route('gas-stations.index')->with('success', 'Gas station created successfully');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(GasStation $gasStation)
+    public function edit(GasStation $gasStation): Response
     {
         return Inertia::render('GasStations/GasStationEdit', [
             'gasStation' => $gasStation,
@@ -58,25 +63,36 @@ class GasStationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, GasStation $gasStation, UpdateGasStation $updateGasStation)
+    public function update(Request $request, GasStation $gasStation, UpdateGasStation $updateGasStation): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:255'],
         ]);
 
-        $updateGasStation->handle($gasStation, $validated);
+        $updateGasStation->handle($gasStation, $this->gasStationAttributes($request));
 
-        return redirect()->route('gas-stations.index')->with('success', 'Gas station updated successfully');
+        return to_route('gas-stations.index')->with('success', 'Gas station updated successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(GasStation $gasStation, DeleteGasStation $deleteGasStation)
+    public function destroy(GasStation $gasStation, DeleteGasStation $deleteGasStation): RedirectResponse
     {
         $deleteGasStation->handle($gasStation);
 
-        return redirect()->back()->with('success', 'Gas station deleted successfully');
+        return back()->with('success', 'Gas station deleted successfully');
+    }
+
+    /**
+     * @return array{name: string, address: string}
+     */
+    private function gasStationAttributes(Request $request): array
+    {
+        return [
+            'name' => $request->string('name')->value(),
+            'address' => $request->string('address')->value(),
+        ];
     }
 }

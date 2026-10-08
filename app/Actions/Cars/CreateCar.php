@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Cars;
 
 use App\Models\Car;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-class CreateCar
+final class CreateCar
 {
     /**
      * @param  array{name: string, registration_number: string, is_electric: bool, start_milage?: int|null, purchase_price?: float|int|null, sale_price?: float|int|null}  $data
@@ -14,7 +16,7 @@ class CreateCar
     public function handle(User $user, array $data): Car
     {
         return DB::transaction(function () use ($user, $data): Car {
-            $car = Car::create($data);
+            $car = Car::query()->create($data);
             $car->users()->attach($user->id, ['role' => 'owner']);
 
             return $car;
