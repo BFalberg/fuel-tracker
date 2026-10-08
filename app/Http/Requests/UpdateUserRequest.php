@@ -2,22 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Settings;
+namespace App\Http\Requests;
 
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-final class ProfileUpdateRequest extends FormRequest
+final class UpdateUserRequest extends FormRequest
 {
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $user = $this->user();
+        assert($user instanceof User);
+
         return [
             'name' => ['required', 'string', 'max:255'],
 
@@ -27,7 +28,7 @@ final class ProfileUpdateRequest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()),
+                Rule::unique(User::class)->ignore($user->id),
             ],
         ];
     }
