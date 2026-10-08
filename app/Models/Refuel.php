@@ -6,7 +6,6 @@ namespace App\Models;
 
 use Carbon\CarbonInterface;
 use Database\Factories\RefuelFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,14 +25,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Car $car
  * @property-read GasStation|null $gasStation
  */
-#[Fillable([
-    'car_id',
-    'gas_station_id',
-    'liters_refueled',
-    'total_price',
-    'mileage',
-    'type',
-])]
 final class Refuel extends Model
 {
     /** @use HasFactory<RefuelFactory> */
@@ -61,9 +52,15 @@ final class Refuel extends Model
     public function casts(): array
     {
         return [
+            'id' => 'integer',
+            'car_id' => 'integer',
+            'gas_station_id' => 'integer',
+            'type' => 'string',
             'liters_refueled' => 'decimal:2',
             'total_price' => 'decimal:2',
             'mileage' => 'integer',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 

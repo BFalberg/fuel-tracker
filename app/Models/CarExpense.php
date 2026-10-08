@@ -7,7 +7,6 @@ namespace App\Models;
 use App\Enums\ExpenseType;
 use Carbon\CarbonInterface;
 use Database\Factories\CarExpenseFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,14 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read CarbonInterface $updated_at
  * @property-read Car $car
  */
-#[Fillable([
-    'car_id',
-    'expense_type',
-    'amount',
-    'description',
-    'vendor',
-    'invoice_date',
-])]
 final class CarExpense extends Model
 {
     /** @use HasFactory<CarExpenseFactory> */
@@ -51,9 +42,15 @@ final class CarExpense extends Model
     public function casts(): array
     {
         return [
-            'amount' => 'decimal:2',
-            'invoice_date' => 'date:Y-m-d',
+            'id' => 'integer',
+            'car_id' => 'integer',
             'expense_type' => ExpenseType::class,
+            'amount' => 'decimal:2',
+            'description' => 'string',
+            'vendor' => 'string',
+            'invoice_date' => 'date:Y-m-d',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 }
