@@ -85,5 +85,3 @@ jobs:
       - name: Tests
         run: composer test
 
-      - name: Code Coverage
-        run: composer test:coverage

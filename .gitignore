@@ -1,4 +1,5 @@
 /.phpunit.cache
+/bootstrap/ssr
 /node_modules
 /public/build
 /public/hot
@@ -9,6 +10,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+.DS_Store
 .env
 .env.backup
 .env.production
@@ -16,17 +18,15 @@
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
-npm-debug.log
-yarn-error.log
 /auth.json
 /.fleet
 /.idea
 /.nova
 /.vscode
 /.zed
-
-**/caddy
-frankenphp
-frankenphp-worker.php
 /tmp/
+*.log
+Thumbs.db
+_ide_helper.php
+/public/fonts-manifest.dev.json
 /coverage

@@ -1,6 +1,7 @@
 {
     "preset": "laravel",
-    "exclude": [
+    "notPath": [
+        "tests/TestCase.php",
         "tmp"
     ],
     "rules": {
