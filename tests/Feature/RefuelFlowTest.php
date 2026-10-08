@@ -6,10 +6,7 @@ use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\Refuel;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
-
-uses(RefreshDatabase::class);
 
 test('stores refuel type based on car type', function (): void {
     $user = User::factory()->create();

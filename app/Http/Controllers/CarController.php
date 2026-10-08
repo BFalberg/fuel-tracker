@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class CarController extends Controller
+final class CarController
 {
     use AuthorizesRequests;
 

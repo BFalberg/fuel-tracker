@@ -24,7 +24,7 @@ use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class RefuelController extends Controller
+final class RefuelController
 {
     use AuthorizesRequests;
 

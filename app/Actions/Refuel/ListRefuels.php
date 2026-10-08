@@ -6,6 +6,7 @@ namespace App\Actions\Refuel;
 
 use App\Models\Refuel;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 final class ListRefuels
@@ -17,7 +18,7 @@ final class ListRefuels
     {
         return Refuel::with(['car', 'gasStation'])
             ->accessibleBy($user)
-            ->when($selectedCarId, function ($query) use ($selectedCarId): void {
+            ->when($selectedCarId, function (Builder $query) use ($selectedCarId): void {
                 $query->where('car_id', $selectedCarId);
             })
             ->latest()

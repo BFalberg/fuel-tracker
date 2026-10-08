@@ -33,7 +33,7 @@ final class CarUser extends Pivot
      */
     public static function of(Model $model): self
     {
-        $membership = $model->getRelation('pivot');
+        $membership = $model->relationLoaded('pivot') ? $model->getRelation('pivot') : null;
 
         throw_unless($membership instanceof self, LogicException::class, 'The model was not loaded through the car_user relation.');
 

@@ -56,6 +56,18 @@ final class Refuel extends Model
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function casts(): array
+    {
+        return [
+            'liters_refueled' => 'decimal:2',
+            'total_price' => 'decimal:2',
+            'mileage' => 'integer',
+        ];
+    }
+
+    /**
      * Limit the query to refuels on cars the given user is a member of,
      * as either owner or co-driver.
      *
@@ -66,17 +78,5 @@ final class Refuel extends Model
     protected function accessibleBy(Builder $query, User $user): Builder
     {
         return $query->whereHas('car.users', fn (Builder $carUsers) => $carUsers->whereKey($user->id));
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'liters_refueled' => 'decimal:2',
-            'total_price' => 'decimal:2',
-            'mileage' => 'integer',
-        ];
     }
 }

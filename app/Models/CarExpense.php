@@ -48,7 +48,7 @@ final class CarExpense extends Model
     /**
      * @return array<string, string>
      */
-    protected function casts(): array
+    public function casts(): array
     {
         return [
             'amount' => 'decimal:2',

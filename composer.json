@@ -29,6 +29,7 @@
         "pestphp/pest": "^5.3",
         "pestphp/pest-plugin-drift": "^5.0",
         "pestphp/pest-plugin-laravel": "^5.0",
+        "pestphp/pest-plugin-type-coverage": "^5.0.3",
         "rector/rector": "^2.7"
     },
     "autoload": {

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 use App\Models\Car;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('owner can add a co-driver by email', function (): void {
     $owner = User::factory()->create();

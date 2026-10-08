@@ -72,7 +72,7 @@ final class Car extends Model
     /**
      * @return array<string, string>
      */
-    protected function casts(): array
+    public function casts(): array
     {
         return [
             'is_electric' => 'boolean',

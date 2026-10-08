@@ -17,7 +17,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class CarExpenseController extends Controller
+final class CarExpenseController
 {
     use AuthorizesRequests;
 

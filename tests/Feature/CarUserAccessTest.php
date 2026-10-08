@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Car;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
-
-uses(RefreshDatabase::class);
 
 test('owner can see their car on the dashboard', function (): void {
     $owner = User::factory()->create();

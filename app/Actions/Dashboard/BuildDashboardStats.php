@@ -78,13 +78,13 @@ final class BuildDashboardStats
             ->where('expense_type', ExpenseType::Subscription->value)
             ->whereNotNull('invoice_date')
             ->get(['amount', 'invoice_date'])
-            ->groupBy(fn ($e): string => CarbonImmutable::parse($e->invoice_date)->format('Y-m'))
+            ->groupBy(fn (CarExpense $e): string => CarbonImmutable::parse($e->invoice_date)->format('Y-m'))
             ->map(fn (Collection $group): float => $this->toFloat($group->sum('amount')))
             ->avg() ?? 0;
 
         $evMonthlyRefuels = Refuel::query()->where('car_id', $car->id)
             ->get(['mileage', 'liters_refueled', 'created_at'])
-            ->groupBy(fn ($r) => $r->created_at->format('Y-m'));
+            ->groupBy(fn (Refuel $r): string => $r->created_at->format('Y-m'));
 
         $avgMonthlyKm = $evMonthlyRefuels
             ->map(fn (Collection $group): int => $this->toInt($group->max('mileage')) - $this->toInt($group->min('mileage')))
@@ -140,7 +140,7 @@ final class BuildDashboardStats
 
         $monthlyRefuels = Refuel::query()->where('car_id', $car->id)
             ->get(['total_price', 'mileage', 'liters_refueled', 'created_at'])
-            ->groupBy(fn ($r) => $r->created_at->format('Y-m'));
+            ->groupBy(fn (Refuel $r): string => $r->created_at->format('Y-m'));
 
         $avgMonthlyAmount = $monthlyRefuels
             ->map(fn (Collection $group): float => $this->toFloat($group->sum('total_price')))
@@ -232,7 +232,7 @@ final class BuildDashboardStats
         $refuelsByMonth = Refuel::query()->where('car_id', $car->id)
             ->whereBetween('created_at', [$rangeStart, $rangeEnd])
             ->get(['mileage', 'liters_refueled', 'total_price', 'created_at'])
-            ->groupBy(fn ($refuel) => $refuel->created_at->format('Y-m'));
+            ->groupBy(fn (Refuel $refuel): string => $refuel->created_at->format('Y-m'));
 
         $subscriptionsByMonth = $car->is_electric
             ? CarExpense::query()->where('car_id', $car->id)
@@ -240,7 +240,7 @@ final class BuildDashboardStats
                 ->whereNotNull('invoice_date')
                 ->whereBetween('invoice_date', [$rangeStart->toDateString(), $rangeEnd->toDateString()])
                 ->get(['amount', 'invoice_date'])
-                ->groupBy(fn ($expense): string => CarbonImmutable::parse($expense->invoice_date)->format('Y-m'))
+                ->groupBy(fn (CarExpense $expense): string => CarbonImmutable::parse($expense->invoice_date)->format('Y-m'))
             : collect();
 
         $trends = [];

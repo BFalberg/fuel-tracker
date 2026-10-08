@@ -3,9 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
+use Illuminate\Auth\Events\Lockout;
+use Illuminate\Support\Facades\Event;
 
 test('login screen can be rendered', function (): void {
     $response = $this->get('/login');
@@ -43,4 +42,21 @@ test('users can logout', function (): void {
 
     $this->assertGuest();
     $response->assertRedirect('/');
+});
+
+test('users are locked out after too many failed login attempts', function (): void {
+    Event::fake([Lockout::class]);
+
+    $user = User::factory()->create();
+
+    foreach (range(1, 5) as $attempt) {
+        $this->post('/login', ['email' => $user->email, 'password' => 'wrong-password'])
+            ->assertSessionHasErrors(['email' => __('auth.failed')]);
+    }
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+        ->assertSessionHasErrors('email');
+
+    $this->assertGuest();
+    Event::assertDispatched(Lockout::class);
 });

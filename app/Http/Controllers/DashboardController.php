@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class DashboardController extends Controller
+final class DashboardController
 {
     /**
      * The widest chart period we will render. Without a bound, a crafted

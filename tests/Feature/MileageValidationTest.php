@@ -6,10 +6,7 @@ use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\Refuel;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
-
-uses(RefreshDatabase::class);
 
 /**
  * Refuels are created directly rather than through the controller so a series

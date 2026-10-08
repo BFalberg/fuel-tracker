@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Car;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
-
-uses(RefreshDatabase::class);
 
 test('cars index defers cars list', function (): void {
     $user = User::factory()->create();

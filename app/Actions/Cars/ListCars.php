@@ -7,6 +7,7 @@ namespace App\Actions\Cars;
 use App\Models\Car;
 use App\Models\CarUser;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 
 final class ListCars
@@ -18,7 +19,7 @@ final class ListCars
     {
         return $user->cars()
             ->withCount(['refuels', 'carExpenses'])
-            ->with(['users' => fn ($q) => $q->wherePivot('role', 'owner')->select('users.id', 'users.name')])
+            ->with(['users' => fn (BelongsToMany $q): BelongsToMany => $q->wherePivot('role', 'owner')->select('users.id', 'users.name')])
             ->latest('cars.created_at')
             ->get(['cars.id', 'cars.name', 'cars.registration_number', 'cars.is_electric'])
             ->map(fn (Car $car): array => [
@@ -26,7 +27,7 @@ final class ListCars
                 'name' => $car->name,
                 'registration_number' => $car->registration_number,
                 'is_electric' => $car->is_electric,
-                'users' => $car->users->map(fn ($user): array => [
+                'users' => $car->users->map(fn (User $user): array => [
                     'id' => $user->id,
                     'name' => $user->name,
                 ])->values(),

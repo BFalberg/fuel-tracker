@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class GasStationController extends Controller
+final class GasStationController
 {
     /**
      * Display a listing of the resource.

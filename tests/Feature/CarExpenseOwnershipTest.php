@@ -5,10 +5,7 @@ declare(strict_types=1);
 use App\Models\Car;
 use App\Models\CarExpense;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
-
-uses(RefreshDatabase::class);
 
 test('editing an expense from a different car returns 404', function (): void {
     $user = User::factory()->create();

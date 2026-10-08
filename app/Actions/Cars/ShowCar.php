@@ -9,6 +9,7 @@ use App\Models\CarExpense;
 use App\Models\Refuel;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 final class ShowCar
 {
@@ -17,7 +18,7 @@ final class ShowCar
      */
     public function handle(Car $car): array
     {
-        $car->load(['users' => fn ($q) => $q->wherePivot('role', 'owner')->select('users.id', 'users.name')]);
+        $car->load(['users' => fn (BelongsToMany $q): BelongsToMany => $q->wherePivot('role', 'owner')->select('users.id', 'users.name')]);
 
         return [
             'car' => $car,
