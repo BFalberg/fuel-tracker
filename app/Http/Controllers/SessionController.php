@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers;
 
-use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\CreateSessionRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,34 +12,27 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class AuthenticatedSessionController
+final readonly class SessionController
 {
-    /**
-     * Show the login page.
-     */
     public function create(Request $request): Response
     {
-        return Inertia::render('auth/login', [
+        return Inertia::render('session/create', [
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
         ]);
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(CreateSessionRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        $user = $request->validateCredentials();
+
+        Auth::login($user, $request->boolean('remember'));
 
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

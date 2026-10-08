@@ -4,107 +4,55 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Actions\CarExpenses\CreateCarExpense;
-use App\Actions\CarExpenses\DeleteCarExpense;
-use App\Actions\CarExpenses\UpdateCarExpense;
+use App\Actions\CreateCarExpense;
+use App\Actions\DeleteCarExpense;
+use App\Actions\UpdateCarExpense;
 use App\Enums\ExpenseType;
+use App\Http\Requests\CreateCarExpenseRequest;
+use App\Http\Requests\UpdateCarExpenseRequest;
 use App\Models\Car;
 use App\Models\CarExpense;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class CarExpenseController
+final readonly class CarExpenseController
 {
-    use AuthorizesRequests;
-
     public function create(Car $car): Response
     {
-        $this->authorize('view', $car);
-
-        return Inertia::render('CarExpenses/Create', [
+        return Inertia::render('car-expense/create', [
             'car' => $car,
             'expenseTypes' => ExpenseType::values(),
         ]);
     }
 
-    public function store(Request $request, Car $car, CreateCarExpense $createCarExpense): RedirectResponse
+    public function store(CreateCarExpenseRequest $request, Car $car, CreateCarExpense $action): RedirectResponse
     {
-        $this->authorize('view', $car);
-
-        $request->validate([
-            'expense_type' => ['required', Rule::enum(ExpenseType::class)],
-            'amount' => ['required', 'numeric', 'min:0'],
-            'description' => ['nullable', 'string'],
-            'vendor' => ['nullable', 'string'],
-            'invoice_date' => ['nullable', 'date'],
-        ]);
-        $createCarExpense->handle($car, $this->expenseAttributes($request));
+        $action->handle($car, $request->validated());
 
         return to_route('cars.show', $car);
     }
 
-    public function edit(Car $car, CarExpense $expense): Response
+    public function edit(Car $car, CarExpense $carExpense): Response
     {
-        abort_if($expense->car_id !== $car->id, 404);
-        $this->authorize('update', $expense);
-
-        return Inertia::render('CarExpenses/Edit', [
+        return Inertia::render('car-expense/edit', [
             'car' => $car,
-            'expense' => $expense,
+            'expense' => $carExpense,
             'expenseTypes' => ExpenseType::values(),
         ]);
     }
 
-    public function update(Request $request, Car $car, CarExpense $expense, UpdateCarExpense $updateCarExpense): RedirectResponse
+    public function update(UpdateCarExpenseRequest $request, Car $car, CarExpense $carExpense, UpdateCarExpense $action): RedirectResponse
     {
-        abort_if($expense->car_id !== $car->id, 404);
-        $this->authorize('update', $expense);
-
-        $request->validate([
-            'expense_type' => ['required', Rule::enum(ExpenseType::class)],
-            'amount' => ['required', 'numeric', 'min:0'],
-            'description' => ['nullable', 'string'],
-            'vendor' => ['nullable', 'string'],
-            'invoice_date' => ['nullable', 'date'],
-        ]);
-        $updateCarExpense->handle($expense, $this->expenseAttributes($request));
+        $action->handle($carExpense, $request->validated());
 
         return to_route('cars.show', $car);
     }
 
-    public function destroy(Car $car, CarExpense $expense, DeleteCarExpense $deleteCarExpense): RedirectResponse
+    public function destroy(Car $car, CarExpense $carExpense, DeleteCarExpense $action): RedirectResponse
     {
-        abort_if($expense->car_id !== $car->id, 404);
-        $this->authorize('delete', $expense);
-
-        $deleteCarExpense->handle($expense);
+        $action->handle($carExpense);
 
         return to_route('cars.show', $car);
-    }
-
-    /**
-     * The validated expense attributes. An optional field is only present when the request sent it,
-     * so an update leaves an omitted field unchanged.
-     *
-     * @return array{expense_type: string, amount: float, description?: string|null, vendor?: string|null, invoice_date?: string|null}
-     */
-    private function expenseAttributes(Request $request): array
-    {
-        $attributes = [
-            'expense_type' => $request->string('expense_type')->value(),
-            'amount' => $request->float('amount'),
-        ];
-
-        foreach (['description', 'vendor', 'invoice_date'] as $optionalField) {
-            if ($request->has($optionalField)) {
-                $attributes[$optionalField] = $request->filled($optionalField) ? $request->string($optionalField)->value() : null;
-            }
-        }
-
-        return $attributes;
     }
 }
