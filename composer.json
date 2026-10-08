@@ -88,8 +88,9 @@
             "pest --parallel"
         ],
         "test:coverage": [
+            "@putenv XDEBUG_MODE=coverage",
             "@php artisan config:clear --ansi",
-            "@php -d memory_limit=1G vendor/bin/pest --parallel --coverage --min=80"
+            "@php -d memory_limit=1G vendor/bin/pest --parallel --coverage --min=89"
         ],
         "test": [
             "@test:lint",
@@ -106,7 +107,7 @@
         "test:types": "Static analysis: PHPStan (Larastan, level max), then the TypeScript type check.",
         "test:type-coverage": "Pest type coverage. Fails below 100%.",
         "test:unit": "Clear the config cache, then run the Pest suite in parallel.",
-        "test:coverage": "Pest code coverage. Fails below 80%. Needs a coverage driver (pcov in CI).",
+        "test:coverage": "Pest code coverage. Fails below 89%. Needs a coverage driver (pcov or Xdebug).",
         "test": "Everything CI runs except code coverage: test:lint, test:types, test:type-coverage, test:unit."
     },
     "extra": {
