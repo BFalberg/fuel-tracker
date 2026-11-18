@@ -30,7 +30,7 @@ it('lets anyone manage a station nobody has used yet', function (): void {
     expect((new GasStationPolicy)->update(User::factory()->create(), $station))->toBeTrue();
 });
 
-it('forbids managing a station another user\'s car depends on', function (): void {
+it("forbids managing a station another user's car depends on", function (): void {
     $user = User::factory()->create();
     $station = GasStation::factory()->create();
     Refuel::factory()->forCar(Car::factory()->ownedBy($user)->create())->atStation($station)->create();

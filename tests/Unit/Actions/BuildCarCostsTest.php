@@ -25,7 +25,7 @@ it('counts an EV charging subscription as energy, not as another expense', funct
     ]);
 });
 
-it('keeps a fossil car\'s subscription among the other expenses', function (): void {
+it("keeps a fossil car's subscription among the other expenses", function (): void {
     $car = Car::factory()->create(['start_milage' => null, 'purchase_price' => 50000, 'sale_price' => 10000]);
     Refuel::factory()->forCar($car)->create(['mileage' => 500, 'total_price' => 300]);
     Refuel::factory()->forCar($car)->create(['mileage' => 1500, 'total_price' => 700]);

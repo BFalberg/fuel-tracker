@@ -7,8 +7,6 @@ namespace App\Actions;
 use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\Refuel;
-use Carbon\CarbonImmutable;
-use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateRefuel
@@ -28,7 +26,7 @@ final readonly class CreateRefuel
      */
     public function handle(Car $car, array $attributes): Refuel
     {
-        $coordinates = $this->isLoggedOnTheSpot($attributes) && isset($attributes['latitude'], $attributes['longitude'])
+        $coordinates = isset($attributes['latitude'], $attributes['longitude'])
             ? ['latitude' => $attributes['latitude'], 'longitude' => $attributes['longitude']]
             : [];
 
@@ -44,27 +42,21 @@ final readonly class CreateRefuel
                 $attributes['gas_station_id'] = GasStation::query()->create([
                     'name' => $newStationName,
                     'address' => $newStationAddress ?? 'Unknown',
-                    ...$coordinates,
                 ])->id;
-            } elseif ($coordinates !== [] && isset($attributes['gas_station_id'])) {
-                GasStation::query()->whereKey($attributes['gas_station_id'])->update($coordinates);
             }
 
-            return $car->refuels()->create($attributes);
+            $refuel = $car->refuels()->create($attributes);
+
+            if ($coordinates !== [] && $refuel->gas_station_id !== null && $this->isLoggedOnTheSpot($refuel)) {
+                GasStation::query()->whereKey($refuel->gas_station_id)->update($coordinates);
+            }
+
+            return $refuel;
         });
     }
 
-    /**
-     * @param  array<string, mixed>  $attributes
-     */
-    private function isLoggedOnTheSpot(array $attributes): bool
+    private function isLoggedOnTheSpot(Refuel $refuel): bool
     {
-        $refueledAt = $attributes['refueled_at'] ?? null;
-
-        if (! is_string($refueledAt) && ! $refueledAt instanceof DateTimeInterface) {
-            return false;
-        }
-
-        return CarbonImmutable::parse($refueledAt)->diffInMinutes(CarbonImmutable::now(), true) <= self::MAX_MINUTES_SINCE_REFUEL_FOR_POSITION;
+        return $refuel->refueled_at->diffInMinutes(now(), true) <= self::MAX_MINUTES_SINCE_REFUEL_FOR_POSITION;
     }
 }

@@ -54,3 +54,24 @@ it('leaves a station unplaced when only its street is matched', function (): voi
 
     expect($station->refresh()->latitude)->toBeNull();
 });
+
+it('waits a second between lookups to respect the usage policy', function (): void {
+    fakeGeocodeMatch('place');
+    GasStation::factory()->count(3)->create();
+
+    $this->artisan('stations:geocode')->assertSuccessful();
+
+    Sleep::assertSleptTimes(2);
+});
+
+it('reports a station whose address is not found', function (): void {
+    Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
+    $station = GasStation::factory()->create();
+
+    $this->artisan('stations:geocode')
+        ->expectsOutputToContain('not found')
+        ->expectsOutputToContain('Placed 0 of 1 stations.')
+        ->assertSuccessful();
+
+    expect($station->refresh()->latitude)->toBeNull();
+});

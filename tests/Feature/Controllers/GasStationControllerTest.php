@@ -94,7 +94,7 @@ it('never deletes the refuels of a deleted gas station', function (): void {
         ->and(Refuel::query()->whereIn('id', $refuels->pluck('id'))->whereNull('gas_station_id')->count())->toBe(3);
 });
 
-it('forbids changing a station another user\'s car depends on', function (string $method, string $route): void {
+it("forbids changing a station another user's car depends on", function (string $method, string $route): void {
     $user = User::factory()->create();
     $station = GasStation::factory()->create(['name' => 'Clever Viby']);
     Refuel::factory()->forCar(Car::factory()->ownedBy(User::factory()->create())->create())->atStation($station)->create();
@@ -127,7 +127,7 @@ it('marks which stations the user may manage', function (): void {
                 ->where('gasStations.1.can_manage', true)));
 });
 
-it('may correct a station\'s position', function (): void {
+it("may correct a station's position", function (): void {
     $station = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
 
     $this->actingAs(User::factory()->create())
@@ -143,7 +143,7 @@ it('may correct a station\'s position', function (): void {
         ->toBe(['latitude' => '56.1296000', 'longitude' => '10.1626000']);
 });
 
-it('may clear a station\'s position', function (): void {
+it("may clear a station's position", function (): void {
     $station = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
 
     $this->actingAs(User::factory()->create())
