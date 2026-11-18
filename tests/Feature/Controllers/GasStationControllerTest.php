@@ -126,3 +126,59 @@ it('marks which stations the user may manage', function (): void {
                 ->where('gasStations.1.id', $own->id)
                 ->where('gasStations.1.can_manage', true)));
 });
+
+it('may correct a station\'s position', function (): void {
+    $station = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
+
+    $this->actingAs(User::factory()->create())
+        ->put(route('gas-stations.update', $station), [
+            'name' => $station->name,
+            'address' => $station->address,
+            'latitude' => 56.1296,
+            'longitude' => 10.1626,
+        ])
+        ->assertRedirectToRoute('gas-stations.index');
+
+    expect($station->refresh()->only('latitude', 'longitude'))
+        ->toBe(['latitude' => '56.1296000', 'longitude' => '10.1626000']);
+});
+
+it('may clear a station\'s position', function (): void {
+    $station = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
+
+    $this->actingAs(User::factory()->create())
+        ->put(route('gas-stations.update', $station), [
+            'name' => $station->name,
+            'address' => $station->address,
+            'latitude' => null,
+            'longitude' => null,
+        ]);
+
+    expect($station->refresh()->latitude)->toBeNull()
+        ->and($station->longitude)->toBeNull();
+});
+
+it('keeps the position when an update leaves it out', function (): void {
+    $station = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
+
+    $this->actingAs(User::factory()->create())
+        ->put(route('gas-stations.update', $station), ['name' => 'Renamed', 'address' => 'Somewhere 1']);
+
+    expect($station->refresh()->latitude)->toBe('55.0000000');
+});
+
+it('rejects a position outside the globe or with one coordinate', function (array $position, string $error): void {
+    $this->actingAs(User::factory()->create())
+        ->post(route('gas-stations.store'), ['name' => 'X', 'address' => 'Y', ...$position])
+        ->assertSessionHasErrors($error);
+})->with([
+    'latitude out of range' => [['latitude' => 91, 'longitude' => 10], 'latitude'],
+    'longitude missing' => [['latitude' => 56.1], 'longitude'],
+]);
+
+it('may create a station at a position', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->post(route('gas-stations.store'), ['name' => 'Clever Home', 'address' => 'Home 1', 'latitude' => 56.1, 'longitude' => 10.2]);
+
+    expect(GasStation::query()->sole()->latitude)->toBe('56.1000000');
+});
