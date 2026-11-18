@@ -33,9 +33,16 @@ export interface RefueledAtBounds {
     max: string | null;
 }
 
+export interface RefuelFormCar {
+    id: number;
+    name: string;
+    is_electric?: boolean;
+    last_mileage?: number | null;
+}
+
 interface RefuelFormProps {
     refuel?: Refuel;
-    cars: Array<{ id: number; name: string; is_electric?: boolean }>;
+    cars: RefuelFormCar[];
     gasStations: Array<{ id: number; name: string }>;
     mileageBounds?: MileageBounds;
     refueledAtBounds?: RefueledAtBounds;
@@ -73,12 +80,16 @@ export default function RefuelForm({
     const [showNewStation, setShowNewStation] = useState(false);
     const [now] = useState(() => new Date().toISOString());
 
+    // The server lists the most recently refuelled active car first.
+    const defaultCar = isEditing ? undefined : cars[0];
+
     const { data, setData, post, put, processing, errors } = useForm({
-        // The server lists the most recently refuelled active car first.
-        car_id: refuel?.car_id?.toString() ?? cars[0]?.id.toString() ?? '',
+        car_id: refuel?.car_id?.toString() ?? defaultCar?.id.toString() ?? '',
         gas_station_id: refuel?.gas_station_id?.toString() ?? '',
         liters_refueled: refuel?.liters_refueled ?? '',
-        total_price: refuel?.total_price ?? '',
+        // Most charges are covered by a subscription, so they cost nothing.
+        total_price:
+            refuel?.total_price ?? (defaultCar?.is_electric ? '0' : ''),
         mileage: refuel?.mileage ?? '',
         refueled_at: refuel?.refueled_at ?? now,
         new_gas_station_name: '',
@@ -95,13 +106,16 @@ export default function RefuelForm({
         showNewStation ||
         Boolean(data.new_gas_station_name || data.new_gas_station_address);
 
-    const previousMileage = mileageBounds?.min ?? null;
+    const previousMileage =
+        mileageBounds?.min ?? selectedCar?.last_mileage ?? null;
     const nextMileage = mileageBounds?.max ?? null;
 
     let mileageHint: string | null = null;
 
     if (previousMileage !== null && nextMileage !== null) {
         mileageHint = `Must be above ${formatMileage(previousMileage)} km and below ${formatMileage(nextMileage)} km — the surrounding refuels.`;
+    } else if (previousMileage !== null && !isEditing) {
+        mileageHint = `Last reading: ${formatMileage(previousMileage)} km.`;
     } else if (previousMileage !== null) {
         mileageHint = `Must be above ${formatMileage(previousMileage)} km — the previous refuel.`;
     } else if (nextMileage !== null) {
@@ -153,6 +167,24 @@ export default function RefuelForm({
         }
     };
 
+    const priceField = (
+        <div className="grid gap-2">
+            <Label htmlFor="total_price">Total Price</Label>
+            <Input
+                id="total_price"
+                type="number"
+                required
+                inputMode="decimal"
+                step="0.01"
+                autoComplete="off"
+                value={data.total_price}
+                onChange={(e) => setData('total_price', e.target.value)}
+                placeholder="Total price"
+            />
+            <InputError message={errors.total_price} />
+        </div>
+    );
+
     return (
         <Card>
             <div className="px-4">
@@ -185,24 +217,7 @@ export default function RefuelForm({
                         )}
                         <InputError message={errors.car_id} />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="total_price">Total Price</Label>
-                        <Input
-                            id="total_price"
-                            type="number"
-                            required
-                            inputMode="decimal"
-                            step="0.01"
-                            tabIndex={1}
-                            autoComplete="off"
-                            value={data.total_price}
-                            onChange={(e) =>
-                                setData('total_price', e.target.value)
-                            }
-                            placeholder="Total price"
-                        />
-                        <InputError message={errors.total_price} />
-                    </div>
+                    {!isElectric && priceField}
                     <div className="grid gap-2">
                         <Label htmlFor="liters_refueled">{energyLabel}</Label>
                         <Input
@@ -211,7 +226,6 @@ export default function RefuelForm({
                             required
                             inputMode="decimal"
                             step="0.01"
-                            tabIndex={2}
                             autoComplete="off"
                             value={data.liters_refueled}
                             onChange={(e) =>
@@ -230,7 +244,6 @@ export default function RefuelForm({
                             type="number"
                             required
                             inputMode="decimal"
-                            tabIndex={3}
                             autoComplete="off"
                             min={
                                 previousMileage !== null
@@ -259,7 +272,6 @@ export default function RefuelForm({
                             id="refueled_at"
                             type="datetime-local"
                             required
-                            tabIndex={4}
                             value={
                                 data.refueled_at
                                     ? toLocalInputValue(data.refueled_at)
@@ -343,7 +355,6 @@ export default function RefuelForm({
                                     <Input
                                         id="new_gas_station_name"
                                         type="text"
-                                        tabIndex={5}
                                         autoComplete="off"
                                         value={data.new_gas_station_name}
                                         onChange={(e) =>
@@ -369,7 +380,6 @@ export default function RefuelForm({
                                     <Input
                                         id="new_gas_station_address"
                                         type="text"
-                                        tabIndex={6}
                                         autoComplete="off"
                                         value={data.new_gas_station_address}
                                         onChange={(e) =>
@@ -394,6 +404,7 @@ export default function RefuelForm({
                             </div>
                         </div>
                     )}
+                    {isElectric && priceField}
                     <div className="flex flex-col gap-2">
                         <Button
                             className="w-full"

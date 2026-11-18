@@ -1,11 +1,11 @@
 import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
-import RefuelForm from '@/components/refuel-form';
+import RefuelForm, { type RefuelFormCar } from '@/components/refuel-form';
 import AppLayout from '@/layouts/app-layout';
 import { create as createRefuel } from '@/routes/refuels';
 
 interface RefuelCreateProps {
-    cars: Array<{ id: number; name: string; is_electric?: boolean }>;
+    cars: RefuelFormCar[];
     gasStations: Array<{ id: number; name: string }>;
 }
 

@@ -33,6 +33,7 @@ final readonly class GetRefuelFormData
                 ->withMax('refuels as last_mileage', 'mileage')
                 ->withMax('refuels as last_refueled_at', 'refueled_at')
                 ->orderByDesc('last_refueled_at')
+                ->withCasts(['last_mileage' => 'integer'])
                 ->get(),
             'gasStations' => GasStation::query()->select(['gas_stations.id', 'gas_stations.name'])
                 ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')

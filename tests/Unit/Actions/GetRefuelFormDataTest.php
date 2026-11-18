@@ -46,5 +46,5 @@ it('offers only active cars when creating, most recently refuelled first, with t
     $cars = resolve(GetRefuelFormData::class)->handle($user, true)['cars'];
 
     expect($cars->pluck('id')->all())->toBe([$dailyCar->id, $idleCar->id])
-        ->and((int) $cars[0]->getAttribute('last_mileage'))->toBe(1200);
+        ->and($cars[0]->getAttribute('last_mileage'))->toBe(1200);
 });

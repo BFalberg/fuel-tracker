@@ -492,3 +492,16 @@ it('keeps a refuel with an out-of-order date editable while its date is unchange
 
     expect($middle->fresh()?->total_price)->toBe('350.00');
 });
+
+it('gives the create form each active car\'s last mileage', function (): void {
+    $user = User::factory()->create();
+    $car = Car::factory()->ownedBy($user)->electric()->create();
+    Refuel::factory()->forCar($car)->create(['mileage' => 60891]);
+
+    $this->actingAs($user)
+        ->get(route('refuels.create'))
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('cars.0.id', $car->id)
+            ->where('cars.0.last_mileage', 60891)
+            ->where('cars.0.is_electric', true));
+});
