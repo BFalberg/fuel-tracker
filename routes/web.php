@@ -58,9 +58,9 @@ Route::middleware('auth')->group(function (): void {
     Route::get('gas-stations', [GasStationController::class, 'index'])->name('gas-stations.index');
     Route::get('gas-stations/create', [GasStationController::class, 'create'])->name('gas-stations.create');
     Route::post('gas-stations', [GasStationController::class, 'store'])->name('gas-stations.store');
-    Route::get('gas-stations/{gasStation}/edit', [GasStationController::class, 'edit'])->name('gas-stations.edit');
-    Route::put('gas-stations/{gasStation}', [GasStationController::class, 'update'])->name('gas-stations.update');
-    Route::delete('gas-stations/{gasStation}', [GasStationController::class, 'destroy'])->name('gas-stations.destroy');
+    Route::get('gas-stations/{gasStation}/edit', [GasStationController::class, 'edit'])->can('update', 'gasStation')->name('gas-stations.edit');
+    Route::put('gas-stations/{gasStation}', [GasStationController::class, 'update'])->can('update', 'gasStation')->name('gas-stations.update');
+    Route::delete('gas-stations/{gasStation}', [GasStationController::class, 'destroy'])->can('delete', 'gasStation')->name('gas-stations.destroy');
 
     // User Profile...
     Route::get('settings', fn (): RedirectResponse => to_route('user-profile.edit'));

@@ -85,15 +85,44 @@ it('never deletes the refuels of a deleted gas station', function (): void {
     $station = GasStation::factory()->create();
     $refuels = Refuel::factory()->count(3)->forCar($car)->atStation($station)->create();
 
-    $otherCar = Car::factory()->ownedBy(User::factory()->create())->create();
-    $otherRefuel = Refuel::factory()->forCar($otherCar)->atStation($station)->create();
-
     $this->actingAs($user)
         ->delete(route('gas-stations.destroy', $station))
         ->assertRedirect()
         ->assertSessionHas('success', 'Gas station deleted successfully');
 
     expect(GasStation::query()->find($station->id))->toBeNull()
-        ->and(Refuel::query()->whereIn('id', $refuels->pluck('id'))->whereNull('gas_station_id')->count())->toBe(3)
-        ->and($otherRefuel->fresh()?->gas_station_id)->toBeNull();
+        ->and(Refuel::query()->whereIn('id', $refuels->pluck('id'))->whereNull('gas_station_id')->count())->toBe(3);
+});
+
+it('forbids changing a station another user\'s car depends on', function (string $method, string $route): void {
+    $user = User::factory()->create();
+    $station = GasStation::factory()->create(['name' => 'Clever Viby']);
+    Refuel::factory()->forCar(Car::factory()->ownedBy(User::factory()->create())->create())->atStation($station)->create();
+
+    $this->actingAs($user)
+        ->{$method}(route($route, $station), ['name' => 'Hijacked', 'address' => 'Nowhere'])
+        ->assertForbidden();
+
+    expect($station->fresh()?->name)->toBe('Clever Viby');
+})->with([
+    'edit' => ['get', 'gas-stations.edit'],
+    'update' => ['put', 'gas-stations.update'],
+    'delete' => ['delete', 'gas-stations.destroy'],
+]);
+
+it('marks which stations the user may manage', function (): void {
+    $user = User::factory()->create();
+    $own = GasStation::factory()->create(['created_at' => now()->subDay()]);
+    Refuel::factory()->forCar(Car::factory()->ownedBy($user)->create())->atStation($own)->create();
+    $shared = GasStation::factory()->create();
+    Refuel::factory()->forCar(Car::factory()->ownedBy(User::factory()->create())->create())->atStation($shared)->create();
+
+    $this->actingAs($user)
+        ->get(route('gas-stations.index'))
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
+                ->where('gasStations.0.id', $shared->id)
+                ->where('gasStations.0.can_manage', false)
+                ->where('gasStations.1.id', $own->id)
+                ->where('gasStations.1.can_manage', true)));
 });
