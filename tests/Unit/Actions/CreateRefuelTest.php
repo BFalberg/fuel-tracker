@@ -60,7 +60,7 @@ it('places a new station at the position the refuel was logged from', function (
         ->toBe(['latitude' => '56.1296000', 'longitude' => '10.1626000']);
 });
 
-it('teaches an existing station its coordinates but never moves known ones', function (): void {
+it('moves an existing station to where a charge was logged on the spot', function (): void {
     $car = Car::factory()->electric()->create();
     $unplaced = GasStation::factory()->create();
     $placed = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
@@ -78,7 +78,7 @@ it('teaches an existing station its coordinates but never moves known ones', fun
     }
 
     expect($unplaced->refresh()->only('latitude', 'longitude'))->toBe(['latitude' => '56.1296000', 'longitude' => '10.1626000'])
-        ->and($placed->refresh()->only('latitude', 'longitude'))->toBe(['latitude' => '55.0000000', 'longitude' => '9.0000000']);
+        ->and($placed->refresh()->only('latitude', 'longitude'))->toBe(['latitude' => '56.1296000', 'longitude' => '10.1626000']);
 });
 
 it('does not place a station from a refuel logged long after the fact', function (): void {

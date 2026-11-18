@@ -20,9 +20,9 @@ final readonly class CreateRefuel
 
     /**
      * The position the refuel was logged from places its station on the map,
-     * but only when it was logged on the spot. A new station takes it, and an
-     * existing station without coordinates learns them, so the form can
-     * preselect it next time. Known coordinates are never moved.
+     * but only when it was logged on the spot. It replaces any earlier
+     * position, because an address lookup can be a street away and a real
+     * visit is the better source, so the form can preselect it next time.
      *
      * @param  array<string, mixed>  $attributes
      */
@@ -47,9 +47,7 @@ final readonly class CreateRefuel
                     ...$coordinates,
                 ])->id;
             } elseif ($coordinates !== [] && isset($attributes['gas_station_id'])) {
-                GasStation::query()->whereKey($attributes['gas_station_id'])
-                    ->whereNull('latitude')
-                    ->update($coordinates);
+                GasStation::query()->whereKey($attributes['gas_station_id'])->update($coordinates);
             }
 
             return $car->refuels()->create($attributes);
