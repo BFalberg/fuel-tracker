@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Enums\ExpenseType;
 use App\Models\Car;
 use App\Models\CarExpense;
 use App\Models\Refuel;
@@ -113,8 +112,8 @@ final readonly class BuildDashboardStats
     }
 
     /**
-     * Every refuel's price is money spent, including the first. An electric
-     * car also pays its charging subscriptions on top of the paid charges.
+     * Every refuel's price is money spent, including the first, plus the
+     * expenses that buy energy, such as an EV's charging subscription.
      *
      * @param  Collection<int, Refuel>  $refuels
      * @return Collection<int, Cost>
@@ -126,19 +125,21 @@ final readonly class BuildDashboardStats
             'amount' => (float) $refuel->total_price,
         ])->toBase();
 
-        if (! $car->is_electric) {
+        $energyExpenseTypes = $car->energyExpenseTypes();
+
+        if ($energyExpenseTypes === []) {
             return $costs;
         }
 
-        $subscriptions = CarExpense::query()->where('car_id', $car->id)
-            ->where('expense_type', ExpenseType::Subscription->value)
+        $energyExpenses = CarExpense::query()->where('car_id', $car->id)
+            ->whereIn('expense_type', $energyExpenseTypes)
             ->get(['amount', 'invoice_date'])
             ->map(fn (CarExpense $expense): array => [
                 'month' => $expense->invoice_date?->format('Y-m'),
                 'amount' => (float) $expense->amount,
             ]);
 
-        return $costs->concat($subscriptions)->values();
+        return $costs->concat($energyExpenses)->values();
     }
 
     /**

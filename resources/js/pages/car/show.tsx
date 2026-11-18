@@ -1,13 +1,13 @@
 import { Deferred, Head } from '@inertiajs/react';
 import { Car, User } from 'lucide-react';
-import CarCosts from '@/components/car-costs';
+import CarCosts, { type CarCostsData } from '@/components/car-costs';
 import CarExpensesList from '@/components/car-expenses-list';
 import Heading from '@/components/heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { show as showCar } from '@/routes/cars';
-import { type BreadcrumbItem, type Refuel } from '@/types';
+import { type BreadcrumbItem } from '@/types';
 
 type CarType = {
     id: number;
@@ -32,16 +32,10 @@ type ExpenseType = {
 interface ShowProps {
     car: CarType;
     expenses?: ExpenseType[];
-    refuels?: Refuel[];
-    start_milage: number | null;
+    costs?: CarCostsData;
 }
 
-export default function Show({
-    car,
-    expenses,
-    refuels,
-    start_milage,
-}: ShowProps) {
+export default function Show({ car, expenses, costs }: ShowProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: car.name,
@@ -132,7 +126,7 @@ export default function Show({
                     </CardContent>
                 </Card>
                 <Deferred
-                    data={['expenses', 'refuels']}
+                    data={['expenses', 'costs']}
                     fallback={
                         <div className="space-y-6">
                             <div className="rounded-xl border p-4">
@@ -158,13 +152,12 @@ export default function Show({
                         </div>
                     }
                 >
-                    <CarCosts
-                        expenses={expenses ?? []}
-                        refuels={refuels ?? []}
-                        startMilage={start_milage}
-                        purchasePrice={car.purchase_price}
-                        salePrice={car.sale_price}
-                    />
+                    {costs && (
+                        <CarCosts
+                            costs={costs}
+                            isElectric={car.is_electric ?? false}
+                        />
+                    )}
                     <CarExpensesList expenses={expenses ?? []} carId={car.id} />
                 </Deferred>
             </div>

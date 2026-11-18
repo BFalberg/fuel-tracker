@@ -6,15 +6,19 @@ namespace App\Actions;
 
 use App\Models\Car;
 use App\Models\CarExpense;
-use App\Models\Refuel;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @phpstan-import-type CarCosts from BuildCarCosts
+ */
 final readonly class ShowCar
 {
+    public function __construct(private BuildCarCosts $buildCarCosts) {}
+
     /**
-     * @return array{car: Car, expenses: Closure(): Collection<int, CarExpense>, refuels: Closure(): Collection<int, Refuel>, start_milage: int|null}
+     * @return array{car: Car, expenses: Closure(): Collection<int, CarExpense>, costs: Closure(): CarCosts}
      */
     public function handle(Car $car): array
     {
@@ -23,8 +27,7 @@ final readonly class ShowCar
         return [
             'car' => $car,
             'expenses' => fn (): Collection => $car->carExpenses->sortByDesc('invoice_date')->values(),
-            'refuels' => fn (): Collection => $car->refuels,
-            'start_milage' => $car->start_milage,
+            'costs' => fn (): array => $this->buildCarCosts->handle($car),
         ];
     }
 }

@@ -48,8 +48,7 @@ final readonly class CarController
         return Inertia::render('car/show', [
             'car' => $data['car'],
             'expenses' => Inertia::defer($data['expenses']),
-            'refuels' => Inertia::defer($data['refuels']),
-            'start_milage' => $data['start_milage'],
+            'costs' => Inertia::defer($data['costs']),
         ]);
     }
 

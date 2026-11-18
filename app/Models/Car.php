@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ExpenseType;
 use Carbon\CarbonInterface;
 use Database\Factories\CarFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -49,6 +50,17 @@ final class Car extends Model
     public function carExpenses(): HasMany
     {
         return $this->hasMany(CarExpense::class);
+    }
+
+    /**
+     * Expense types that pay for energy rather than for the car itself. An EV's
+     * charging subscription buys its charges, so it counts as driving cost.
+     *
+     * @return list<ExpenseType>
+     */
+    public function energyExpenseTypes(): array
+    {
+        return $this->is_electric ? [ExpenseType::Subscription] : [];
     }
 
     /**

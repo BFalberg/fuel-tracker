@@ -105,13 +105,13 @@ it('shows a car to its owner', function (): void {
         ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
             ->component('car/show')
             ->where('car.id', $car->id)
-            ->where('start_milage', 100)
+            ->where('car.start_milage', 100)
             ->has('car.users', 1)
             ->missing('expenses')
-            ->missing('refuels')
+            ->missing('costs')
             ->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
                 ->has('expenses', 1)
-                ->has('refuels', 1)));
+                ->has('costs.perKilometer')));
 });
 
 it('shows a car to a co-driver', function (): void {
