@@ -56,7 +56,7 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div className="flex flex-col gap-2">
                     <CardTitle className="text-base">
-                        {formatDate(refuel.created_at)}
+                        {formatDate(refuel.refueled_at)}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -66,7 +66,7 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                     </div>
                 </div>
                 <ActionSheet
-                    title={`Refuel · ${formatDate(refuel.created_at)}`}
+                    title={`Refuel · ${formatDate(refuel.refueled_at)}`}
                     items={[
                         {
                             label: 'Edit',

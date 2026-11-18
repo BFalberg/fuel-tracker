@@ -13,8 +13,8 @@ it('orders the gas stations by their latest refuel', function (): void {
     $car = Car::factory()->ownedBy($user)->create();
     $older = GasStation::factory()->create();
     $newer = GasStation::factory()->create();
-    Refuel::factory()->forCar($car)->atStation($older)->create(['created_at' => now()->subDay()]);
-    Refuel::factory()->forCar($car)->atStation($newer)->create(['created_at' => now()]);
+    Refuel::factory()->forCar($car)->atStation($older)->create(['refueled_at' => now()->subDay(), 'created_at' => now()]);
+    Refuel::factory()->forCar($car)->atStation($newer)->create(['refueled_at' => now(), 'created_at' => now()->subDay()]);
 
     $data = resolve(GetRefuelFormData::class)->handle($user, true);
 

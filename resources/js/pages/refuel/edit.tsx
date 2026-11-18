@@ -1,6 +1,9 @@
 import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
-import RefuelForm, { type MileageBounds } from '@/components/refuel-form';
+import RefuelForm, {
+    type MileageBounds,
+    type RefueledAtBounds,
+} from '@/components/refuel-form';
 import AppLayout from '@/layouts/app-layout';
 import { edit as editRefuel, index as refuelsIndex } from '@/routes/refuels';
 
@@ -11,6 +14,7 @@ interface Refuel {
     liters_refueled: number;
     total_price: number;
     mileage: number;
+    refueled_at: string;
     type?: 'fossil' | 'charge';
 }
 
@@ -19,6 +23,7 @@ interface RefuelEditProps {
     cars: Array<{ id: number; name: string; is_electric?: boolean }>;
     gasStations: Array<{ id: number; name: string }>;
     mileageBounds: MileageBounds;
+    refueledAtBounds: RefueledAtBounds;
 }
 
 export default function RefuelEdit({
@@ -26,6 +31,7 @@ export default function RefuelEdit({
     cars,
     gasStations,
     mileageBounds,
+    refueledAtBounds,
 }: RefuelEditProps) {
     const breadcrumbs = [
         { title: 'Refuels', href: refuelsIndex.url() },
@@ -41,6 +47,7 @@ export default function RefuelEdit({
                 cars={cars}
                 gasStations={gasStations}
                 mileageBounds={mileageBounds}
+                refueledAtBounds={refueledAtBounds}
                 formType="edit"
             />
         </AppLayout>

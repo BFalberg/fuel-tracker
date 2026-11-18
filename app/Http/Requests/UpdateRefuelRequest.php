@@ -7,6 +7,7 @@ namespace App\Http\Requests;
 use App\Models\GasStation;
 use App\Models\Refuel;
 use App\Rules\MileageFitsCarSeries;
+use App\Rules\RefueledAtFitsCarSeries;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,6 +32,7 @@ final class UpdateRefuelRequest extends FormRequest
             'liters_refueled' => ['required', 'numeric', 'gt:0'],
             'total_price' => ['required', 'numeric', 'min:0'],
             'mileage' => ['required', 'integer', 'min:0', MileageFitsCarSeries::whenUpdating($refuel)],
+            'refueled_at' => ['required', 'date', RefueledAtFitsCarSeries::whenUpdating($refuel)],
         ];
     }
 }

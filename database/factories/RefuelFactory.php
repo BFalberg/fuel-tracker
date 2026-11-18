@@ -25,6 +25,7 @@ final class RefuelFactory extends Factory
             'liters_refueled' => fake()->randomFloat(2, 10, 60),
             'total_price' => fake()->randomFloat(2, 200, 900),
             'mileage' => fake()->numberBetween(1000, 250000),
+            'refueled_at' => now(),
             'type' => 'fossil',
         ];
     }

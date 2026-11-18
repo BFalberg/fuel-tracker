@@ -19,6 +19,7 @@ interface Refuel {
     liters_refueled: number;
     total_price: number;
     mileage: number;
+    refueled_at: string;
     type?: 'fossil' | 'charge';
 }
 
@@ -27,25 +28,50 @@ export interface MileageBounds {
     max: number | null;
 }
 
+export interface RefueledAtBounds {
+    min: string | null;
+    max: string | null;
+}
+
 interface RefuelFormProps {
     refuel?: Refuel;
     cars: Array<{ id: number; name: string; is_electric?: boolean }>;
     gasStations: Array<{ id: number; name: string }>;
     mileageBounds?: MileageBounds;
+    refueledAtBounds?: RefueledAtBounds;
     formType: 'create' | 'edit';
 }
 
 const formatMileage = (value: number) => value.toLocaleString('da-DK');
+
+const formatRefueledAt = (iso: string) =>
+    new Date(iso).toLocaleString('da-DK', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    });
+
+/**
+ * The form keeps the date as a UTC ISO string; the datetime-local input
+ * shows and edits it in the browser's own time zone.
+ */
+const toLocalInputValue = (iso: string) => {
+    const date = new Date(iso);
+    const pad = (value: number) => value.toString().padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 export default function RefuelForm({
     refuel,
     cars,
     gasStations,
     mileageBounds,
+    refueledAtBounds,
     formType,
 }: RefuelFormProps) {
     const isEditing = formType === 'edit';
     const [showNewStation, setShowNewStation] = useState(false);
+    const [now] = useState(() => new Date().toISOString());
 
     const { data, setData, post, put, processing, errors } = useForm({
         car_id: refuel?.car_id?.toString() ?? '',
@@ -53,6 +79,7 @@ export default function RefuelForm({
         liters_refueled: refuel?.liters_refueled ?? '',
         total_price: refuel?.total_price ?? '',
         mileage: refuel?.mileage ?? '',
+        refueled_at: refuel?.refueled_at ?? now,
         new_gas_station_name: '',
         new_gas_station_address: '',
     });
@@ -78,6 +105,19 @@ export default function RefuelForm({
         mileageHint = `Must be above ${formatMileage(previousMileage)} km — the previous refuel.`;
     } else if (nextMileage !== null) {
         mileageHint = `Must be below ${formatMileage(nextMileage)} km — the next refuel.`;
+    }
+
+    const previousRefueledAt = refueledAtBounds?.min ?? null;
+    const nextRefueledAt = refueledAtBounds?.max ?? null;
+
+    let refueledAtHint: string | null = null;
+
+    if (previousRefueledAt !== null && nextRefueledAt !== null) {
+        refueledAtHint = `Must be between ${formatRefueledAt(previousRefueledAt)} and ${formatRefueledAt(nextRefueledAt)} — the surrounding refuels.`;
+    } else if (previousRefueledAt !== null) {
+        refueledAtHint = `Must be on or after ${formatRefueledAt(previousRefueledAt)} — the previous refuel.`;
+    } else if (nextRefueledAt !== null) {
+        refueledAtHint = `Must be on or before ${formatRefueledAt(nextRefueledAt)} — the next refuel.`;
     }
 
     const handleUseCurrentLocation = () => {
@@ -211,6 +251,44 @@ export default function RefuelForm({
                             </p>
                         )}
                         <InputError message={errors.mileage} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="refueled_at">Date</Label>
+                        <Input
+                            id="refueled_at"
+                            type="datetime-local"
+                            required
+                            tabIndex={4}
+                            value={
+                                data.refueled_at
+                                    ? toLocalInputValue(data.refueled_at)
+                                    : ''
+                            }
+                            min={
+                                previousRefueledAt !== null
+                                    ? toLocalInputValue(previousRefueledAt)
+                                    : undefined
+                            }
+                            max={
+                                nextRefueledAt !== null
+                                    ? toLocalInputValue(nextRefueledAt)
+                                    : undefined
+                            }
+                            onChange={(e) =>
+                                setData(
+                                    'refueled_at',
+                                    e.target.value
+                                        ? new Date(e.target.value).toISOString()
+                                        : '',
+                                )
+                            }
+                        />
+                        {refueledAtHint && (
+                            <p className="text-xs text-muted-foreground">
+                                {refueledAtHint}
+                            </p>
+                        )}
+                        <InputError message={errors.refueled_at} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="gas_station_id">Station</Label>

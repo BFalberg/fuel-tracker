@@ -15,6 +15,7 @@ it('may create a refuel with the type of the car', function (bool $isElectric, s
         'liters_refueled' => 10,
         'total_price' => 200,
         'mileage' => 1000,
+        'refueled_at' => now(),
     ]);
 
     expect($refuel->car_id)->toBe($car->id)
@@ -34,6 +35,7 @@ it('creates a new gas station when a name is given', function (): void {
         'liters_refueled' => 10,
         'total_price' => 200,
         'mileage' => 1000,
+        'refueled_at' => now(),
     ]);
 
     $station = GasStation::query()->sole();
