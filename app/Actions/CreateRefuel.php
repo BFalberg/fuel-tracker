@@ -7,21 +7,28 @@ namespace App\Actions;
 use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\Refuel;
+use Carbon\CarbonImmutable;
+use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateRefuel
 {
     /**
-     * The position the refuel was logged from places its station on the map.
-     * A new station takes it, and an existing station without coordinates
-     * learns them, so the form can preselect it next time. Known coordinates
-     * are never moved.
+     * A refuel logged later, for example at home, is far from its station.
+     */
+    private const int MAX_MINUTES_SINCE_REFUEL_FOR_POSITION = 30;
+
+    /**
+     * The position the refuel was logged from places its station on the map,
+     * but only when it was logged on the spot. A new station takes it, and an
+     * existing station without coordinates learns them, so the form can
+     * preselect it next time. Known coordinates are never moved.
      *
      * @param  array<string, mixed>  $attributes
      */
     public function handle(Car $car, array $attributes): Refuel
     {
-        $coordinates = isset($attributes['latitude'], $attributes['longitude'])
+        $coordinates = $this->isLoggedOnTheSpot($attributes) && isset($attributes['latitude'], $attributes['longitude'])
             ? ['latitude' => $attributes['latitude'], 'longitude' => $attributes['longitude']]
             : [];
 
@@ -47,5 +54,19 @@ final readonly class CreateRefuel
 
             return $car->refuels()->create($attributes);
         });
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function isLoggedOnTheSpot(array $attributes): bool
+    {
+        $refueledAt = $attributes['refueled_at'] ?? null;
+
+        if (! is_string($refueledAt) && ! $refueledAt instanceof DateTimeInterface) {
+            return false;
+        }
+
+        return CarbonImmutable::parse($refueledAt)->diffInMinutes(CarbonImmutable::now(), true) <= self::MAX_MINUTES_SINCE_REFUEL_FOR_POSITION;
     }
 }

@@ -44,6 +44,9 @@ export interface RefuelFormStation {
 /** Close enough to be standing at the station, allowing for GPS drift. */
 const stationRadiusMeters = 300;
 
+/** A fix less precise than this could place a station on the wrong street. */
+const maxAccuracyMeters = 100;
+
 export interface RefuelFormCar {
     id: number;
     name: string;
@@ -116,6 +119,10 @@ export default function RefuelForm({
 
         navigator.geolocation.getCurrentPosition(
             ({ coords }) => {
+                if (coords.accuracy > maxAccuracyMeters) {
+                    return;
+                }
+
                 const position = {
                     latitude: coords.latitude,
                     longitude: coords.longitude,
@@ -182,24 +189,33 @@ export default function RefuelForm({
         refueledAtHint = `Must be on or before ${formatRefueledAt(nextRefueledAt)} — the next refuel.`;
     }
 
+    const fillAddress = async (latitude: number, longitude: number) => {
+        const address = await reverseGeocode(latitude, longitude);
+
+        if (address) {
+            setData('new_gas_station_address', address);
+        }
+    };
+
+    // Reuse the position found when the form opened, so the user is not asked twice.
     const handleUseCurrentLocation = () => {
-        if (!navigator.geolocation) {
+        if (data.latitude !== null && data.longitude !== null) {
+            void fillAddress(data.latitude, data.longitude);
+
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const address = await reverseGeocode(
-                    position.coords.latitude,
-                    position.coords.longitude,
-                );
-
-                if (address) {
-                    setData('new_gas_station_address', address);
-                }
+        navigator.geolocation?.getCurrentPosition(
+            ({ coords }) => {
+                setData((current) => ({
+                    ...current,
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+                }));
+                void fillAddress(coords.latitude, coords.longitude);
             },
             () => {
-                // no-op
+                // Without a position the address is typed by hand.
             },
         );
     };
