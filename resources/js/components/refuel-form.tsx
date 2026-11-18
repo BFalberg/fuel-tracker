@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import {
     NativeSelectOption,
 } from '@/components/ui/native-select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { nearestStation } from '@/lib/nearest-station';
 import { reverseGeocode } from '@/lib/reverse-geocode';
 import { store as storeRefuel, update as updateRefuel } from '@/routes/refuels';
 
@@ -46,7 +47,12 @@ export interface RefuelFormStation {
     id: number;
     name: string;
     last_charge_type?: ChargeType | null;
+    latitude?: string | null;
+    longitude?: string | null;
 }
+
+/** Close enough to be standing at the station, allowing for GPS drift. */
+const stationRadiusMeters = 300;
 
 export interface RefuelFormCar {
     id: number;
@@ -112,8 +118,49 @@ export default function RefuelForm({
             refueled_at: refuel?.refueled_at ?? now,
             new_gas_station_name: '',
             new_gas_station_address: '',
+            latitude: null as number | null,
+            longitude: null as number | null,
         },
     );
+
+    useEffect(() => {
+        if (isEditing || !navigator.geolocation) {
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+                const position = {
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+                };
+                const station = nearestStation(
+                    gasStations,
+                    position,
+                    stationRadiusMeters,
+                );
+
+                setData((current) => ({
+                    ...current,
+                    ...position,
+                    ...(station && current.gas_station_id === ''
+                        ? {
+                              gas_station_id: station.id.toString(),
+                              charge_type:
+                                  station.last_charge_type ??
+                                  current.charge_type,
+                          }
+                        : {}),
+                }));
+            },
+            () => {
+                // Without a position the station is picked by hand.
+            },
+            { enableHighAccuracy: true, timeout: 10_000 },
+        );
+        // Locate once when the form opens; re-running would prompt again.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const selectedCar = cars.find(
         (car) => car.id.toString() === data.car_id.toString(),

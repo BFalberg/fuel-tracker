@@ -37,7 +37,7 @@ final readonly class GetRefuelFormData
                 ->orderByDesc('last_refueled_at')
                 ->withCasts(['last_mileage' => 'integer'])
                 ->get(),
-            'gasStations' => GasStation::query()->select(['gas_stations.id', 'gas_stations.name'])
+            'gasStations' => GasStation::query()->select(['gas_stations.id', 'gas_stations.name', 'gas_stations.latitude', 'gas_stations.longitude'])
                 ->addSelect(['last_charge_type' => Refuel::query()->select('charge_type')
                     ->whereColumn('gas_station_id', 'gas_stations.id')
                     ->whereNotNull('charge_type')
@@ -45,7 +45,7 @@ final readonly class GetRefuelFormData
                     ->limit(1)])
                 ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
                 ->orderByRaw('MAX(refuels.refueled_at) DESC')
-                ->groupBy('gas_stations.id', 'gas_stations.name')
+                ->groupBy('gas_stations.id', 'gas_stations.name', 'gas_stations.latitude', 'gas_stations.longitude')
                 ->get(),
         ];
     }
