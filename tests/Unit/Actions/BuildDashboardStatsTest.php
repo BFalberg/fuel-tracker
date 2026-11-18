@@ -274,6 +274,26 @@ test('ev cost adds paid charges to the subscription', function (): void {
         ->and(trendFor($stats, '2026-07')['cost'])->toBe(424.0);
 });
 
+test('the effective energy price spreads every cost, subscription included, over all energy bought', function (): void {
+    $car = Car::factory()->electric()->create();
+    CarExpense::query()->create([
+        'car_id' => $car->id,
+        'expense_type' => 'Abonnement',
+        'amount' => 300,
+        'invoice_date' => '2026-07-01',
+    ]);
+    dashboardRefuel($car, 1000, '2026-07-02', liters: 100, price: 0);
+    dashboardRefuel($car, 1500, '2026-07-20', liters: 50, price: 150);
+
+    expect(julyStats($car)['stats']['totals']['pricePerUnit'])->toBe(3.0);
+});
+
+test('there is no energy price without energy', function (): void {
+    $car = Car::factory()->electric()->create();
+
+    expect(julyStats($car)['stats']['totals']['pricePerUnit'])->toBeNull();
+});
+
 test('the refuel date, not the creation date, decides the month', function (): void {
     $car = Car::factory()->create(['is_electric' => false]);
     dashboardRefuel($car, 1000, '2026-05-30', price: 100, attributes: ['created_at' => '2026-07-10']);
