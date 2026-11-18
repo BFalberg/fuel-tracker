@@ -146,3 +146,28 @@ it('rejects a malformed period parameter', function (array $query): void {
     'not a date' => [['from' => 'not-a-date']],
     'an array' => [['from' => ['2026-01']]],
 ]);
+
+it('selects the newest active car and hides archived cars from the switcher', function (): void {
+    $user = User::factory()->create();
+    $active = Car::factory()->ownedBy($user)->create(['created_at' => now()->subDays(10)]);
+    Car::factory()->ownedBy($user)->archived()->create(['created_at' => now()]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('selectedCarId', $active->id)
+            ->has('cars', 1)
+            ->where('cars.0.id', $active->id));
+});
+
+it('still shows an archived car when it is asked for', function (): void {
+    $user = User::factory()->create();
+    Car::factory()->ownedBy($user)->create();
+    $archived = Car::factory()->ownedBy($user)->archived()->create();
+
+    $this->actingAs($user)
+        ->get(route('dashboard', ['car' => $archived->id]))
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('selectedCarId', $archived->id)
+            ->has('cars', 2));
+});

@@ -32,6 +32,11 @@ final class CarFactory extends Factory
         });
     }
 
+    public function archived(): static
+    {
+        return $this->state(['archived_at' => now()]);
+    }
+
     public function electric(): static
     {
         return $this->state(['is_electric' => true]);

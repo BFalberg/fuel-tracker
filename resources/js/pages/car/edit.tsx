@@ -21,6 +21,7 @@ interface Car {
     purchase_price?: number;
     sale_price?: number;
     is_electric?: boolean;
+    archived_at?: string | null;
 }
 
 interface CarUser {

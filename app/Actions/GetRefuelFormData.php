@@ -12,21 +12,28 @@ use Illuminate\Database\Eloquent\Collection;
 final readonly class GetRefuelFormData
 {
     /**
+     * A new refuel is logged on a car that is still driven, so archived cars
+     * are left out and the most recently refuelled car comes first, ready to
+     * be preselected. Each car carries its last odometer reading.
+     *
      * @return array{cars: Collection<int, Car>, gasStations: Collection<int, GasStation>}
      */
-    public function handle(User $user, bool $orderByLatestRefuel): array
+    public function handle(User $user, bool $isCreating): array
     {
-        $cars = $user->cars()->select(['cars.id', 'cars.name', 'cars.is_electric'])->get();
-
-        if (! $orderByLatestRefuel) {
+        if (! $isCreating) {
             return [
-                'cars' => $cars,
+                'cars' => $user->cars()->select(['cars.id', 'cars.name', 'cars.is_electric'])->get(),
                 'gasStations' => GasStation::query()->select(['id', 'name'])->get(),
             ];
         }
 
         return [
-            'cars' => $cars,
+            'cars' => $user->cars()->active()
+                ->select(['cars.id', 'cars.name', 'cars.is_electric'])
+                ->withMax('refuels as last_mileage', 'mileage')
+                ->withMax('refuels as last_refueled_at', 'refueled_at')
+                ->orderByDesc('last_refueled_at')
+                ->get(),
             'gasStations' => GasStation::query()->select(['gas_stations.id', 'gas_stations.name'])
                 ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
                 ->orderByRaw('MAX(refuels.refueled_at) DESC')

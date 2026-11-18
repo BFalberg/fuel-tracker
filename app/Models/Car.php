@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\ExpenseType;
 use Carbon\CarbonInterface;
 use Database\Factories\CarFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -20,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read int|null $start_milage
  * @property-read string|null $purchase_price
  * @property-read string|null $sale_price
+ * @property-read CarbonInterface|null $archived_at
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  */
@@ -50,6 +53,11 @@ final class Car extends Model
     public function carExpenses(): HasMany
     {
         return $this->hasMany(CarExpense::class);
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
     }
 
     /**
@@ -85,8 +93,21 @@ final class Car extends Model
             'start_milage' => 'integer',
             'purchase_price' => 'decimal:2',
             'sale_price' => 'decimal:2',
+            'archived_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Limit the query to cars that are still driven.
+     *
+     * @param  Builder<Car>  $query
+     * @return Builder<Car>
+     */
+    #[Scope]
+    protected function active(Builder $query): Builder
+    {
+        return $query->whereNull('cars.archived_at');
     }
 }

@@ -74,7 +74,8 @@ export default function RefuelForm({
     const [now] = useState(() => new Date().toISOString());
 
     const { data, setData, post, put, processing, errors } = useForm({
-        car_id: refuel?.car_id?.toString() ?? '',
+        // The server lists the most recently refuelled active car first.
+        car_id: refuel?.car_id?.toString() ?? cars[0]?.id.toString() ?? '',
         gas_station_id: refuel?.gas_station_id?.toString() ?? '',
         liters_refueled: refuel?.liters_refueled ?? '',
         total_price: refuel?.total_price ?? '',

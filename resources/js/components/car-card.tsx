@@ -11,6 +11,7 @@ interface CarCardProps {
         name: string;
         registration_number: string;
         is_electric?: boolean;
+        is_archived?: boolean;
         users?: { id: number; name: string }[];
         pivot?: { role: 'owner' | 'co_driver' };
         can_delete?: boolean;
@@ -39,6 +40,9 @@ export default function CarCard({ car, onDelete }: CarCardProps) {
                     <Badge variant={car.is_electric ? 'secondary' : 'outline'}>
                         {car.is_electric ? 'EV' : 'Fossil'}
                     </Badge>
+                    {car.is_archived && (
+                        <Badge variant="outline">Archived</Badge>
+                    )}
                 </div>
                 {isOwner && (
                     <ActionSheet

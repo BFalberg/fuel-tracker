@@ -25,6 +25,7 @@ final class UpdateCarRequest extends FormRequest
             'start_milage' => ['nullable', 'integer', 'min:0'],
             'purchase_price' => ['nullable', 'numeric', 'min:0'],
             'sale_price' => ['nullable', 'numeric', 'min:0'],
+            'is_archived' => ['sometimes', 'boolean'],
         ];
     }
 }
