@@ -493,7 +493,7 @@ it('keeps a refuel with an out-of-order date editable while its date is unchange
     expect($middle->fresh()?->total_price)->toBe('350.00');
 });
 
-it('gives the create form each active car\'s last mileage', function (): void {
+it("gives the create form each active car's last mileage", function (): void {
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->electric()->create();
     Refuel::factory()->forCar($car)->create(['mileage' => 60891]);
@@ -522,7 +522,7 @@ it('rejects a position with only one coordinate', function (): void {
         ->assertSessionHasErrors('longitude');
 });
 
-it('gives the create form each station\'s coordinates', function (): void {
+it("gives the create form each station's coordinates", function (): void {
     $user = User::factory()->create();
     $station = GasStation::factory()->create(['latitude' => 56.1296, 'longitude' => 10.1626]);
 
