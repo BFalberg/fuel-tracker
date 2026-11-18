@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read string $liters_refueled
  * @property-read string $total_price
  * @property-read int $mileage
+ * @property-read CarbonInterface $refueled_at
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  * @property-read Car $car
@@ -59,6 +60,7 @@ final class Refuel extends Model
             'liters_refueled' => 'decimal:2',
             'total_price' => 'decimal:2',
             'mileage' => 'integer',
+            'refueled_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

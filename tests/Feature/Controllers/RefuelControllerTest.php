@@ -6,6 +6,7 @@ use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\Refuel;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 
@@ -23,13 +24,15 @@ function seedRefuel(Car $car, GasStation $station, int $mileage, array $attribut
         'liters_refueled' => 10,
         'total_price' => 200,
         'mileage' => $mileage,
+        'refueled_at' => now(),
         'type' => 'fossil',
         ...$attributes,
     ]);
 }
 
 /**
- * A car with three refuels at 1000, 2000 and 3000 km.
+ * A car with three refuels at 1000, 2000 and 3000 km, refuelled on
+ * 1, 10 and 20 July 2026.
  *
  * @return array{0: User, 1: Car, 2: GasStation, 3: Refuel, 4: Refuel, 5: Refuel}
  */
@@ -43,9 +46,9 @@ function seedRefuelSeries(): array
         $user,
         $car,
         $station,
-        seedRefuel($car, $station, 1000),
-        seedRefuel($car, $station, 2000),
-        seedRefuel($car, $station, 3000),
+        seedRefuel($car, $station, 1000, ['refueled_at' => '2026-07-01 08:00:00']),
+        seedRefuel($car, $station, 2000, ['refueled_at' => '2026-07-10 08:00:00']),
+        seedRefuel($car, $station, 3000, ['refueled_at' => '2026-07-20 08:00:00']),
     ];
 }
 
@@ -60,6 +63,7 @@ function putRefuel(User $user, Refuel $refuel, array $overrides = []): TestRespo
             'liters_refueled' => $refuel->liters_refueled,
             'total_price' => $refuel->total_price,
             'mileage' => $refuel->mileage,
+            'refueled_at' => $refuel->refueled_at->toIso8601String(),
             ...$overrides,
         ]);
 }
@@ -138,6 +142,7 @@ it('stores the refuel type from the car type', function (bool $isElectric, strin
             'liters_refueled' => 12.5,
             'total_price' => 250,
             'mileage' => 1000,
+            'refueled_at' => now()->toIso8601String(),
         ])
         ->assertRedirectToRoute('refuels.index')
         ->assertSessionHas('success', 'Refuel created successfully');
@@ -161,6 +166,7 @@ it('creates a new gas station during refuel creation', function (): void {
             'liters_refueled' => 15,
             'total_price' => 300,
             'mileage' => 1200,
+            'refueled_at' => now()->toIso8601String(),
         ])
         ->assertRedirectToRoute('refuels.index');
 
@@ -181,6 +187,7 @@ it('lets a co-driver add a refuel to a shared car', function (): void {
             'liters_refueled' => 40,
             'total_price' => 0,
             'mileage' => 1000,
+            'refueled_at' => now()->toIso8601String(),
         ])
         ->assertRedirectToRoute('refuels.index');
 
@@ -196,6 +203,7 @@ it('does not let a stranger add a refuel', function (): void {
             'liters_refueled' => 40,
             'total_price' => 0,
             'mileage' => 1000,
+            'refueled_at' => now()->toIso8601String(),
         ])
         ->assertForbidden();
 
@@ -209,6 +217,7 @@ it('returns 404 for a refuel on an unknown car', function (): void {
             'liters_refueled' => 40,
             'total_price' => 0,
             'mileage' => 1000,
+            'refueled_at' => now()->toIso8601String(),
         ])
         ->assertNotFound();
 });
@@ -217,8 +226,8 @@ it('requires the mileage to exceed the highest existing mileage', function (): v
     $user = User::factory()->create();
     $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
     $station = GasStation::factory()->create();
-    seedRefuel($car, $station, 1000, ['created_at' => now()->subDays(2)]);
-    seedRefuel($car, $station, 1500, ['created_at' => now()->subDay()]);
+    seedRefuel($car, $station, 1000, ['refueled_at' => now()->subDays(2)]);
+    seedRefuel($car, $station, 1500, ['refueled_at' => now()->subDay()]);
 
     $this->actingAs($user)
         ->post(route('refuels.store'), [
@@ -227,6 +236,7 @@ it('requires the mileage to exceed the highest existing mileage', function (): v
             'liters_refueled' => 10,
             'total_price' => 200,
             'mileage' => 1200,
+            'refueled_at' => now()->toIso8601String(),
         ])
         ->assertSessionHasErrors(['mileage' => "The mileage must be greater than the last refuel's mileage (1500)."]);
 });
@@ -244,6 +254,7 @@ it('accepts a mileage above the highest existing mileage', function (): void {
             'liters_refueled' => 10,
             'total_price' => 200,
             'mileage' => 1500,
+            'refueled_at' => now()->toIso8601String(),
         ])
         ->assertRedirectToRoute('refuels.index');
 });
@@ -258,6 +269,8 @@ it('renders the edit refuel page with the mileage bounds', function (): void {
             ->component('refuel/edit')
             ->where('refuel.id', $middle->id)
             ->where('mileageBounds', ['min' => 1000, 'max' => 3000])
+            ->where('refueledAtBounds.min', fn (string $date): bool => CarbonImmutable::parse($date)->equalTo('2026-07-01 08:00:00'))
+            ->where('refueledAtBounds.max', fn (string $date): bool => CarbonImmutable::parse($date)->equalTo('2026-07-20 08:00:00'))
             ->has('cars', 1)
             ->has('gasStations', 1));
 });
@@ -420,4 +433,62 @@ it('lets a co-driver delete a refuel on a shared car', function (): void {
         ->assertSessionHas('success', 'Refuel deleted successfully');
 
     expect(Refuel::query()->find($refuel->id))->toBeNull();
+});
+
+it('requires a new refuel to be dated no earlier than the last refuel', function (): void {
+    [$user, $car, $station] = seedRefuelSeries();
+    $payload = [
+        'car_id' => $car->id,
+        'gas_station_id' => $station->id,
+        'liters_refueled' => 10,
+        'total_price' => 200,
+        'mileage' => 4000,
+    ];
+
+    $this->actingAs($user)
+        ->post(route('refuels.store'), [...$payload, 'refueled_at' => '2026-07-19T08:00:00Z'])
+        ->assertSessionHasErrors(['refueled_at' => "The refuel date must not be before the last refuel's date (2026-07-20 08:00 UTC)."]);
+
+    $this->actingAs($user)
+        ->post(route('refuels.store'), [...$payload, 'refueled_at' => '2026-07-20T08:00:00Z'])
+        ->assertRedirectToRoute('refuels.index');
+
+    expect(Refuel::query()->where('mileage', 4000)->sole()->refueled_at->toDateTimeString())->toBe('2026-07-20 08:00:00');
+});
+
+it('requires a valid refuel date', function (mixed $refueledAt): void {
+    [$user, , , , $middle] = seedRefuelSeries();
+
+    putRefuel($user, $middle, ['refueled_at' => $refueledAt])->assertSessionHasErrors('refueled_at');
+})->with([
+    'missing' => [null],
+    'not a date' => ['not-a-date'],
+]);
+
+it('lets a refuel date move between the dates of its neighbours', function (): void {
+    [$user, , , , $middle] = seedRefuelSeries();
+
+    putRefuel($user, $middle, ['refueled_at' => '2026-07-15T12:30:00Z'])->assertRedirectToRoute('refuels.index');
+
+    expect($middle->fresh()?->refueled_at->toDateTimeString())->toBe('2026-07-15 12:30:00');
+});
+
+it('does not let a refuel date leave the order of its mileage', function (string $refueledAt, string $error): void {
+    [$user, , , , $middle] = seedRefuelSeries();
+
+    putRefuel($user, $middle, ['refueled_at' => $refueledAt])->assertSessionHasErrors(['refueled_at' => $error]);
+
+    expect($middle->fresh()?->refueled_at->toDateTimeString())->toBe('2026-07-10 08:00:00');
+})->with([
+    'before the previous refuel' => ['2026-06-30T08:00:00Z', "The refuel date must not be before the previous refuel's date (2026-07-01 08:00 UTC)."],
+    'after the next refuel' => ['2026-07-21T08:00:00Z', "The refuel date must not be after the next refuel's date (2026-07-20 08:00 UTC)."],
+]);
+
+it('keeps a refuel with an out-of-order date editable while its date is unchanged', function (): void {
+    [$user, , , , $middle] = seedRefuelSeries();
+    $middle->forceFill(['refueled_at' => '2026-08-01 08:00:00'])->save();
+
+    putRefuel($user, $middle->refresh(), ['total_price' => 350])->assertRedirectToRoute('refuels.index');
+
+    expect($middle->fresh()?->total_price)->toBe('350.00');
 });

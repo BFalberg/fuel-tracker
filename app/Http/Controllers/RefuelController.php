@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\CreateRefuel;
 use App\Actions\DeleteRefuel;
 use App\Actions\GetMileageBounds;
+use App\Actions\GetRefueledAtBounds;
 use App\Actions\GetRefuelFormData;
 use App\Actions\GetRefuelIndexData;
 use App\Actions\ListRefuels;
@@ -59,7 +60,7 @@ final readonly class RefuelController
         return to_route('refuels.index')->with('success', 'Refuel created successfully');
     }
 
-    public function edit(#[CurrentUser] User $user, Refuel $refuel, GetRefuelFormData $getRefuelFormData, GetMileageBounds $getMileageBounds): Response
+    public function edit(#[CurrentUser] User $user, Refuel $refuel, GetRefuelFormData $getRefuelFormData, GetMileageBounds $getMileageBounds, GetRefueledAtBounds $getRefueledAtBounds): Response
     {
         $formData = $getRefuelFormData->handle($user, false);
 
@@ -68,6 +69,7 @@ final readonly class RefuelController
             'cars' => $formData['cars'],
             'gasStations' => $formData['gasStations'],
             'mileageBounds' => $getMileageBounds->handle($refuel),
+            'refueledAtBounds' => $getRefueledAtBounds->handle($refuel),
         ]);
     }
 

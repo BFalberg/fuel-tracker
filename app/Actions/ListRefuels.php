@@ -21,7 +21,7 @@ final readonly class ListRefuels
             ->when($selectedCarId, function (Builder $query) use ($selectedCarId): void {
                 $query->where('car_id', $selectedCarId);
             })
-            ->latest()
+            ->latest('refueled_at')
             ->paginate(10)
             ->withQueryString();
     }

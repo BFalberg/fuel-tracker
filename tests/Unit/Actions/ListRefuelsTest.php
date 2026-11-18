@@ -32,3 +32,14 @@ it('filters the refuels by car', function (): void {
 
     expect(collect($refuels->items())->pluck('id')->all())->toBe([$refuel->id]);
 });
+
+it('lists the most recently refuelled first', function (): void {
+    $user = User::factory()->create();
+    $car = Car::factory()->ownedBy($user)->create();
+    $older = Refuel::factory()->forCar($car)->create(['refueled_at' => now()->subWeek(), 'created_at' => now()]);
+    $newer = Refuel::factory()->forCar($car)->create(['refueled_at' => now(), 'created_at' => now()->subWeek()]);
+
+    $refuels = resolve(ListRefuels::class)->handle($user);
+
+    expect(collect($refuels->items())->pluck('id')->all())->toBe([$newer->id, $older->id]);
+});

@@ -29,7 +29,7 @@ final readonly class GetRefuelFormData
             'cars' => $cars,
             'gasStations' => GasStation::query()->select(['gas_stations.id', 'gas_stations.name'])
                 ->leftJoin('refuels', 'gas_stations.id', '=', 'refuels.gas_station_id')
-                ->orderByRaw('MAX(refuels.created_at) DESC')
+                ->orderByRaw('MAX(refuels.refueled_at) DESC')
                 ->groupBy('gas_stations.id', 'gas_stations.name')
                 ->get(),
         ];

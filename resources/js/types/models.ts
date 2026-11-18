@@ -6,7 +6,7 @@ export type Refuel = {
     total_price: number;
     mileage: number;
     type?: 'fossil' | 'charge';
-    created_at: string;
+    refueled_at: string;
     car?: {
         name: string;
         is_electric?: boolean;
