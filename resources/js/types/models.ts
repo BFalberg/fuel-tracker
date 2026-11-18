@@ -5,7 +5,7 @@ export type Refuel = {
     liters_refueled: number;
     total_price: number;
     mileage: number;
-    type?: 'fossil' | 'charge';
+    charge_type?: 'home' | 'ac' | 'dc' | null;
     refueled_at: string;
     car?: {
         name: string;

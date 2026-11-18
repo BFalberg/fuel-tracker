@@ -26,8 +26,6 @@ final readonly class UpdateRefuel
             $attributes['gas_station_id'] = $station->id;
         }
 
-        $attributes['type'] = $refuel->car->is_electric ? 'charge' : 'fossil';
-
         unset($attributes['new_gas_station_name'], $attributes['new_gas_station_address']);
 
         $refuel->update($attributes);

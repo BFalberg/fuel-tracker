@@ -24,8 +24,6 @@ final readonly class CreateRefuel
             $attributes['gas_station_id'] = $station->id;
         }
 
-        $attributes['type'] = $car->is_electric ? 'charge' : 'fossil';
-
         unset($attributes['new_gas_station_name'], $attributes['new_gas_station_address']);
 
         return $car->refuels()->create($attributes);

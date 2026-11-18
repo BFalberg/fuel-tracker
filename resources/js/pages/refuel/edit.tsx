@@ -15,7 +15,7 @@ interface Refuel {
     total_price: number;
     mileage: number;
     refueled_at: string;
-    type?: 'fossil' | 'charge';
+    charge_type?: 'home' | 'ac' | 'dc' | null;
 }
 
 interface RefuelEditProps {

@@ -9,6 +9,7 @@ import {
     NativeSelect,
     NativeSelectOption,
 } from '@/components/ui/native-select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { reverseGeocode } from '@/lib/reverse-geocode';
 import { store as storeRefuel, update as updateRefuel } from '@/routes/refuels';
 
@@ -20,7 +21,7 @@ interface Refuel {
     total_price: number;
     mileage: number;
     refueled_at: string;
-    type?: 'fossil' | 'charge';
+    charge_type?: ChargeType | null;
 }
 
 export interface MileageBounds {
@@ -33,6 +34,20 @@ export interface RefueledAtBounds {
     max: string | null;
 }
 
+export type ChargeType = 'home' | 'ac' | 'dc';
+
+const chargeTypes: Array<{ value: ChargeType; label: string }> = [
+    { value: 'home', label: 'Home' },
+    { value: 'ac', label: 'AC' },
+    { value: 'dc', label: 'DC' },
+];
+
+export interface RefuelFormStation {
+    id: number;
+    name: string;
+    last_charge_type?: ChargeType | null;
+}
+
 export interface RefuelFormCar {
     id: number;
     name: string;
@@ -43,7 +58,7 @@ export interface RefuelFormCar {
 interface RefuelFormProps {
     refuel?: Refuel;
     cars: RefuelFormCar[];
-    gasStations: Array<{ id: number; name: string }>;
+    gasStations: RefuelFormStation[];
     mileageBounds?: MileageBounds;
     refueledAtBounds?: RefueledAtBounds;
     formType: 'create' | 'edit';
@@ -83,18 +98,22 @@ export default function RefuelForm({
     // The server lists the most recently refuelled active car first.
     const defaultCar = isEditing ? undefined : cars[0];
 
-    const { data, setData, post, put, processing, errors } = useForm({
-        car_id: refuel?.car_id?.toString() ?? defaultCar?.id.toString() ?? '',
-        gas_station_id: refuel?.gas_station_id?.toString() ?? '',
-        liters_refueled: refuel?.liters_refueled ?? '',
-        // Most charges are covered by a subscription, so they cost nothing.
-        total_price:
-            refuel?.total_price ?? (defaultCar?.is_electric ? '0' : ''),
-        mileage: refuel?.mileage ?? '',
-        refueled_at: refuel?.refueled_at ?? now,
-        new_gas_station_name: '',
-        new_gas_station_address: '',
-    });
+    const { data, setData, transform, post, put, processing, errors } = useForm(
+        {
+            car_id:
+                refuel?.car_id?.toString() ?? defaultCar?.id.toString() ?? '',
+            gas_station_id: refuel?.gas_station_id?.toString() ?? '',
+            charge_type: (refuel?.charge_type ?? '') as ChargeType | '',
+            liters_refueled: refuel?.liters_refueled ?? '',
+            // Most charges are covered by a subscription, so they cost nothing.
+            total_price:
+                refuel?.total_price ?? (defaultCar?.is_electric ? '0' : ''),
+            mileage: refuel?.mileage ?? '',
+            refueled_at: refuel?.refueled_at ?? now,
+            new_gas_station_name: '',
+            new_gas_station_address: '',
+        },
+    );
 
     const selectedCar = cars.find(
         (car) => car.id.toString() === data.car_id.toString(),
@@ -157,8 +176,26 @@ export default function RefuelForm({
         );
     };
 
+    // A station is usually charged the same way every time.
+    const selectStation = (stationId: string) => {
+        const station = gasStations.find(
+            (candidate) => candidate.id.toString() === stationId,
+        );
+
+        setData((current) => ({
+            ...current,
+            gas_station_id: stationId,
+            charge_type: station?.last_charge_type ?? current.charge_type,
+        }));
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        transform((current) => ({
+            ...current,
+            charge_type: isElectric ? current.charge_type || null : null,
+        }));
 
         if (isEditing && refuel?.id) {
             put(updateRefuel.url(refuel.id));
@@ -308,9 +345,7 @@ export default function RefuelForm({
                         <NativeSelect
                             id="gas_station_id"
                             value={data.gas_station_id.toString()}
-                            onChange={(e) =>
-                                setData('gas_station_id', e.target.value)
-                            }
+                            onChange={(e) => selectStation(e.target.value)}
                         >
                             <NativeSelectOption value="">
                                 Select station
@@ -402,6 +437,35 @@ export default function RefuelForm({
                                     Use current location
                                 </Button>
                             </div>
+                        </div>
+                    )}
+                    {isElectric && (
+                        <div className="grid gap-2">
+                            <Label id="charge_type_label">Charge type</Label>
+                            <ToggleGroup
+                                type="single"
+                                variant="outline"
+                                aria-labelledby="charge_type_label"
+                                className="w-full"
+                                value={data.charge_type}
+                                onValueChange={(value) =>
+                                    setData(
+                                        'charge_type',
+                                        value as ChargeType | '',
+                                    )
+                                }
+                            >
+                                {chargeTypes.map((chargeType) => (
+                                    <ToggleGroupItem
+                                        key={chargeType.value}
+                                        value={chargeType.value}
+                                        className="h-11 flex-1"
+                                    >
+                                        {chargeType.label}
+                                    </ToggleGroupItem>
+                                ))}
+                            </ToggleGroup>
+                            <InputError message={errors.charge_type} />
                         </div>
                     )}
                     {isElectric && priceField}

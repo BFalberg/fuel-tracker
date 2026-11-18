@@ -3,22 +3,24 @@
 declare(strict_types=1);
 
 use App\Actions\UpdateRefuel;
+use App\Enums\ChargeType;
 use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\Refuel;
 
-it('may update a refuel and keeps its type in line with the car', function (): void {
+it('may update a refuel and its charge type', function (): void {
     $car = Car::factory()->electric()->create();
-    $refuel = Refuel::factory()->forCar($car)->create(['type' => 'fossil', 'mileage' => 1000]);
+    $refuel = Refuel::factory()->forCar($car)->create(['mileage' => 1000]);
 
     $updated = resolve(UpdateRefuel::class)->handle($refuel, [
         'liters_refueled' => 20,
         'total_price' => 300,
         'mileage' => 1100,
+        'charge_type' => ChargeType::Dc,
     ]);
 
     expect($updated->refresh()->mileage)->toBe(1100)
-        ->and($updated->type)->toBe('charge');
+        ->and($updated->charge_type)->toBe(ChargeType::Dc);
 });
 
 it('creates a new gas station when a name is given', function (): void {

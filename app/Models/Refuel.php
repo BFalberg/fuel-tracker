@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ChargeType;
 use Carbon\CarbonInterface;
 use Database\Factories\RefuelFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read int $id
  * @property-read int $car_id
  * @property-read int|null $gas_station_id
- * @property-read string $type
+ * @property-read ChargeType|null $charge_type
  * @property-read string $liters_refueled
  * @property-read string $total_price
  * @property-read int $mileage
@@ -56,7 +57,7 @@ final class Refuel extends Model
             'id' => 'integer',
             'car_id' => 'integer',
             'gas_station_id' => 'integer',
-            'type' => 'string',
+            'charge_type' => ChargeType::class,
             'liters_refueled' => 'decimal:2',
             'total_price' => 'decimal:2',
             'mileage' => 'integer',

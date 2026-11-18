@@ -8,6 +8,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import ActionSheet from '@/components/action-sheet';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { edit as editRefuel } from '@/routes/refuels';
 import { type Refuel } from '@/types';
@@ -41,9 +42,10 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
         });
     };
 
-    const isElectric = refuel.type
-        ? refuel.type === 'charge'
-        : (refuel.car?.is_electric ?? false);
+    const isElectric = refuel.car?.is_electric ?? false;
+    const chargeTypeLabel = refuel.charge_type
+        ? { home: 'Home', ac: 'AC', dc: 'DC' }[refuel.charge_type]
+        : null;
     const liters = Number(refuel.liters_refueled);
     const totalPrice = Number(refuel.total_price);
     // Guard against a zero-litre record producing Infinity or NaN.
@@ -63,6 +65,9 @@ export default function RefuelCard({ refuel, onDelete }: RefuelCardProps) {
                         <span className="text-sm text-muted-foreground">
                             {refuel.gas_station?.name ?? 'Unknown Station'}
                         </span>
+                        {chargeTypeLabel && (
+                            <Badge variant="outline">{chargeTypeLabel}</Badge>
+                        )}
                     </div>
                 </div>
                 <ActionSheet
