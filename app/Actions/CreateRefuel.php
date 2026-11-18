@@ -28,6 +28,8 @@ final readonly class CreateRefuel
         $newStationName = $attributes['new_gas_station_name'] ?? null;
         $newStationAddress = $attributes['new_gas_station_address'] ?? null;
 
+        $attributes['type'] = $car->is_electric ? 'charge' : 'fossil';
+
         unset($attributes['new_gas_station_name'], $attributes['new_gas_station_address'], $attributes['latitude'], $attributes['longitude']);
 
         return DB::transaction(function () use ($car, $attributes, $coordinates, $newStationName, $newStationAddress): Refuel {

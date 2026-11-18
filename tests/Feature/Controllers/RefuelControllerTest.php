@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\ChargeType;
 use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\Refuel;
@@ -26,6 +25,7 @@ function seedRefuel(Car $car, GasStation $station, int $mileage, array $attribut
         'total_price' => 200,
         'mileage' => $mileage,
         'refueled_at' => now(),
+        'type' => 'fossil',
         ...$attributes,
     ]);
 }
@@ -131,58 +131,27 @@ it('renders the create refuel page', function (): void {
             ->has('gasStations', 1));
 });
 
-it('stores the charge type of an EV charge', function (): void {
+it('stores the refuel type from the car type', function (bool $isElectric, string $type): void {
     $user = User::factory()->create();
-    $car = Car::factory()->ownedBy($user)->electric()->create();
+    $car = Car::factory()->ownedBy($user)->create(['is_electric' => $isElectric]);
 
     $this->actingAs($user)
         ->post(route('refuels.store'), [
             'car_id' => $car->id,
             'gas_station_id' => GasStation::factory()->create()->id,
             'liters_refueled' => 12.5,
-            'total_price' => 0,
+            'total_price' => 250,
             'mileage' => 1000,
             'refueled_at' => now()->toIso8601String(),
-            'charge_type' => 'dc',
         ])
         ->assertRedirectToRoute('refuels.index')
         ->assertSessionHas('success', 'Refuel created successfully');
 
-    expect(Refuel::query()->sole()->charge_type)->toBe(ChargeType::Dc);
-});
-
-it('rejects a charge type on a fossil refuel', function (): void {
-    $user = User::factory()->create();
-    $car = Car::factory()->ownedBy($user)->create(['is_electric' => false]);
-
-    $this->actingAs($user)
-        ->post(route('refuels.store'), [
-            'car_id' => $car->id,
-            'liters_refueled' => 30,
-            'total_price' => 500,
-            'mileage' => 1000,
-            'refueled_at' => now()->toIso8601String(),
-            'charge_type' => 'dc',
-        ])
-        ->assertSessionHasErrors('charge_type');
-
-    expect(Refuel::query()->count())->toBe(0);
-});
-
-it('offers the charge type last used at each station', function (): void {
-    $user = User::factory()->create();
-    $car = Car::factory()->ownedBy($user)->electric()->create();
-    $station = GasStation::factory()->create();
-    Refuel::factory()->forCar($car)->atStation($station)->create(['mileage' => 100, 'refueled_at' => now()->subDays(2), 'charge_type' => 'ac']);
-    Refuel::factory()->forCar($car)->atStation($station)->create(['mileage' => 200, 'refueled_at' => now()->subDay(), 'charge_type' => 'dc']);
-    Refuel::factory()->forCar($car)->atStation($station)->create(['mileage' => 300, 'refueled_at' => now(), 'charge_type' => null]);
-
-    $this->actingAs($user)
-        ->get(route('refuels.create'))
-        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
-            ->where('gasStations.0.id', $station->id)
-            ->where('gasStations.0.last_charge_type', 'dc'));
-});
+    expect(Refuel::query()->sole()->type)->toBe($type);
+})->with([
+    'electric' => [true, 'charge'],
+    'fossil' => [false, 'fossil'],
+]);
 
 it('creates a new gas station during refuel creation', function (): void {
     $user = User::factory()->create();

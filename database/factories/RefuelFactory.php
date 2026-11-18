@@ -26,12 +26,16 @@ final class RefuelFactory extends Factory
             'total_price' => fake()->randomFloat(2, 200, 900),
             'mileage' => fake()->numberBetween(1000, 250000),
             'refueled_at' => now(),
+            'type' => 'fossil',
         ];
     }
 
     public function forCar(Car $car): static
     {
-        return $this->state(['car_id' => $car->id]);
+        return $this->state([
+            'car_id' => $car->id,
+            'type' => $car->is_electric ? 'charge' : 'fossil',
+        ]);
     }
 
     public function atStation(GasStation $station): static

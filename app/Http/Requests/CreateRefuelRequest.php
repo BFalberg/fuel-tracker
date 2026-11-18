@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\ChargeType;
 use App\Models\Car;
 use App\Models\GasStation;
 use App\Models\User;
@@ -35,7 +34,6 @@ final class CreateRefuelRequest extends FormRequest
         return [
             'car_id' => ['required', Rule::exists(Car::class, 'id')],
             'gas_station_id' => ['nullable', Rule::exists(GasStation::class, 'id')],
-            'charge_type' => ['nullable', Rule::enum(ChargeType::class), Rule::prohibitedIf(! $this->car()->is_electric)],
             'new_gas_station_name' => ['nullable', 'string', 'max:255'],
             'new_gas_station_address' => ['nullable', 'string', 'max:255'],
             'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],

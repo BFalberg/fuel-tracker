@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\ChargeType;
 use App\Models\GasStation;
 use App\Models\Refuel;
 use App\Rules\MileageFitsCarSeries;
@@ -28,7 +27,6 @@ final class UpdateRefuelRequest extends FormRequest
 
         return [
             'gas_station_id' => ['nullable', Rule::exists(GasStation::class, 'id')],
-            'charge_type' => ['nullable', Rule::enum(ChargeType::class), Rule::prohibitedIf(! $refuel->car->is_electric)],
             'new_gas_station_name' => ['nullable', 'string', 'max:255'],
             'new_gas_station_address' => ['nullable', 'string', 'max:255'],
             'liters_refueled' => ['required', 'numeric', 'gt:0'],
