@@ -3,43 +3,17 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Facades\Event;
-use Inertia\Testing\AssertableInertia;
 
-it('renders the registration page', function (): void {
-    $this->get(route('register'))
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->component('user/create'));
-});
-
-it('may register a new user', function (): void {
-    Event::fake([Registered::class]);
-
-    $response = $this->post(route('register.store'), [
+it('does not offer registration', function (string $method): void {
+    $this->{$method}('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ]);
+    ])->assertNotFound();
 
-    $user = User::query()->where('email', 'test@example.com')->sole();
-
-    $this->assertAuthenticatedAs($user);
-    $response->assertRedirect(route('dashboard', absolute: false));
-    Event::assertDispatched(Registered::class);
-});
-
-it('requires a valid email to register', function (): void {
-    $this->post(route('register.store'), [
-        'name' => 'Test User',
-        'email' => 'test@localhost',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-    ])->assertSessionHasErrors('email');
-
-    $this->assertGuest();
-});
+    expect(User::query()->count())->toBe(0);
+})->with(['get', 'post']);
 
 it('may delete the account', function (): void {
     $user = User::factory()->create();
