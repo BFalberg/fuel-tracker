@@ -492,3 +492,44 @@ it('keeps a refuel with an out-of-order date editable while its date is unchange
 
     expect($middle->fresh()?->total_price)->toBe('350.00');
 });
+
+it('gives the create form each active car\'s last mileage', function (): void {
+    $user = User::factory()->create();
+    $car = Car::factory()->ownedBy($user)->electric()->create();
+    Refuel::factory()->forCar($car)->create(['mileage' => 60891]);
+
+    $this->actingAs($user)
+        ->get(route('refuels.create'))
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('cars.0.id', $car->id)
+            ->where('cars.0.last_mileage', 60891)
+            ->where('cars.0.is_electric', true));
+});
+
+it('rejects a position with only one coordinate', function (): void {
+    $user = User::factory()->create();
+    $car = Car::factory()->ownedBy($user)->electric()->create();
+
+    $this->actingAs($user)
+        ->post(route('refuels.store'), [
+            'car_id' => $car->id,
+            'liters_refueled' => 20,
+            'total_price' => 0,
+            'mileage' => 1000,
+            'refueled_at' => now()->toIso8601String(),
+            'latitude' => 56.1,
+        ])
+        ->assertSessionHasErrors('longitude');
+});
+
+it('gives the create form each station\'s coordinates', function (): void {
+    $user = User::factory()->create();
+    $station = GasStation::factory()->create(['latitude' => 56.1296, 'longitude' => 10.1626]);
+
+    $this->actingAs($user)
+        ->get(route('refuels.create'))
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('gasStations.0.id', $station->id)
+            ->where('gasStations.0.latitude', '56.1296000')
+            ->where('gasStations.0.longitude', '10.1626000'));
+});

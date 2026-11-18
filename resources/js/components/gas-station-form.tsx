@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -15,7 +15,15 @@ interface GasStation {
     id?: number;
     name: string;
     address: string;
+    latitude?: string | null;
+    longitude?: string | null;
 }
+
+/** A fix less precise than this could place the station on the wrong street. */
+const maxAccuracyMeters = 100;
+
+const toCoordinate = (value?: string | null) =>
+    value == null ? null : Number(value);
 
 interface GasStationFormProps {
     formType: 'create' | 'edit';
@@ -26,9 +34,12 @@ export default function GasStationForm({
     formType,
     gasStation,
 }: GasStationFormProps) {
+    const [locationError, setLocationError] = useState<string | null>(null);
     const { data, setData, post, put, processing, errors, reset } = useForm({
         name: gasStation?.name ?? '',
         address: gasStation?.address ?? '',
+        latitude: toCoordinate(gasStation?.latitude),
+        longitude: toCoordinate(gasStation?.longitude),
     });
 
     useEffect(() => {
@@ -36,22 +47,45 @@ export default function GasStationForm({
             setData({
                 name: gasStation.name,
                 address: gasStation.address,
+                latitude: toCoordinate(gasStation.latitude),
+                longitude: toCoordinate(gasStation.longitude),
             });
         } else {
             reset();
         }
     }, [gasStation, reset, setData]);
 
+    const hasPosition = data.latitude !== null && data.longitude !== null;
+
+    // Standing at the station gives both its position and its address.
     const handleUseCurrentLocation = () => {
         if (!navigator.geolocation) {
+            setLocationError('Location is not available on this device.');
+
             return;
         }
 
+        setLocationError(null);
+
         navigator.geolocation.getCurrentPosition(
-            async (position) => {
+            async ({ coords }) => {
+                if (coords.accuracy > maxAccuracyMeters) {
+                    setLocationError(
+                        `Your location is only accurate to ${Math.round(coords.accuracy)} m. Try again outside or closer to the charger.`,
+                    );
+
+                    return;
+                }
+
+                setData((current) => ({
+                    ...current,
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+                }));
+
                 const address = await reverseGeocode(
-                    position.coords.latitude,
-                    position.coords.longitude,
+                    coords.latitude,
+                    coords.longitude,
                 );
 
                 if (address) {
@@ -59,9 +93,14 @@ export default function GasStationForm({
                 }
             },
             () => {
-                // no-op
+                setLocationError('Location permission was denied.');
             },
+            { enableHighAccuracy: true, timeout: 10_000 },
         );
+    };
+
+    const clearPosition = () => {
+        setData((current) => ({ ...current, latitude: null, longitude: null }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -113,13 +152,51 @@ export default function GasStationForm({
                         placeholder="123 Main St"
                     />
                     <InputError message={errors.address} />
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleUseCurrentLocation}
-                    >
-                        Use current location
-                    </Button>
+                </div>
+                <div className="grid gap-2">
+                    <Label>Position</Label>
+                    {hasPosition ? (
+                        <p className="text-sm">
+                            {data.latitude?.toFixed(5)},{' '}
+                            {data.longitude?.toFixed(5)}{' '}
+                            <a
+                                href={`https://www.openstreetmap.org/?mlat=${data.latitude}&mlon=${data.longitude}#map=18/${data.latitude}/${data.longitude}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-accent underline underline-offset-4"
+                            >
+                                Check on map
+                            </a>
+                        </p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            Not placed yet. It is set the next time a refuel is
+                            logged here on the spot.
+                        </p>
+                    )}
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleUseCurrentLocation}
+                        >
+                            Use my location
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={clearPosition}
+                            disabled={!hasPosition}
+                        >
+                            Clear position
+                        </Button>
+                    </div>
+                    {locationError && (
+                        <p className="text-sm text-destructive">
+                            {locationError}
+                        </p>
+                    )}
+                    <InputError message={errors.latitude ?? errors.longitude} />
                 </div>
                 <div className="flex flex-col gap-2">
                     <Button

@@ -1,12 +1,15 @@
 import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
-import RefuelForm from '@/components/refuel-form';
+import RefuelForm, {
+    type RefuelFormCar,
+    type RefuelFormStation,
+} from '@/components/refuel-form';
 import AppLayout from '@/layouts/app-layout';
 import { create as createRefuel } from '@/routes/refuels';
 
 interface RefuelCreateProps {
-    cars: Array<{ id: number; name: string; is_electric?: boolean }>;
-    gasStations: Array<{ id: number; name: string }>;
+    cars: RefuelFormCar[];
+    gasStations: RefuelFormStation[];
 }
 
 const breadcrumbs = [{ title: 'Create Refuel', href: createRefuel.url() }];

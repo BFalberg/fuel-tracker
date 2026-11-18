@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Enums\ExpenseType;
 use App\Models\Car;
 use App\Models\CarExpense;
 use App\Models\Refuel;
@@ -22,7 +21,7 @@ use Illuminate\Support\Collection;
  *     stats: array{
  *         currentMonth: array{amount: float, kilometers: int, litersThisMonth: float},
  *         averages: array{monthlyAmount: float, monthlyKilometers: float, monthlyLiters: float},
- *         totals: array{amount: float, kilometers: float, pricePerKilometer: float|int},
+ *         totals: array{amount: float, kilometers: float, pricePerKilometer: float|int, pricePerUnit: float|null},
  *         efficiency: Efficiency,
  *         monthlyTrends: list<MonthlyTrend>,
  *     },
@@ -53,6 +52,7 @@ final readonly class BuildDashboardStats
 
             $totalAmount = $this->sumAmount($costs);
             $totalDistance = $this->sumDistance($segments);
+            $totalEnergy = $refuels->reduce(fn (float $total, Refuel $refuel): float => $total + (float) $refuel->liters_refueled, 0.0);
 
             return [
                 'id' => $car->id,
@@ -73,6 +73,7 @@ final readonly class BuildDashboardStats
                         'amount' => round($totalAmount, 2),
                         'kilometers' => round($totalDistance, 2),
                         'pricePerKilometer' => $totalDistance > 0 ? round($totalAmount / $totalDistance, 2) : 0,
+                        'pricePerUnit' => $totalEnergy > 0 ? round($totalAmount / $totalEnergy, 2) : null,
                     ],
                     'efficiency' => [
                         'currentMonth' => $this->efficiency($currentMonthSegments),
@@ -113,8 +114,8 @@ final readonly class BuildDashboardStats
     }
 
     /**
-     * Every refuel's price is money spent, including the first. An electric
-     * car also pays its charging subscriptions on top of the paid charges.
+     * Every refuel's price is money spent, including the first, plus the
+     * expenses that buy energy, such as an EV's charging subscription.
      *
      * @param  Collection<int, Refuel>  $refuels
      * @return Collection<int, Cost>
@@ -126,19 +127,21 @@ final readonly class BuildDashboardStats
             'amount' => (float) $refuel->total_price,
         ])->toBase();
 
-        if (! $car->is_electric) {
+        $energyExpenseTypes = $car->energyExpenseTypes();
+
+        if ($energyExpenseTypes === []) {
             return $costs;
         }
 
-        $subscriptions = CarExpense::query()->where('car_id', $car->id)
-            ->where('expense_type', ExpenseType::Subscription->value)
+        $energyExpenses = CarExpense::query()->where('car_id', $car->id)
+            ->whereIn('expense_type', $energyExpenseTypes)
             ->get(['amount', 'invoice_date'])
             ->map(fn (CarExpense $expense): array => [
                 'month' => $expense->invoice_date?->format('Y-m'),
                 'amount' => (float) $expense->amount,
             ]);
 
-        return $costs->concat($subscriptions)->values();
+        return $costs->concat($energyExpenses)->values();
     }
 
     /**

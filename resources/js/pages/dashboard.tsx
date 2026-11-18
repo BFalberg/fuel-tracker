@@ -44,6 +44,7 @@ interface CarStats {
             amount: number;
             kilometers: number;
             pricePerKilometer: number;
+            pricePerUnit: number | null;
         };
         efficiency: { currentMonth: number | null; allTime: number | null };
         monthlyTrends: MonthlyTrend[];
@@ -457,6 +458,16 @@ export default function Dashboard({
                                             )}{' '}
                                             km total
                                         </p>
+                                        {stats.stats.totals.pricePerUnit !==
+                                            null && (
+                                            <p className="text-[0.7rem] text-muted-foreground">
+                                                {formatCurrency(
+                                                    stats.stats.totals
+                                                        .pricePerUnit,
+                                                )}
+                                                /{efficiencyUnit} effective
+                                            </p>
+                                        )}
                                     </CardContent>
                                 </Card>
                                 <Card>

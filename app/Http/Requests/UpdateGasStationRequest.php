@@ -16,6 +16,8 @@ final class UpdateGasStationRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:255'],
+            'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
         ];
     }
 }

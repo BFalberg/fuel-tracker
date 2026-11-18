@@ -15,6 +15,7 @@ interface Car {
     purchase_price?: number | '';
     sale_price?: number | '';
     is_electric?: boolean;
+    archived_at?: string | null;
 }
 
 interface CarFormProps {
@@ -30,6 +31,7 @@ export default function CarForm({ formType, car }: CarFormProps) {
         purchase_price: car?.purchase_price ?? '',
         sale_price: car?.sale_price ?? '',
         is_electric: car?.is_electric ?? false,
+        is_archived: Boolean(car?.archived_at),
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -148,6 +150,25 @@ export default function CarForm({ formType, car }: CarFormProps) {
                     />
                     <InputError message={errors.sale_price} />
                 </div>
+                {formType === 'edit' && (
+                    <div className="grid gap-2">
+                        <div className="flex items-center gap-3">
+                            <Checkbox
+                                id="is_archived"
+                                checked={data.is_archived}
+                                onCheckedChange={(checked) =>
+                                    setData('is_archived', Boolean(checked))
+                                }
+                            />
+                            <Label htmlFor="is_archived">Archived</Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Archived cars keep their history but are hidden when
+                            logging refuels and on the dashboard.
+                        </p>
+                        <InputError message={errors.is_archived} />
+                    </div>
+                )}
                 <div className="flex flex-col gap-2">
                     <Button
                         className="w-full"

@@ -19,7 +19,9 @@ final readonly class DashboardController
         [$chartStart, $chartEnd] = $request->chartPeriod();
 
         $cars = $user->cars()->latest('cars.created_at')->get();
-        $selectedCar = $cars->firstWhere('id', $request->integer('car')) ?? $cars->first();
+        $selectedCar = $cars->firstWhere('id', $request->integer('car'))
+            ?? $cars->first(fn (Car $car): bool => ! $car->isArchived())
+            ?? $cars->first();
 
         if ($selectedCar === null) {
             return Inertia::render('dashboard', [
@@ -32,7 +34,10 @@ final readonly class DashboardController
         }
 
         return Inertia::render('dashboard', [
-            'cars' => $cars->map(fn (Car $car): array => ['id' => $car->id, 'name' => $car->name])->values(),
+            'cars' => $cars
+                ->filter(fn (Car $car): bool => ! $car->isArchived() || $car->is($selectedCar))
+                ->map(fn (Car $car): array => ['id' => $car->id, 'name' => $car->name])
+                ->values(),
             'selectedCarId' => $selectedCar->id,
             'selectedFrom' => $chartStart->format('Y-m'),
             'selectedTo' => $chartEnd->format('Y-m'),

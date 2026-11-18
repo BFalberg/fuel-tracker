@@ -8,7 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
-import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request as requestPasswordReset } from '@/routes/password';
 
@@ -107,13 +106,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         )}
                         Log in
                     </Button>
-                </div>
-
-                <div className="text-center text-sm text-muted-foreground">
-                    Don't have an account?{' '}
-                    <TextLink href={register()} tabIndex={5}>
-                        Sign up
-                    </TextLink>
                 </div>
             </form>
 

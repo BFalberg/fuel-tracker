@@ -36,6 +36,8 @@ final class CreateRefuelRequest extends FormRequest
             'gas_station_id' => ['nullable', Rule::exists(GasStation::class, 'id')],
             'new_gas_station_name' => ['nullable', 'string', 'max:255'],
             'new_gas_station_address' => ['nullable', 'string', 'max:255'],
+            'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
             'liters_refueled' => ['required', 'numeric', 'gt:0'],
             'total_price' => ['required', 'numeric', 'min:0'],
             'mileage' => ['required', 'integer', 'min:0', MileageFitsCarSeries::whenCreating($this->car())],

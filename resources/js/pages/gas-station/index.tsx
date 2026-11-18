@@ -22,7 +22,8 @@ interface GasStation {
     id: number;
     name: string;
     address: string;
-    refuels_count?: number;
+    refuels_count: number;
+    can_manage: boolean;
 }
 
 interface Props {
@@ -55,7 +56,7 @@ export default function GasStations({ gasStations }: Props) {
 
     // Deleting a station never removes refuels - it only clears their station reference.
     const deleteDescription = (station: GasStation) => {
-        const count = station.refuels_count ?? 0;
+        const count = station.refuels_count;
 
         if (count === 0) {
             return `Are you sure you want to delete ${station.name}? This action cannot be undone.`;
@@ -96,7 +97,7 @@ export default function GasStations({ gasStations }: Props) {
                             <GasStationCard
                                 key={station.id}
                                 gasStation={station}
-                                onDelete={handleDelete}
+                                onDelete={() => handleDelete(station)}
                             />
                         ))}
                     </div>

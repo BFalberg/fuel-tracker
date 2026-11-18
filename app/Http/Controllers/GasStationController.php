@@ -11,17 +11,19 @@ use App\Actions\UpdateGasStation;
 use App\Http\Requests\CreateGasStationRequest;
 use App\Http\Requests\UpdateGasStationRequest;
 use App\Models\GasStation;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final readonly class GasStationController
 {
-    public function index(ListGasStations $action): Response
+    public function index(#[CurrentUser] User $user, ListGasStations $action): Response
     {
         return Inertia::render('gas-station/index', [
-            'gasStations' => Inertia::defer(fn (): Collection => $action->handle()),
+            'gasStations' => Inertia::defer(fn (): Collection => $action->handle($user)),
         ]);
     }
 

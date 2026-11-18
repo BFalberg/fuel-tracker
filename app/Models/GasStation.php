@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read int $id
  * @property-read string $name
  * @property-read string $address
+ * @property-read string|null $latitude
+ * @property-read string|null $longitude
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  */
@@ -39,6 +41,8 @@ final class GasStation extends Model
             'id' => 'integer',
             'name' => 'string',
             'address' => 'string',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

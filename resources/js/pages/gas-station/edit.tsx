@@ -13,6 +13,8 @@ interface Props {
         id: number;
         name: string;
         address: string;
+        latitude: string | null;
+        longitude: string | null;
     };
 }
 

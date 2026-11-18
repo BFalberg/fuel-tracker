@@ -78,4 +78,16 @@ final class Refuel extends Model
     {
         return $query->whereHas('car.users', fn (Builder $carUsers) => $carUsers->whereKey($user->id));
     }
+
+    /**
+     * Limit the query to refuels on cars the given user is not a member of.
+     *
+     * @param  Builder<Refuel>  $query
+     * @return Builder<Refuel>
+     */
+    #[Scope]
+    protected function inaccessibleTo(Builder $query, User $user): Builder
+    {
+        return $query->whereDoesntHave('car.users', fn (Builder $carUsers) => $carUsers->whereKey($user->id));
+    }
 }

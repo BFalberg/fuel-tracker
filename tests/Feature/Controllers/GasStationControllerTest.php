@@ -85,15 +85,100 @@ it('never deletes the refuels of a deleted gas station', function (): void {
     $station = GasStation::factory()->create();
     $refuels = Refuel::factory()->count(3)->forCar($car)->atStation($station)->create();
 
-    $otherCar = Car::factory()->ownedBy(User::factory()->create())->create();
-    $otherRefuel = Refuel::factory()->forCar($otherCar)->atStation($station)->create();
-
     $this->actingAs($user)
         ->delete(route('gas-stations.destroy', $station))
         ->assertRedirect()
         ->assertSessionHas('success', 'Gas station deleted successfully');
 
     expect(GasStation::query()->find($station->id))->toBeNull()
-        ->and(Refuel::query()->whereIn('id', $refuels->pluck('id'))->whereNull('gas_station_id')->count())->toBe(3)
-        ->and($otherRefuel->fresh()?->gas_station_id)->toBeNull();
+        ->and(Refuel::query()->whereIn('id', $refuels->pluck('id'))->whereNull('gas_station_id')->count())->toBe(3);
+});
+
+it('forbids changing a station another user\'s car depends on', function (string $method, string $route): void {
+    $user = User::factory()->create();
+    $station = GasStation::factory()->create(['name' => 'Clever Viby']);
+    Refuel::factory()->forCar(Car::factory()->ownedBy(User::factory()->create())->create())->atStation($station)->create();
+
+    $this->actingAs($user)
+        ->{$method}(route($route, $station), ['name' => 'Hijacked', 'address' => 'Nowhere'])
+        ->assertForbidden();
+
+    expect($station->fresh()?->name)->toBe('Clever Viby');
+})->with([
+    'edit' => ['get', 'gas-stations.edit'],
+    'update' => ['put', 'gas-stations.update'],
+    'delete' => ['delete', 'gas-stations.destroy'],
+]);
+
+it('marks which stations the user may manage', function (): void {
+    $user = User::factory()->create();
+    $own = GasStation::factory()->create(['created_at' => now()->subDay()]);
+    Refuel::factory()->forCar(Car::factory()->ownedBy($user)->create())->atStation($own)->create();
+    $shared = GasStation::factory()->create();
+    Refuel::factory()->forCar(Car::factory()->ownedBy(User::factory()->create())->create())->atStation($shared)->create();
+
+    $this->actingAs($user)
+        ->get(route('gas-stations.index'))
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
+                ->where('gasStations.0.id', $shared->id)
+                ->where('gasStations.0.can_manage', false)
+                ->where('gasStations.1.id', $own->id)
+                ->where('gasStations.1.can_manage', true)));
+});
+
+it('may correct a station\'s position', function (): void {
+    $station = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
+
+    $this->actingAs(User::factory()->create())
+        ->put(route('gas-stations.update', $station), [
+            'name' => $station->name,
+            'address' => $station->address,
+            'latitude' => 56.1296,
+            'longitude' => 10.1626,
+        ])
+        ->assertRedirectToRoute('gas-stations.index');
+
+    expect($station->refresh()->only('latitude', 'longitude'))
+        ->toBe(['latitude' => '56.1296000', 'longitude' => '10.1626000']);
+});
+
+it('may clear a station\'s position', function (): void {
+    $station = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
+
+    $this->actingAs(User::factory()->create())
+        ->put(route('gas-stations.update', $station), [
+            'name' => $station->name,
+            'address' => $station->address,
+            'latitude' => null,
+            'longitude' => null,
+        ]);
+
+    expect($station->refresh()->latitude)->toBeNull()
+        ->and($station->longitude)->toBeNull();
+});
+
+it('keeps the position when an update leaves it out', function (): void {
+    $station = GasStation::factory()->create(['latitude' => 55.0, 'longitude' => 9.0]);
+
+    $this->actingAs(User::factory()->create())
+        ->put(route('gas-stations.update', $station), ['name' => 'Renamed', 'address' => 'Somewhere 1']);
+
+    expect($station->refresh()->latitude)->toBe('55.0000000');
+});
+
+it('rejects a position outside the globe or with one coordinate', function (array $position, string $error): void {
+    $this->actingAs(User::factory()->create())
+        ->post(route('gas-stations.store'), ['name' => 'X', 'address' => 'Y', ...$position])
+        ->assertSessionHasErrors($error);
+})->with([
+    'latitude out of range' => [['latitude' => 91, 'longitude' => 10], 'latitude'],
+    'longitude missing' => [['latitude' => 56.1], 'longitude'],
+]);
+
+it('may create a station at a position', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->post(route('gas-stations.store'), ['name' => 'Clever Home', 'address' => 'Home 1', 'latitude' => 56.1, 'longitude' => 10.2]);
+
+    expect(GasStation::query()->sole()->latitude)->toBe('56.1000000');
 });

@@ -8,14 +8,19 @@ interface GasStationCardProps {
         id: number;
         name: string;
         address: string;
+        can_manage: boolean;
     };
-    onDelete?: (gasStation: GasStationCardProps['gasStation']) => void;
+    onDelete?: () => void;
 }
+
+const sharedHint = "Used by another user's car, so it can't be changed.";
 
 export default function GasStationCard({
     gasStation,
     onDelete,
 }: GasStationCardProps) {
+    const canManage = gasStation.can_manage;
+
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -27,12 +32,16 @@ export default function GasStationCard({
                             label: 'Edit',
                             icon: Pencil,
                             href: editGasStation.url(gasStation.id),
+                            disabled: !canManage,
+                            hint: canManage ? undefined : sharedHint,
                         },
                         {
                             label: 'Delete',
                             icon: Trash2,
-                            onSelect: () => onDelete?.(gasStation),
+                            onSelect: () => onDelete?.(),
                             destructive: true,
+                            disabled: !canManage,
+                            hint: canManage ? undefined : sharedHint,
                         },
                     ]}
                 />

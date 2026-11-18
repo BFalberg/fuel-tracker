@@ -32,3 +32,19 @@ it('returns every gas station when not ordered by latest refuel', function (): v
     expect($data['cars'])->toHaveCount(1)
         ->and($data['gasStations'])->toHaveCount(2);
 });
+
+it('offers only active cars when creating, most recently refuelled first, with their last mileage', function (): void {
+    $user = User::factory()->create();
+    $idleCar = Car::factory()->ownedBy($user)->create();
+    $dailyCar = Car::factory()->ownedBy($user)->create();
+    $archivedCar = Car::factory()->ownedBy($user)->archived()->create();
+    Refuel::factory()->forCar($idleCar)->create(['mileage' => 500, 'refueled_at' => now()->subMonth()]);
+    Refuel::factory()->forCar($dailyCar)->create(['mileage' => 1000, 'refueled_at' => now()->subDay()]);
+    Refuel::factory()->forCar($dailyCar)->create(['mileage' => 1200, 'refueled_at' => now()]);
+    Refuel::factory()->forCar($archivedCar)->create(['refueled_at' => now()->addMinute()]);
+
+    $cars = resolve(GetRefuelFormData::class)->handle($user, true)['cars'];
+
+    expect($cars->pluck('id')->all())->toBe([$dailyCar->id, $idleCar->id])
+        ->and($cars[0]->getAttribute('last_mileage'))->toBe(1200);
+});

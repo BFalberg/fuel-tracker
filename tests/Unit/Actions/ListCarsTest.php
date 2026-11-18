@@ -27,3 +27,14 @@ it('lists the cars of the user with their owner and role', function (): void {
         ->and($cars[1]['can_delete'])->toBeFalse()
         ->and($cars[1]['users']->all())->toBe([['id' => $owner->id, 'name' => 'Owner']]);
 });
+
+it('lists archived cars last and flags them', function (): void {
+    $user = User::factory()->create();
+    $archived = Car::factory()->ownedBy($user)->archived()->create(['created_at' => now()]);
+    $active = Car::factory()->ownedBy($user)->create(['created_at' => now()->subYear()]);
+
+    $cars = resolve(ListCars::class)->handle($user);
+
+    expect($cars->pluck('id')->all())->toBe([$active->id, $archived->id])
+        ->and($cars->pluck('is_archived')->all())->toBe([false, true]);
+});
