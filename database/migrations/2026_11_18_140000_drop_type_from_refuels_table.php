@@ -8,17 +8,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * `type` only repeated whether the car is electric. `charge_type` records how
- * an EV charge was delivered (home, AC or DC); existing charges stay unknown.
+ * `type` only repeated whether the car is electric, so `down()` rebuilds it
+ * from the cars without loss.
  */
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('refuels', function (Blueprint $table): void {
-            $table->string('charge_type')->nullable()->after('gas_station_id');
-        });
-
         Schema::table('refuels', function (Blueprint $table): void {
             $table->dropColumn('type');
         });
@@ -33,9 +29,5 @@ return new class extends Migration
         DB::table('refuels')
             ->whereIn('car_id', DB::table('cars')->where('is_electric', true)->select('id'))
             ->update(['type' => 'charge']);
-
-        Schema::table('refuels', function (Blueprint $table): void {
-            $table->dropColumn('charge_type');
-        });
     }
 };
